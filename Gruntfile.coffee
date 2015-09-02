@@ -1,0 +1,143 @@
+module.exports = (grunt) ->
+
+    # Project configuration
+    grunt.initConfig({
+
+        pkg: grunt.file.readJSON('package.json')
+
+        coffee:
+            options:
+                join: true
+
+            build:
+                files:
+                    'src/tmp/content-tools.js': [
+                        'src/scripts/namespace.coffee'
+
+                        # UI
+                        'src/scripts/ui/ui.coffee'
+                        'src/scripts/ui/dialogs.coffee'
+                        'src/scripts/ui/flashes.coffee'
+                        'src/scripts/ui/ignition.coffee'
+                        'src/scripts/ui/inspector.coffee'
+                        'src/scripts/ui/modal.coffee'
+                        'src/scripts/ui/toolbox.coffee'
+
+                        # UI - Dialogs
+                        'src/scripts/ui/dialogs/dialogs.coffee'
+                        'src/scripts/ui/dialogs/image.coffee'
+                        'src/scripts/ui/dialogs/link.coffee'
+                        'src/scripts/ui/dialogs/properties.coffee'
+                        'src/scripts/ui/dialogs/table.coffee'
+                        'src/scripts/ui/dialogs/video.coffee'
+
+                        # Other
+                        'src/scripts/editor.coffee'
+                        'src/scripts/history.coffee'
+                        'src/scripts/styles.coffee'
+                        'src/scripts/tools.coffee'
+                    ]
+
+            sandbox:
+                files:
+                    'sandbox/sandbox.js': [
+                        'src/sandbox/image-uploader.coffee'
+                        'src/sandbox/sandbox.coffee'
+                        ]
+
+            spec:
+                files:
+                    'spec/spec-helper.js': 'src/spec/spec-helper.coffee'
+                    'spec/content-tools-spec.js': [
+                        'src/spec/history.coffee'
+                        'src/spec/inspector.coffee'
+                        'src/spec/shortcuts.coffee'
+                        'src/spec/tools.coffee'
+                        'src/spec/styles.coffee'
+                        'src/spec/ui.coffee'
+                        ]
+
+        sass:
+            options:
+                banner: '/*! <%= pkg.name %> v<%= pkg.version %> by <%= pkg.author.name %> <<%= pkg.author.email %>> (<%= pkg.author.url %>) */'
+                sourcemap: 'none'
+                style: 'compressed'
+
+            build:
+                files:
+                    'build/content-tools.min.css':
+                        'src/styles/content-tools.scss'
+
+            sandbox:
+                files:
+                    'sandbox/sandbox.css': 'src/sandbox/sandbox.scss'
+
+        uglify:
+            options:
+                banner: '/*! <%= pkg.name %> v<%= pkg.version %> by <%= pkg.author.name %> <<%= pkg.author.email %>> (<%= pkg.author.url %>) */\n'
+                mangle: false
+
+            build:
+                src: 'build/content-tools.js'
+                dest: 'build/content-tools.min.js'
+
+        concat:
+            build:
+                src: [
+                    'external/scripts/content-edit.js'
+                    'src/tmp/content-tools.js'
+                ]
+                dest: 'build/content-tools.js'
+
+        clean:
+            build: ['src/tmp']
+
+        watch:
+            build:
+                files: [
+                    'src/scripts/**/*.coffee',
+                    'src/styles/**/*.scss'
+                    ]
+                tasks: ['build']
+
+            sandbox:
+                files: [
+                    'src/sandbox/*.coffee',
+                    'src/sandbox/*.scss'
+                    ]
+                tasks: ['sandbox']
+
+            spec:
+                files: ['src/spec/*.coffee']
+                tasks: ['spec']
+    })
+
+    # Plug-ins
+    grunt.loadNpmTasks 'grunt-contrib-clean'
+    grunt.loadNpmTasks 'grunt-contrib-coffee'
+    grunt.loadNpmTasks 'grunt-contrib-concat'
+    grunt.loadNpmTasks 'grunt-contrib-sass'
+    grunt.loadNpmTasks 'grunt-contrib-uglify'
+    grunt.loadNpmTasks 'grunt-contrib-watch'
+
+    # Tasks
+    grunt.registerTask 'build', [
+        'coffee:build'
+        'sass:build'
+        'concat:build'
+        'uglify:build'
+        'clean:build'
+    ]
+
+    grunt.registerTask 'sandbox', [
+        'coffee:sandbox'
+        'sass:sandbox'
+    ]
+
+    grunt.registerTask 'spec', [
+        'coffee:spec'
+    ]
+
+    grunt.registerTask 'watch-build', ['watch:build']
+    grunt.registerTask 'watch-sandbox', ['watch:sandbox']
+    grunt.registerTask 'watch-spec', ['watch:spec']

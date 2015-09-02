@@ -1,0 +1,36 @@
+/**
+ * The modal widget provides a layer over the page limiting interaction to just
+ * the components positioned above the layer. This is commonly used when
+ * displaying a dialog, for example if we're editing a table's properties then
+ * the modal ensures the user can't change the element selected on the page
+ * while the dialog is open.
+ */
+
+.ct-widget {
+
+    &.ct-modal {
+        background: rgba(black, 0.7);
+        height: 0;
+        left: 0;
+        position: fixed;
+        top: 0;
+        width: 0;
+        z-index: $base-z-index + 10;
+
+        // States
+
+        &--transparent {
+            background: transparent;
+        }
+    }
+
+}
+
+.ct-widget--active {
+
+    &.ct-modal {
+        height: 100%;
+        width: 100%;
+    }
+
+}

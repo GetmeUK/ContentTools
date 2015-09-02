@@ -1,0 +1,116 @@
+/**
+ * Sections are used to divide up configuration blocks within a dialog's view.
+ * They contain wither a switch or an input, for example the table dialog has
+ * header (switch), body (input - e.g number of columns) and footer (switch)
+ * sections.
+ */
+
+.ct-widget {
+
+    .ct-section {
+        border-bottom: 1px solid #eee;
+        @include clearfix;
+        color: lighten($text-color, 35%);
+        cursor: pointer;
+        font-style: italic;
+        height: 48px;
+        padding: 0 16px;
+        @include type-text($font-size: 16px, $line-height: 48px);
+
+        &:hover {
+            background: #f6f6f6;
+        }
+
+        /**
+         * If the section is a switch then the `applied` modifier is set when
+         * the switch is on.
+         */
+        &--applied {
+            color: $text-color;
+            font-style: normal;
+
+            .ct-section__switch {
+                background-color: #27ae60;
+                border: 1px solid darken(#27ae60, 10%);
+
+                &:before {
+                    left: 25px;
+                    @include transition-property(left);
+                    @include transition-duration(0.1s);
+                    @include transition-timing-function(ease-in);
+                }
+            }
+        }
+
+        /**
+         * If the section contains an input field the `contains-input` modifier
+         * is set.
+         */
+        &--contains-input {
+            .ct-section__label {
+                width: 75%;
+            }
+        }
+
+        /**
+         * Each section has a label describing the purpose of the switch or
+         * input within the section.
+         */
+        &__label {
+            float: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 472px;
+            white-space: nowrap;
+        }
+
+        &__switch {
+            background-color: #ccc;
+            border: 1px solid darken(#ccc, 10%);
+            border-radius: 12px;
+            box-shadow: inset 0px 0 2px rgba(black, 0.1);
+            float: right;
+            height: 24px;
+            margin-top: 12px;
+            position: relative;
+            width: 48px;
+
+            &:before {
+                background: white;
+                border-radius: 10px;
+                content: '';
+                height: 20px;
+                left: 1px;
+                position: absolute;
+                top: 1px;
+                @include transition-property(left);
+                @include transition-duration(0.1s);
+                @include transition-timing-function(ease-in);
+                width:20px;
+            }
+        }
+
+        &__input {
+            background: white;
+            border: none;
+            color: $text-color;
+            float: right;
+            height: 47px;
+            outline: none;
+            padding: 0 16px;
+            text-align: right;
+            @include type-text($line-height: 48px);
+            width: 25%;
+
+            /**
+             * If the contents of the sections input is invalid then the
+             * `invalid` modifier is set against the input (programmatically).
+             */
+            &--invalid {
+                color: $cancel-action-color;
+            }
+        }
+
+    }
+
+}

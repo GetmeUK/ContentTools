@@ -1,0 +1,313 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>ContentTools sandbox</title>
+        <link rel="stylesheet" type="text/css" href="sandbox.css">
+        <link rel="stylesheet" type="text/css" href="../build/content-tools.min.css">
+    </head>
+    <body>
+        <article class="article">
+            <section class="[ article__content ]  [ editable ]"  data-name="article">
+
+                <h1>5 rules for naming variables</h1>
+
+                <p class="article__by-line">
+                    by <b>Anthony Blackshaw</b> · 18th January 2015
+                </p>
+
+                <blockquote>
+                    Writing poor quality code will dramatically reduce the time
+                    you get to spend doing things you love, if you’re lucky
+                    enough to leave a project shortly after such a contribution
+                    everyone who subsequently has to work with your code will
+                    think you an arsehole.
+                </blockquote>
+
+                <img src="image.png" alt="Example of bad variable names">
+
+                <p class="article__caption">
+                    <b>Above:</b> This example is code found in
+                    a live and commercial project. Clearly the developer thought
+                    <b>user.n5</b> would still clearly point to the 5th
+                    character of a the user's name when used elsewhere.
+                </p>
+
+                <p>
+                    The names we devise for folders, files, variables,
+                    functions, classes and any other user definable construct
+                    will (for the most part) determine how easily someone else
+                    can read and understand what we have written.
+                </p>
+                <p>
+                    To avoid repetition in the remainder of this section we use
+                    the term variable to cover folders, files, variables,
+                    functions, and classes.
+                </p>
+
+                <iframe
+                    width="400"
+                    height="300"
+                    src="https://www.youtube.com/embed/I9jSKFk5Zp0"
+                    frameborder="0"></iframe>
+
+                <h2>Be descriptive and concise</h2>
+
+                <p>
+                    It’s the most obvious naming rule of all but it’s also
+                    perhaps the most difficult. In my younger years I would
+                    often use very descriptive names, I pulled the following
+                    doozy from the archives:
+                </p>
+
+                <pre class="example  example--bad">design_inspiration_competition_promotion_code_list</pre>
+
+                <p>
+                    At a whopping 50 characters it can hardly be described as
+                    nondescript, however I’m sure anyone who came after would
+                    have cursed me for using such a long name. A far better name
+                    for my list of promotion codes would have been:
+                </p>
+
+                <pre class="example  example--good">promotion_codes</pre>
+
+                <p>
+                    Or possibly:
+                </p>
+
+                <pre class="example  example--good">promo_codes</pre>
+
+                <p>
+                    However care should be taken when using abbreviations or
+                    acronyms. Only use an abbreviated term if it is well known
+                    and/or its use is standard practice (e.g db, id, url, etc.)
+                    If you’re not sure if an abbreviated form of a term is well
+                    known err on the side of caution and don’t abbreviate:
+                </p>
+
+                <pre class="example  example--bad">p_codes</pre>
+
+                <pre class="example  example--bad">pcs</pre>
+
+                <p>
+                    There is one exception to this rule - list or dictionary
+                    comprehensions (if you’re not familiar with list
+                    comprehension look it up). Using a single letter
+                    abbreviation in this case is preferential to a more
+                    descriptive name, for example:
+                </p>
+
+                <pre class="example  example--bad">[employee.name for employee in employees \
+         if employee.role == “developer”]</pre>
+
+                <pre class="example  example--good">[e.name for e in employees if e.role == “developers”]</pre>
+
+                <h2>Be conscious of scope</h2>
+
+                <p>
+                    In the first rule we reduced a very descriptive term to a
+                    more concise version promotion_codes. So why not reduce it
+                    further (e.g codes) and why was it acceptable to reduce it
+                    at all? The answer lies in scope.
+                </p>
+
+                <p>
+                    The scope in which you declare a variable determines how
+                    much information must be included in the name. For example a
+                    variable declared in the settings module for a project will
+                    infer little information from its scope and therefore needs
+                    to be more descriptive.
+                </p>
+
+                <pre class="example  example--bad">settings.username = 'foo'</pre>
+
+                <pre class="example  example--good">settings.db_username = 'foo'</pre>
+
+                <p>
+                    Now consider the scope when the same variable is used in a
+                    function:
+                </p>
+
+                <pre class="example  example--bad">def connect_to_db(db_username, db_password):</pre>
+
+                <pre class="example  example--good">def connect_to_db(username, password):</pre>
+
+                <p>
+                    The purpose of our function is to connect to the database
+                    and therefore we can infer that the supplied username and
+                    password are for this purpose and there’s no need to include
+                    db in the variable names.
+                </p>
+
+                <p>
+                    On occasion it may be necessary to use more descriptive
+                    names to avoid a naming conflict within the same scope.
+                    Consider our first example where we declared a username for
+                    the database in the settings file, what if the project uses
+                    multiple databases?
+                </p>
+
+                <pre class="example  example--good">settings.redis_db_username = ‘foo’
+     ...
+
+     settings.mysql_db_username = ‘bar’
+     ...</pre>
+
+                <p>
+                    Here the name of the database application is used to
+                    namespace the variables and avoid any conflict whilst
+                    keeping the names themselves as concise as possible.
+                </p>
+
+                <h2>Pluralize when naming collections</h2>
+
+                <p>
+                    Harking back again to my youth there was a time where I
+                    would have avoided using plurals at all costs, instead
+                    opting to follow the convention of appending <i>_list</i> to
+                    any variable associated with a collection of items. With the
+                    benefit of time I’ve come to prefer variable names that
+                    sound natural.
+                </p>
+
+                <pre class="example">for colour in colour_list:
+    ...
+
+for colour in colours:
+    ...</pre>
+
+                <p>
+                    I’ve refrained from marking either example as good or bad as
+                    they are both acceptable in my eyes, however colours would
+                    be the preferred term purely on the base it is the most
+                    concise and natural sounding.
+                </p>
+
+                <p>
+                    Advocates for using <i>_list</i> often argue that it reduces
+                    common spelling mistakes with words like category/categories
+                    and hero/heroes. I would counter that in the same way I will
+                    grammar and spell check this document before asking you to
+                    read it you should take the same pride in the code you
+                    write.
+                </p>
+
+                <h2>Read your code out loud</h2>
+
+                <p>
+                    If you can read a line of code and comprehend it in one
+                    that’s a good indication that it’s well written using good
+                    variable names. If on the other hand if jars or you find
+                    yourself re-reading it multiple times before it makes sense
+                    then there’s room for improvement.
+                </p>
+
+                <p>
+                    Reading your code out loud (or in your head if you’re
+                    attracting too much attention) is a sure fire way to spot
+                    badly named variables.
+                </p>
+
+                <h2>Above all else be consistent</h2>
+
+                <p>
+                    When you work with old or externally written code chances
+                    are there will be difference in the rules the author(s) used
+                    when coming up with variable names. Unless you’re going to
+                    rewrite and maintain all the code in future do not break
+                    from the existing naming conventions.
+                </p>
+
+                <p>
+                    If they prefix numbers with num_ or append _list to lists
+                    then follow suite, whilst conventional wisdom tells us two
+                    wrongs don’t make a right, mixing styles within a project
+                    will only make things worse.
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Chair</td>
+                            <td>Helen Troughton</td>
+                        </tr>
+                        <tr>
+                            <td>Vice-chair</td>
+                            <td>Sarah Stone</td>
+                        </tr>
+                        <tr>
+                            <td>Secretary</td>
+                            <td>Bridget Brickley</td>
+                        </tr>
+                        <tr>
+                            <td>Treasurer</td>
+                            <td>Sarahann Holmes</td>
+                        </tr>
+                        <tr>
+                            <td>Publicity officer</td>
+                            <td>Zillah Cimmock</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    If you have to work with code that has a mixture of styles
+                    or no clear style at all then I refer you to my opening
+                    statement.
+                </p>
+
+                <h2>Further reading...</h2>
+
+                <ul>
+                    <li>
+                        Code complete 2 <i>(by Steve McConnell)</i>
+                    </li>
+                    <li>
+                        The Art of Computer Programming: Volumes 1-4a
+                        <i>(by Donald E. Knuth)</i>
+                    </li>
+                </ul>
+            </section>
+            <aside class="article__related">
+                <div class="[ article__author ]  [ author ]  [ editable ]" data-name="author">
+
+                    <h3 class="author__about">About the author</h3>
+
+                    <img
+                        src="author-pic.jpg"
+                        alt="Anthony Blackshaw"
+                        width="80"
+                        class="[ author__pic ]  [ align-right ]"
+                        >
+
+                    <p class="author__bio">
+                        Anthony Blackshaw is a co-founder of Getme, an
+                        employee owned company with a focus on web tech. He
+                        enjoys writing and talking about tech, especially
+                        code and the occasional Montecristo No.2s.
+                    </p>
+
+                </div>
+                <div class="[ article__learn-more ]  [ learn-more ]  [ editable ]" data-name="learn-more">
+
+                    <h3>Want to learn more?</h3>
+
+                    <p>
+                        If you'd like to learn more about the ContentTools
+                        library that makes this page editable,
+                        <a href="https://bitbucket.org/getmeuk/contenttools">visit the projects homepage.</a>
+                    </p>
+
+                </div>
+            </aside>
+        </article>
+        <script type="text/javascript" src="../build/content-tools.js"></script>
+        <script type="text/javascript" src="sandbox.js"></script>
+    </body>
+</html>

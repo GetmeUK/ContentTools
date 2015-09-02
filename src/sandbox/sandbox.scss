@@ -1,0 +1,260 @@
+@charset "UTF-8";
+
+/* Vendor */
+@import "../../external/styles/bourbon/bourbon";
+@import "../../external/styles/neat/neat";
+
+/* Reset */
+@import "../../external/styles/normalize";
+
+/* Settings */
+
+$sans-serif: helvetica, sans-serif;
+$serif: georgia, serif;
+$spacing: 20px;
+$text-color: #494949;
+
+
+/* Grid */
+
+$column: 60px;
+$gutter: 20px;
+$max-width: 920px;
+
+/* Breakpoints */
+
+$mobile: new-breakpoint(min-width 320px 12);
+$tablet: new-breakpoint(min-width 720px 12);
+$desktop: new-breakpoint(min-width 960px 12);
+
+/* Body */
+
+body {
+    color: $text-color;
+    font-family: $sans-serif;
+    @include font-feature-settings("kern", "liga", "frac", "pnum");
+    -webkit-font-smoothing: antialiased;
+}
+
+
+/* Technical article */
+
+.article {
+
+    @include outer-container;
+    padding: 0 10px 2em;
+
+    &__content {
+        @include fill-parent();
+
+        @include media($tablet) {
+            @include span-columns(8);
+        }
+
+        // Common tag styles
+
+        h1 {
+            color: darken($text-color, 5%);
+            font-family: $serif;
+            font-size: 60px;
+            margin-bottom: 0;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-top: 1.5em;
+            line-height: 125%;
+        }
+
+        li,
+        p {
+            font-size: 14px;
+            line-height: 145%;
+        }
+
+        blockquote {
+            color: lighten($text-color, 20%);
+            font-family: $serif;
+            font-size: 20px;
+            font-style: italic;
+            line-height: 135%;
+            margin: 1.5em 0;
+            padding-left: 40px;
+            position: relative;
+
+            &:before {
+                content: '“';
+                font-size: 60px;
+                left: 0;
+                position: absolute;
+                top: 5px;
+            }
+        }
+
+        table {
+            @include font-feature-settings("kern", "liga", "tnum");
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: $spacing;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        th {
+            border-bottom: 1px solid $text-color;
+            font-weight: bold;
+            padding: floor($spacing / 2) 0;
+            text-align: left;
+        }
+
+        td {
+            border-bottom: 1px solid lighten($text-color, 50%);
+            padding: floor($spacing / 2) 0;
+        }
+
+        tr,
+        td,
+        th {
+            vertical-align: middle;
+        }
+    }
+
+    &__by-line {
+        font-family: $serif;
+        font-style: italic;
+    }
+
+    &__caption {
+        color: lighten($text-color, 20%);
+        font-family: $serif;
+        font-size: 12px;
+        font-style: italic;
+        text-align: center;
+    }
+
+    &__related {
+        @include fill-parent();
+        margin-top: 2em;
+
+        @include media($tablet) {
+            @include shift(1);
+            @include span-columns(3);
+        }
+    }
+
+}
+
+
+/* Code examples */
+
+.example {
+    background: #f6f6f6;
+    border-radius: 4px;
+    color: lighten($text-color, 15%);
+    padding: 0.5em;
+
+    &--bad {
+        &:before {
+            color: #c0392b;
+            content: 'BAD  ';
+            font-weight: bold;
+        }
+    }
+
+    &--good {
+        &:before {
+            color: #27ae60;
+            content: 'GOOD ';
+            font-weight: bold;
+        }
+    }
+}
+
+
+/* Author */
+
+.author {
+    background: #1abc9c;
+    @include clearfix;
+    color: white;
+    padding: 1em;
+
+    .author__about {
+        font-size: 16px;
+        margin-top: 0;
+        margin-bottom: 0.5em;
+    }
+
+    .author__bio {
+        font-size: 13px;
+        font-style: italic;
+        line-height: 135%;
+        margin: 0.5em 0 0;
+    }
+
+    // Modify editing styles to cater for the background color
+    .ce-element--focused,
+    .ce-element--over {
+        background-color: rgba(white, 0.2);
+        outline-color: rgba(white, 0.2) !important;
+        z-index: initial;
+    }
+}
+
+
+/* Learn more */
+
+.learn-more {
+    margin-top: 1em;
+
+    h3 {
+        font-size: 16px;
+        margin: 0.5em 0;
+    }
+
+    p {
+        font-size: 13px;
+        line-height: 135%;
+        margin: 0.5em 0;
+    }
+}
+
+
+
+/* Alignment */
+
+img,
+iframe,
+video,
+.ce-element--type-image,
+.ce-element--type-video {
+    clear: both;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+
+    &.align-left {
+        clear: initial;
+        float: left;
+        margin-right: 0.5em;
+    }
+
+    &.align-right {
+        clear: initial;
+        float: right;
+        margin-left: 0.5em;
+    }
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}

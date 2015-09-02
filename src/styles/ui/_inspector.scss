@@ -1,0 +1,127 @@
+/**
+ * The inspector provides a breadcrumb style path (constructured from tags) for
+ * the currently selected element and its parent/ancestor tags.
+ *
+ * Tags can be selected which triggers the properties dialog. This allows
+ * elements which typically can't be directly selected using the editor to be
+ * modified.
+ */
+.ct-widget {
+
+    &.ct-inspector {
+        background: rgba( $in-page-background, 0.2);
+        border-top: 1px solid rgba(lighten( $in-page-background, 10%), 0.1);
+        bottom: 0;
+        height: 32px;
+        left: 0;
+        overflow: hidden;
+        padding: 3px 16px 0;
+        position: fixed;
+        width: 100%;
+    }
+
+    /**
+     * The inspector bar is consists of a list of one or more tags, each tag
+     * represents an element in the lineage between the currently selected
+     * element and the top level element it is defined within, e.g for a table
+     * division the path might look like this:
+     *
+     * table > tbody > tr > td
+     */
+    .ct-inspector {
+        &__tags {
+            @include clearfix;
+
+            &:before {
+                color: $icon-color;
+                content: '\ea80';
+                display: block;
+                float: left;
+                height: 24px;
+                line-height: 24px;
+                margin-right: 16px;
+                text-align: center;
+                @include type-icons;
+                width: 24px;
+            }
+        }
+    }
+
+    .ct-tag {
+        $tag-height: 24px;
+
+        background-color: #2980b9;
+        border-radius: 2px 0 0 2px;
+        color: white;
+        cursor: pointer;
+        float: left;
+        font-weight: bold;
+        height: $tag-height;
+        line-height: $tag-height;
+        margin-left: $tag-height;
+        padding: 0 8px;
+        position: relative;
+        text-shadow: 0 1px 0 $shadow-color;
+
+        &:after {
+            border-style: solid;
+            border-bottom: ($tag-height / 2) solid rgba(255, 0, 0, 0);
+            border-left: ($tag-height / 2) solid #2980b9;
+            border-right: none;
+            border-top: ($tag-height / 2) solid rgba(255, 0, 0, 0);
+            content: '';
+            display: block;
+            height: $tag-height;
+            bottom: 0;
+            right: -$tag-height;
+            position: absolute;
+            width: $tag-height;
+
+            // HACK: Fix for appearance of border in FireFox
+            -moz-transform: scale(.9999);
+        }
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        &:hover {
+            background-color: lighten(#3498db, 5%);
+
+            &:after {
+                border-left-color: lighten(#3498db, 5%);
+            }
+        }
+
+        // Set the background colour for tags based on their position in the
+        // list, the list cycles round.
+        $tag-colors:
+            #8e44ad,
+            #2980b9,
+            #27ae60,
+            #d35400,
+            #f39c12,
+            #16a085;
+
+        @for $i from 1 through length($tag-colors) {
+            $tag-color: nth($tag-colors, $i);
+
+            &:nth-child(#{$i}) {
+                background-color: $tag-color;
+
+                &:after {
+                    border-left-color: $tag-color;
+                }
+
+                &:hover {
+                    background-color: lighten($tag-color, 5%);
+
+                    &:after {
+                        border-left-color: lighten($tag-color, 5%);
+                    }
+                }
+
+            }
+        }
+    }
+}

@@ -1,0 +1,174 @@
+/**
+ * The ignition switch is how users start and stop editing the page.
+ */
+
+/**
+ * If the app is performing a remote task that requires the user to wait for
+ * a response from the server then the ignition may be set to a busy state. The
+ * busy state uses an animation (a rotating cog) defined below.
+ */
+@include keyframes(busy-ignition) {
+    0% {
+        transform: rotate(0deg);
+        @include transform(transform);
+    }
+    100% {
+        transform: rotate(359deg);
+        @include transform(transform);
+    }
+}
+
+@mixin animation--busy-ignition() {
+    @include animation(busy-ignition 5s linear);
+    @include animation-iteration-count(infinite);
+    @include animation-fill-mode(forwards);
+}
+
+.ct-widget {
+
+    &.ct-ignition {
+
+        /**
+         * Position of the switch on the page
+         */
+        left: 16px;
+        position: fixed;
+        top: 16px;
+
+
+        /**
+         * Depending on the current state of the switch we show either the edit
+         * button (page ready to edit), or the confirm and cancel buttons (
+         * page currently being edited).
+         */
+        .ct-ignition__button {
+            display: none;
+        }
+
+        &--editing {
+            .ct-ignition__button--confirm,
+            .ct-ignition__button--cancel {
+                display: block;
+            }
+        }
+
+        &--ready {
+            .ct-ignition__button--edit {
+                display: block;
+            }
+        }
+
+        // Position here to ensure it supersedes `editing` and `ready` modifiers
+        &--busy {
+            .ct-ignition__button {
+                display: none;
+
+                &--busy {
+                    display: block;
+                }
+            }
+        }
+    }
+
+    .ct-ignition {
+
+        /**
+         * The ignition switch is constructed of 3 buttons, edit, confirm and
+         * cancel.
+         */
+        $buttonSize: 48px;
+
+        &__button {
+
+            // Set the base appeance of the button
+            border-radius: $buttonSize / 2;
+            content: '';
+            cursor: pointer;
+            display: block;
+            height: $buttonSize;
+            line-height: $buttonSize;
+            opacity: 0.9;
+            position: absolute;
+            text-align: center;
+            @include type-icons($font-size: 24px);
+            width: $buttonSize;
+
+            // Each button displays an icon
+            &:before {
+                color: white;
+            }
+
+            /* Busy button */
+            &--busy {
+                @include animation--busy-ignition();
+                background: $muted-action-color;
+                cursor: default;
+
+                &:before {
+                    content: '\e994';
+                }
+
+                &:hover {
+                    background: $muted-action-color;
+                }
+            }
+
+            /* Confirm button */
+            &--confirm {
+                background: $confirm-action-color;
+
+                &:before {
+                    content: '\ea10';
+                }
+
+                &:hover {
+                    background: lighten($confirm-action-color, 5%);
+                }
+            }
+
+            /* Cancel button */
+            &--cancel {
+                background: $cancel-action-color;
+                left: $buttonSize + 16;
+
+                &:before {
+                    content: '\ea0f';
+                }
+
+                &:hover {
+                    background: lighten($cancel-action-color, 5%);
+                }
+            }
+
+            /* Edit button */
+            &--edit {
+                $bkg-color: $edit-action-color;
+                background: $bkg-color;
+
+                /**
+                 * Unlike the confirm and cancel buttons we rotate the edit
+                 * button's pencil icon on mouse over to add a sense of
+                 * purpose :)
+                 */
+                &:before {
+                    content: '\e905';
+                    @include transition-property(transform);
+                    @include transition-duration(0.1s);
+                    @include transition-timing-function(ease-in);
+                }
+
+                &:hover {
+                    background: lighten($bkg-color, 5%);
+
+                    &:before {
+                        display: inline-block;
+                        @include transform(rotate(-15deg));
+                    }
+                }
+            }
+
+        } // __button
+
+    } // .ct-ignition
+
+} // .ct-widget

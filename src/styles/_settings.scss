@@ -1,0 +1,116 @@
+/**
+ * All widgets are assigned a z-index equal to or higher than this setting. The
+ * base z-index can be adjusted to overcome z-index conflicts with existing page
+ * elements.
+ */
+$base-z-index: 9999;
+
+/**
+ * For UI widgets that appear on the page (as opposed to appearing in front of a
+ * modal screen) we define a base background colour.
+ */
+$in-page-background: #e9e9e9;
+
+/**
+ * The colour used when casting shadows for widgets that appear to float.
+ */
+$shadow-color: rgba(black, 0.35);
+
+/**
+ * Confirm, Cancel and Edit actions are common amoung the various ui components.
+ * Each action has an associated/common colour.
+ */
+$cancel-action-color: #e74c3c;
+$confirm-action-color: #27ae60;
+$edit-action-color: #2980b9;
+$muted-action-color: #646464;
+
+/**
+ * The background colour used to highlight editiable regions to users when they
+ * hold down the shift key.
+ */
+$highlight-color: rgba(#f39c12, 0.25);
+
+
+/**
+ * Tooltips feature for a number of components, their base appearance is
+ * configured using a mixin.
+ */
+@mixin type-tooltip(
+    $parent-width: 0px,
+    $height: 20px,
+    $offset-top: 5px,
+    $width: 85px
+    ) {
+
+    &:after {
+        background: black;
+        border-radius: 2px;
+        color: white;
+        content: attr(data-tooltip);
+        display: block;
+        left: -($width - $parent-width) / 2;
+        line-height: $height;
+        opacity: 0.0;
+        padding: 0 4px;
+        position: absolute;
+        top: -($height + $offset-top);
+        @include type-text($font-size: 12px, $line-height: $height);
+        visibility: hidden;
+        width: $width;
+    }
+
+    &:hover {
+        &:after {
+            opacity: 0.8;
+            visibility:visible;
+
+            @include transition-property(opacity);
+            @include transition-duration(0.0s);
+            @include transition-timing-function(ease-in);
+            @include transition-delay(2.0s);
+        }
+    }
+}
+
+/**
+ * The following settings relate to typography. For portability we limit the the
+ * use of fonts to:
+ *
+ * - `type-icon` used for displaying icons (courtesy of http://icomoon.io).
+ * - `type-text` used for displaying text.
+ *
+ */
+
+// Icon font-face
+@font-face {
+    font-family: 'icon';
+    src: url('icons.woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+// Text colours
+$icon-color: #464646;
+$text-color: #646464;
+
+// Type mixins
+@mixin type-text($font-size: 14px, $line-height: 18px) {
+    font-family: arial, sans-serif;
+    font-size: $font-size;
+    line-height: $line-height;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@mixin type-icons($font-size: 16px) {
+    font-family: 'icon';
+    font-size: $font-size;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    speak: none;
+    text-transform: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

@@ -1,0 +1,25 @@
+/**
+ * The progress bar appears in dialogs (such as the image dialog) and provides
+ * feedback to the user on a task (such as uploading an image).
+ */
+
+.ct-widget {
+
+    .ct-progress-bar {
+        border: 1px solid #eee;
+        height: 32px;
+        line-height: 32px;
+        padding: 1px;
+        width: 476px;
+
+        /**
+         * Note: The width of the progress bar should be set (as a percentage)
+         * programatially, e.g `progressBarDOM.style.width = '50%'`.
+         */
+        &__progress {
+            background: #2980b9;
+            height: 28px;
+        }
+    }
+
+}

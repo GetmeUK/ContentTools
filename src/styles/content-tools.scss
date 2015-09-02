@@ -1,0 +1,68 @@
+@charset "UTF-8";
+
+/* Vendor */
+@import "../../external/styles/content-edit";
+@import "../../external/styles/bourbon/bourbon";
+
+/* Settings */
+@import "settings";
+
+/* UI */
+@import "ui/ui";
+
+/**
+ * The highlight class below is used to highlight editable regions within the
+ * page to users to help them see what they can edit. It's slightly unusual in
+ * that it's specified as a modifier of `ct`.
+ */
+
+@include keyframes(highlight) {
+    0% {
+        outline-color: rgba(white, 0);
+        @include transform(background-color);
+    }
+    25% {
+        outline-color: $highlight-color;
+        @include transform(background-color);
+    }
+    50% {
+        outline-color: $highlight-color;
+        @include transform(background-color);
+    }
+    100% {
+        outline-color: rgba(white, 0);
+        @include transform(background-color);
+    }
+}
+
+@mixin animation--highlight() {
+    @include animation(highlight 0.5s ease-in);
+    @include animation-iteration-count(infinite);
+    @include animation-fill-mode(forwards);
+}
+
+.ct--highlight {
+    outline: 4px solid $highlight-color;
+    @include animation--highlight();
+}
+
+/**
+ * When applied to the `body` this class prevents the page from scrolling. This
+ * can be a useful trait when overlaying content such as a dialog where
+ * scrolling is either undesirable or relevant only to the overlayed content.
+ */
+.ct--no-scroll {
+    overflow: hidden;
+}
+
+/**
+ * Sometimes it necessary to take focus from an element such as when asking a
+ * user to provide a URL for a link. To provide an indication of the element's
+ * selection before focus was list this class can be applied to a `span`
+ * surrounding the element's selection.
+ *
+ * Once focus is returned to the element the class should be removed.
+ */
+.ct--puesdo-select {
+    background: rgba(black, 0.1);
+}

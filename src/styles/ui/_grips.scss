@@ -1,0 +1,35 @@
+/**
+ * Grip's provide a visual hint to the user that they can use the mouse to drag
+ * an item (for example the toolbar has a grip that can be used to drag it to a
+ * new location.
+ */
+
+.ct-widget {
+
+    .ct-grip {
+
+        cursor: move;
+        font-size: 0;
+        text-align: center;
+        @include user-select(none);
+
+        /**
+         * Grips consist of one or more bumps, elements that appear to be sunk
+         * or raised and therefore provide grip.
+         */
+        &__bump {
+            $grip-size: 12px;
+            background: rgba($icon-color, 0.15);
+            border-radius: $grip-size;
+            display: inline-block;
+            height: $grip-size;
+            margin-left: $grip-size;
+            width: $grip-size;
+
+            &:first-child {
+                margin-left: 0;
+            }
+        }
+    }
+
+}

@@ -1,0 +1,55 @@
+/**
+ * Attributes are similar to sections in that they are used to divide up
+ * configuration blocks within a dialog's view. However attributes
+ * exclusively support text inputs (no switches) and both the name and value of
+ * an attribute can be modified (unlike sections where the label is fixed).
+ */
+.ct-widget {
+
+    .ct-attribute {
+        border-bottom: 1px solid #eee;
+        @include clearfix;
+        height: 48px;
+        vertical-align: top;
+
+        /**
+         * Each section has a name and value component, both of which can be
+         * modified.
+         */
+        &__name {
+            background: #f6f6f6;
+            border: none;
+            color: $text-color;
+            float: left;
+            height: 47px;
+            outline: none;
+            padding: 0 16px;
+            @include type-text($line-height: 48px);
+            width: 25%;
+
+            /**
+             * If the the attributes name is invalid then the `invalid` modifier
+             * is set against the input (programmatically).
+             */
+            &--invalid {
+                color: $cancel-action-color;
+            }
+        }
+
+        &__value {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            background: white;
+            border: none;
+            color: $text-color;
+            float: right;
+            height: 47px;
+            outline: none;
+            padding: 0 16px;
+            @include type-text($line-height: 48px);
+            width: 75%;
+        }
+    }
+}

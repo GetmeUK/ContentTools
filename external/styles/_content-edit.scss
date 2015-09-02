@@ -1,0 +1,352 @@
+/**
+ * A prefix appended to all background-image URLs.
+ */
+$image-path-prefix: 'images/';
+
+
+/**
+ * The modifier classes here are applied by the root node and indicate the
+ * the state of the root node managing interactions (e.g dragging and resizing).
+ */
+.ce--dragging,
+.ce--resizing {
+
+    /**
+     * Prevent the user selecting any content in the page while we're dragging
+     * or resizing.
+     */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+}
+.ce--dragging { cursor: move        !important; }
+.ce--resizing { cursor: nwse-resize !important; }
+
+
+
+
+/**
+ * All editiable elements are assigned the .ce-element class. Modifiers are used
+ * to identify the type of element (e.g image, text, list, etc.) and to indicate
+ * state (e.g resizing, focused, etc.)
+ */
+.ce-element {
+
+
+    /* Types of element */
+
+    &--type-image,
+    &--type-video {
+        background-repeat: no-repeat;
+        position: relative;
+        cursor: pointer;
+        z-index: 1;
+
+        /**
+         * Image and video elements use puesdo elements to display information
+         * such as the size of the element and for videos the `src` also.
+         */
+        &:after,
+        &:before {
+            background: rgba(black, 0.5);
+            border-radius: 2px;
+            color: white;
+            display: none;
+            font-family: arial, sans-serif;
+            font-size: 10px;
+            line-height: 10px;
+            padding: 4px 4px 3px;
+            position: absolute;
+        }
+
+        /**
+         * The before element is used to display the size of the element, by
+         * default the size is hidden unless the user moves the mouse cursor
+         * over the element or the element is being resized.
+         */
+        &:before {
+            content: attr(data-ce-size);
+            right: 10px;
+            top: 10px;
+        }
+        &.ce-element--over,
+        &.ce-element--resizing {
+            &:before { display: block; }
+        }
+
+    }
+
+    /**
+     * As image elements are represented as a `<div>` in the DOM we use the
+     * background to display the image.
+     */
+    &--type-image {
+        background-position: 0 0;
+        background-size: cover;
+    }
+
+    /**
+     * Like images, video elements are represented as a `<div>` in the DOM,
+     * unlike images there is source image to apply to the background, instead
+     * we display a video icon in the background and use the after element to
+     * display information about the video's source.
+     */
+    &--type-video {
+        background:
+            #333
+            url($image-path-prefix + 'video.png')
+            center
+            center
+            no-repeat;
+
+        &:after {
+            bottom: 10px;
+            content: attr(data-ce-title);
+            display: block;
+            left: 10px;
+        }
+
+    }
+
+
+    /* The various states for elements */
+
+    /**
+     * When an element that supports text content is empty (e.g '') some
+     * browsers don't provide a height for the element and so it can appear to
+     * disappear until the user adds content. To resolve this issue we use a
+     * puesdo element to ensure the element contains content.
+     */
+    &--empty {
+        &:after {
+            display: inline-block;
+            content: '\00a0';
+        }
+    }
+
+    /* Element is being dragged */
+    &--dragging {
+        background-color: rgba(#333, 0.1) !important;
+        opacity: 0.5;
+
+        /**
+         * HACK: Forces the the element being dragged not to obscure elements
+         * that can be dropped on (for example an image floated over a
+         * paragraph).
+         */
+        z-index: -1;
+
+        /**
+         * For images and videos we set the outline color instead of changing
+         * the inner style.
+         */
+        &.ce-element--type-image,
+        &.ce-element--type-video {
+            background-color: #333 !important;
+            opacity: 1.0;
+            outline-color: rgba(#333, 0.1) !important;
+        }
+    }
+
+    /**
+     * Element is being dropped on to. Depending on the position of the element
+     * being dragged over the element (the mouse cursor) the drop modifiers
+     * provide a guide to the placement of the dragging element after it's
+     * dropped.
+     */
+    &--drop {
+        background: rgba(#f39c12, 0.5) none 0 0 repeat !important;
+
+        /**
+         * We remove any background from child elements contained within
+         * elements such as lists, tables and table rows to prevent layering
+         * where the child elements appearance clashes with the parents.
+         */
+        .ce-element--type-list-item-text,
+        .ce-element--type-table-cell-text {
+            background: transparent !important;
+        }
+    }
+    &--drop-above { background-image: url($image-path-prefix + 'ce-drop-above.png') !important; }
+    &--drop-below { background-image: url($image-path-prefix + 'ce-drop-below.png') !important; }
+    &--drop-left  { background-image: url($image-path-prefix + 'ce-drop-left.png')  !important; }
+    &--drop-right { background-image: url($image-path-prefix + 'ce-drop-right.png') !important; }
+
+    /**
+     * Element has focus `--focused` (only one element can have focus) or the
+     * mouse cursor is currently over the element.
+     */
+    &--focused,
+    &--over {
+        background-color: rgba(#f39c12, 0.1);
+        outline: none;
+
+        /**
+         * For images and videos we add an outline so as not to distort their
+         * appearance.
+         */
+        &.ce-element--type-image,
+        &.ce-element--type-video {
+            background-color: #333;
+            outline: 4px solid rgba(#f39c12, 0.35);
+        }
+    }
+
+    /**
+     * When the mouse cursor is over the corners of a resizable element (e.g an
+     * image or video) the following modifiers are applied to indicate to the
+     * user they can resize the element in a given direction.
+     */
+    &--resize-top-left     { cursor: nw-resize; }
+    &--resize-top-right    { cursor: ne-resize; }
+    &--resize-bottom-right { cursor: se-resize; }
+    &--resize-bottom-left  { cursor: sw-resize; }
+
+}
+
+
+
+
+
+/**
+ * When an element is dragged a helper element is created that follows the mouse
+ * cursor, the helper represents the element being dragged in a simplified form.
+ */
+
+.ce-drag-helper {
+    background: #fff;
+    border-radius: 2px;
+    box-shadow: 0 3px 3px rgba(black, 0.25);
+    color: #4e4e4e;
+    font: arial, sans-serif;
+    font-size: 12px;
+    height: 120px;
+    left: 0;
+    line-height: 135%;
+    margin: 5px 0px 0px 5px;
+    overflow: hidden;
+    padding: 15px;
+    position: absolute;
+    top: 0;
+    width: 120px;
+    word-wrap: break-word;
+    z-index: 9;
+
+    /**
+     * A puesdo element is used to display the type of element the helper
+     * represents.
+     */
+
+    &:before {
+        background: #2980b9;
+        color: white;
+        content: 'Element';
+        display: block;
+        font-family: arial, sans-serif;
+        font-size: 10px;
+        line-height: 10px;
+        padding: 4px 4px 3px;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    /* Assign labels for each type of element that can be dragged */
+    &--type-image           { &:before { content: 'Image';    } }
+    &--type-list            { &:before { content: 'List';     } }
+    &--type-list-item-text  { &:before { content: 'Item';     } }
+    &--type-pre-text        { &:before { content: 'Pre-text'; } }
+    &--type-table           { &:before { content: 'Table';    } }
+    &--type-table-row       { &:before { content: 'Row';      } }
+    &--type-text            { &:before { content: 'Text';     } }
+    &--type-video           { &:before { content: 'Video';    } }
+
+    /**
+     * For elements that have text content displayed within the helper we clip
+     * the content and use a puesdo element to fade out any verical overflow.
+     */
+    &--type-list,
+    &--type-list-item-text,
+    &--type-pre-text,
+    &--type-table,
+    &--type-table-row,
+    &--type-text {
+
+        &:after {
+            background-image: linear-gradient(
+                rgba(white, 0),
+                rgba(white, 1) 66%
+                );
+            bottom: 0;
+            content: '';
+            display: block;
+            height: 40px;
+            left: 0;
+            position: absolute;
+            width: 100%;
+        }
+    }
+
+    /**
+     * Image helpers display a version of the image as a background image within
+     * the helper element.
+     */
+    &--type-image {
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+}
+
+
+
+
+
+/**
+ * The alignment of elements such as images and videos horizontally is achieved
+ * through the `align-left` and `align-right` classes. We provide basic stylings
+ * for these classes so that this style sheet works out the box, it is however
+ * expected that these styles will be extended if not overridden by the site
+ * CSS.
+ */
+img,
+iframe,
+video,
+.ce-element--type-image,
+.ce-element--type-video {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
+    &.align-left {
+        clear: initial;
+        float: left;
+    }
+
+    &.align-right {
+        clear: initial;
+        float: right;
+    }
+}
+
+
+/**
+ * Show a placeholder for empty table cells.
+ */
+.ce-element--type-table-cell-text:empty:before {
+    content: '...';
+    font-style: italic;
+    opacity: 0.5;
+}
+
+
+/**
+ * Special class applied to a temporary element which is inserted into a parent
+ * element to measure the width excluding padding.
+ */
+.ce-measure {
+    display: block !important;
+}
