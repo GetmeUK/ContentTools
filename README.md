@@ -31,5 +31,10 @@ Then open `ContentTools/SpecRunner.html` in a browser to run the tests.
 ## Documentation
 Full documentation is available at http://getcontenttools.com/api/content-tools
 
+## Browser support
+The current aim is for all the libraries to support IE9+, Chrome and Firefox. Test suites are complete for all the libraries except ContentTools and I'm using Jasmine to check that the tests pass in those browsers.
+
+There will be some visual differences for ContentTools in IE9 as I use CSS animations for some of the UI feedback.
+
 ## Roadmap
 - Complete test suite for library.
