@@ -180,6 +180,100 @@
     });
   });
 
+  describe('ContentTools.Tools.Heading.apply()', function() {
+    return it('should change the tag name of a top level element supporting content to h1', function() {
+      var element, region, selection, tool;
+      region = new ContentEdit.Region(document.createElement('div'));
+      selection = new ContentSelect.Range(0, 0);
+      tool = ContentTools.Tools.Heading;
+      element = new ContentEdit.Text('p', {}, 'test');
+      region.attach(element);
+      tool.apply(element, selection, (function(_this) {
+        return function() {};
+      })(this));
+      return expect(element.tagName()).toBe('h1');
+    });
+  });
+
+  describe('ContentTools.Tools.Heading.canApply()', function() {
+    return it('should return true if the element is a top-level element that supports content', function() {
+      var element, image, list, listItem, listItemText, region, selection, tool;
+      region = new ContentEdit.Region(document.createElement('div'));
+      selection = new ContentSelect.Range(0, 0);
+      tool = ContentTools.Tools.Heading;
+      element = new ContentEdit.Text('p', {}, 'test');
+      region.attach(element);
+      expect(tool.canApply(element, selection)).toBe(true);
+      image = new ContentEdit.Image();
+      region.attach(image);
+      expect(tool.canApply(image, selection)).toBe(false);
+      list = new ContentEdit.List('ul');
+      listItem = new ContentEdit.ListItem();
+      listItemText = new ContentEdit.ListItemText('test');
+      listItem.attach(listItemText);
+      list.attach(listItem);
+      region.attach(list);
+      return expect(tool.canApply(list, selection)).toBe(false);
+    });
+  });
+
+  describe('ContentTools.Tools.Heading.isApplied()', function() {
+    return it('should return false, tool does not support toggling', function() {
+      var element, selection, tool;
+      tool = ContentTools.Tools.Heading;
+      element = new ContentEdit.Text('p', {}, 'test');
+      selection = new ContentSelect.Range(0, 0);
+      return expect(tool.isApplied(element, selection)).toBe(false);
+    });
+  });
+
+  describe('ContentTools.Tools.Subheading.apply()', function() {
+    return it('should change the tag name of a top level element supporting content to h2', function() {
+      var element, region, selection, tool;
+      region = new ContentEdit.Region(document.createElement('div'));
+      selection = new ContentSelect.Range(0, 0);
+      tool = ContentTools.Tools.Subheading;
+      element = new ContentEdit.Text('p', {}, 'test');
+      region.attach(element);
+      tool.apply(element, selection, (function(_this) {
+        return function() {};
+      })(this));
+      return expect(element.tagName()).toBe('h2');
+    });
+  });
+
+  describe('ContentTools.Tools.Subheading.canApply()', function() {
+    return it('should return true if the element is a top-level element that supports content', function() {
+      var element, image, list, listItem, listItemText, region, selection, tool;
+      region = new ContentEdit.Region(document.createElement('div'));
+      selection = new ContentSelect.Range(0, 0);
+      tool = ContentTools.Tools.Subheading;
+      element = new ContentEdit.Text('p', {}, 'test');
+      region.attach(element);
+      expect(tool.canApply(element, selection)).toBe(true);
+      image = new ContentEdit.Image();
+      region.attach(image);
+      expect(tool.canApply(image, selection)).toBe(false);
+      list = new ContentEdit.List('ul');
+      listItem = new ContentEdit.ListItem();
+      listItemText = new ContentEdit.ListItemText('test');
+      listItem.attach(listItemText);
+      list.attach(listItem);
+      region.attach(list);
+      return expect(tool.canApply(list, selection)).toBe(false);
+    });
+  });
+
+  describe('ContentTools.Tools.Subheading.isApplied()', function() {
+    return it('should return false, tool does not support toggling', function() {
+      var element, selection, tool;
+      tool = ContentTools.Tools.Subheading;
+      element = new ContentEdit.Text('p', {}, 'test');
+      selection = new ContentSelect.Range(0, 0);
+      return expect(tool.isApplied(element, selection)).toBe(false);
+    });
+  });
+
   describe('ContentTools.StylePalette.add()', function() {
     return it('should return a `ContentTools.Style` instance', function() {
       var style;

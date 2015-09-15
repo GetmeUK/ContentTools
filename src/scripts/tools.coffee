@@ -289,7 +289,8 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        return element.content and
+
+        return element.content != undefined and
                 element.parent().constructor.name == 'Region'
 
     @apply: (element, selection, callback) ->
@@ -498,7 +499,7 @@ class ContentTools.Tools.UnorderedList extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        return element.content and
+        return element.content != undefined and
                 element.parent().constructor.name in ['Region', 'ListItem']
 
     @apply: (element, selection, callback) ->

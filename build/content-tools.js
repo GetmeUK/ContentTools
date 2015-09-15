@@ -7851,7 +7851,7 @@
     Heading.tagName = 'h1';
 
     Heading.canApply = function(element, selection) {
-      return element.content && element.parent().constructor.name === 'Region';
+      return element.content !== void 0 && element.parent().constructor.name === 'Region';
     };
 
     Heading.apply = function(element, selection, callback) {
@@ -8081,7 +8081,7 @@
 
     UnorderedList.canApply = function(element, selection) {
       var _ref;
-      return element.content && ((_ref = element.parent().constructor.name) === 'Region' || _ref === 'ListItem');
+      return element.content !== void 0 && ((_ref = element.parent().constructor.name) === 'Region' || _ref === 'ListItem');
     };
 
     UnorderedList.apply = function(element, selection, callback) {

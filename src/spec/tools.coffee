@@ -65,15 +65,15 @@ describe 'ContentTools.Tools.Bold.canApply()', () ->
         element = new ContentEdit.Text('p', {}, 'test')
         tool = ContentTools.Tools.Bold
 
-        # Check for content element with expanded selection
+        # Check true for content element with expanded selection
         selection = new ContentSelect.Range(0, 2)
         expect(tool.canApply(element, selection)).toBe true
 
-        # Check for content element with collapsed selection
+        # Check false for content element with collapsed selection
         selection = new ContentSelect.Range(0, 0)
         expect(tool.canApply(element, selection)).toBe false
 
-        # Check for non-content element
+        # Check false for non-content element
         element = new ContentEdit.Image()
         expect(tool.canApply(element, selection)).toBe false
 
@@ -147,15 +147,15 @@ describe 'ContentTools.Tools.Italic.canApply()', () ->
         element = new ContentEdit.Text('p', {}, 'test')
         tool = ContentTools.Tools.Italic
 
-        # Check for content element with expanded selection
+        # Check true for content element with expanded selection
         selection = new ContentSelect.Range(0, 2)
         expect(tool.canApply(element, selection)).toBe true
 
-        # Check for content element with collapsed selection
+        # Check false for content element with collapsed selection
         selection = new ContentSelect.Range(0, 0)
         expect(tool.canApply(element, selection)).toBe false
 
-        # Check for non-content element
+        # Check false for non-content element
         element = new ContentEdit.Image()
         expect(tool.canApply(element, selection)).toBe false
 
@@ -181,14 +181,7 @@ describe 'ContentTools.Tools.Italic.isApplied()', () ->
         expect(tool.isApplied(element, selection)).toBe false
 
 
-# Link
-
-# TODO: Establish how to test more complex interactions that required an
-# editable document and application. Possibly via selenium or through automating
-# the creation of an editable enviroment to test against (would still be limited
-# with jasmine).
-#
-# Anthony Blackshaw <ant@getme.co.uk> - 2015-05-25 11:44
+# Link (TODO: add tests for apply)
 
 describe 'ContentTools.Tools.Link.canApply()', () ->
 
@@ -209,6 +202,7 @@ describe 'ContentTools.Tools.Link.canApply()', () ->
         # Check for image element
         element = new ContentEdit.Image()
         expect(tool.canApply(element, selection)).toBe true
+
 
 describe 'ContentTools.Tools.Link.getHref()', () ->
 
@@ -256,4 +250,124 @@ describe 'ContentTools.Tools.Link.isApplied()', () ->
         expect(tool.isApplied(element, selection)).toBe false
 
 
-#
+# Heading
+
+describe 'ContentTools.Tools.Heading.apply()', () ->
+
+    it 'should change the tag name of a top level element supporting content to
+            h1', () ->
+
+        region = new ContentEdit.Region(document.createElement('div'))
+        selection = new ContentSelect.Range(0, 0)
+        tool = ContentTools.Tools.Heading
+
+        # Apply heading tool
+        element = new ContentEdit.Text('p', {}, 'test')
+        region.attach(element)
+
+        tool.apply(element, selection, () =>)
+        expect(element.tagName()).toBe 'h1'
+
+
+describe 'ContentTools.Tools.Heading.canApply()', () ->
+
+    it 'should return true if the element is a top-level element that supports
+            content', () ->
+
+        region = new ContentEdit.Region(document.createElement('div'))
+        selection = new ContentSelect.Range(0, 0)
+        tool = ContentTools.Tools.Heading
+
+        element = new ContentEdit.Text('p', {}, 'test')
+        region.attach(element)
+
+        # Check true for content top-level content element
+        expect(tool.canApply(element, selection)).toBe true
+
+        # Check false for image element
+        image = new ContentEdit.Image()
+        region.attach(image)
+        expect(tool.canApply(image, selection)).toBe false
+
+        # Check for content element that is not top level
+        list = new ContentEdit.List('ul')
+        listItem = new ContentEdit.ListItem()
+        listItemText= new ContentEdit.ListItemText('test')
+        listItem.attach(listItemText)
+        list.attach(listItem)
+        region.attach(list)
+        expect(tool.canApply(list, selection)).toBe false
+
+
+describe 'ContentTools.Tools.Heading.isApplied()', () ->
+
+    it 'should return false, tool does not support toggling', () ->
+
+        tool = ContentTools.Tools.Heading
+        element = new ContentEdit.Text('p', {}, 'test')
+        selection = new ContentSelect.Range(0, 0)
+
+        expect(tool.isApplied(element, selection)).toBe false
+
+
+# Sub-heading
+
+describe 'ContentTools.Tools.Subheading.apply()', () ->
+
+    it 'should change the tag name of a top level element supporting content to
+            h2', () ->
+
+        region = new ContentEdit.Region(document.createElement('div'))
+        selection = new ContentSelect.Range(0, 0)
+        tool = ContentTools.Tools.Subheading
+
+        # Apply heading tool
+        element = new ContentEdit.Text('p', {}, 'test')
+        region.attach(element)
+
+        tool.apply(element, selection, () =>)
+        expect(element.tagName()).toBe 'h2'
+
+
+describe 'ContentTools.Tools.Subheading.canApply()', () ->
+
+    it 'should return true if the element is a top-level element that supports
+            content', () ->
+
+        region = new ContentEdit.Region(document.createElement('div'))
+        selection = new ContentSelect.Range(0, 0)
+        tool = ContentTools.Tools.Subheading
+
+        element = new ContentEdit.Text('p', {}, 'test')
+        region.attach(element)
+
+        # Check true for content top-level content element
+        expect(tool.canApply(element, selection)).toBe true
+
+        # Check false for image element
+        image = new ContentEdit.Image()
+        region.attach(image)
+        expect(tool.canApply(image, selection)).toBe false
+
+        # Check for content element that is not top level
+        list = new ContentEdit.List('ul')
+        listItem = new ContentEdit.ListItem()
+        listItemText= new ContentEdit.ListItemText('test')
+        listItem.attach(listItemText)
+        list.attach(listItem)
+        region.attach(list)
+        expect(tool.canApply(list, selection)).toBe false
+
+
+describe 'ContentTools.Tools.Subheading.isApplied()', () ->
+
+    it 'should return false, tool does not support toggling', () ->
+
+        tool = ContentTools.Tools.Subheading
+        element = new ContentEdit.Text('p', {}, 'test')
+        selection = new ContentSelect.Range(0, 0)
+
+        expect(tool.isApplied(element, selection)).toBe false
+
+
+# Paragraph
