@@ -37,4 +37,5 @@ The current aim is for all the libraries to support IE9+, Chrome and Firefox. Te
 There will be some visual differences for ContentTools in IE9 as I use CSS animations for some of the UI feedback.
 
 ## Roadmap
-- Complete test suite for library.
+- Complete the test suite for the library.
+- Support for loading additional language translations.
