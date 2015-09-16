@@ -1632,8 +1632,16 @@
     RESIZE_CORNER_SIZE: 15,
     addCSSClass: function(domElement, className) {
       var c, classAttr, classNames;
+      var _classNamesArr = className.split(' ');
       if (domElement.classList) {
-        domElement.classList.add(className);
+        if(_classNamesArr.length > 1){
+            var _i;
+            for(_i = 0; _i < _classNamesArr.length; _i++){
+                domElement.classList.add(_classNamesArr[_i]);
+            }
+        } else {
+            domElement.classList.add(className);
+        }
         return;
       }
       classAttr = domElement.getAttribute('class');
@@ -1649,10 +1657,10 @@
           return _results;
         })();
         if (classNames.indexOf(className) === -1) {
-          return domElement.setAttribute('class', "" + classAttr + " " + className);
+          return domElement.setAttribute('class', "" + classAttr + " " + ((_classNamesArr.length > 1) ? _classNamesArr.join(' ') : className));
         }
       } else {
-        return domElement.setAttribute('class', className);
+        return domElement.setAttribute('class', ((_classNamesArr.length > 1) ? _classNamesArr.join(' ') : className));
       }
     },
     attributesToString: function(attributes) {
@@ -1683,8 +1691,16 @@
     },
     removeCSSClass: function(domElement, className) {
       var c, classAttr, classNameIndex, classNames;
+      var _classNamesArr = className.split(' ');
       if (domElement.classList) {
-        domElement.classList.remove(className);
+          if(_classNamesArr.length > 1){
+            var _i;
+            for(_i = 0; _i < _classNamesArr.length; _i++){
+                domElement.classList.remove(_classNamesArr[_i]);
+            }
+          } else {
+                domElement.classList.remove(className);
+          }
         if (domElement.classList.length === 0) {
           domElement.removeAttribute('class');
         }
@@ -1702,17 +1718,25 @@
           }
           return _results;
         })();
-        classNameIndex = classNames.indexOf(className);
-        if (classNameIndex > -1) {
-          classNames.splice(classNameIndex, 1);
-          if (classNames.length) {
-            return domElement.setAttribute('class', classNames.join(' '));
-          } else {
-            return domElement.removeAttribute('class');
-          }
+
+        var _i;
+        var _found = false;
+        for(_i=0; _i<_classNamesArr.length; _i++){
+            classNameIndex = classNames.indexOf(_classNamesArr[_i]);
+            if (classNameIndex > -1) {
+                _found = true;
+                classNames.splice(classNameIndex, 1);
+            }
+        }
+        if (_found === true) {
+            if (classNames.length) {
+                return domElement.setAttribute('class', classNames.join(' '));
+            } else {
+                return domElement.removeAttribute('class');
+            }
         }
       } else {
-        return domElement.setAttribute('class', className);
+        return domElement.setAttribute('class', ((_classNamesArr.length>1) ? _classNamesArr.join(' ') : className));
       }
     }
   };
@@ -2121,17 +2145,25 @@
     };
 
     Element.prototype.addCSSClass = function(className) {
-      var modified;
+      var modified, _i;
+      var _classNamesArr = className.split(' ');
       modified = false;
-      if (!this.hasCSSClass(className)) {
-        modified = true;
-        if (this.attr('class')) {
-          this.attr('class', "" + (this.attr('class')) + " " + className);
-        } else {
-          this.attr('class', className);
+
+      for(_i=0;_i<_classNamesArr.length;_i++){
+        if(!this.hasCSSClass(_classNamesArr[_i])){
+            modified = true;
+            if (this.attr('class')) {
+                this.attr('class', "" + (this.attr('class')) + " " + _classNamesArr[_i]);
+            } else {
+                this.attr('class', _classNamesArr[_i]);
+            }
         }
       }
-      this._addCSSClass(className);
+      
+      for(_i=0;_i<_classNamesArr.length;_i++){
+        this._addCSSClass(_classNamesArr[_i]);
+      }
+      
       if (modified) {
         return this.taint();
       }
@@ -2208,6 +2240,7 @@
 
     Element.prototype.hasCSSClass = function(className) {
       var c, classNames;
+      var _classNamesArr = className.split(' ');
       if (this.attr('class')) {
         classNames = (function() {
           var _i, _len, _ref, _results;
@@ -2219,8 +2252,20 @@
           }
           return _results;
         }).call(this);
-        if (classNames.indexOf(className) > -1) {
-          return true;
+        
+        if(_classNamesArr.length > 1){
+            var _i;
+            var _succCount = 0;
+            for(_i=0; _i < _classNamesArr.length; _i++){
+                if (classNames.indexOf(_classNamesArr[_i]) > -1) {
+                    _succCount++;
+                }
+            }
+            return (_succCount==_classNamesArr.length) ? true : false;
+        } else {
+            if (classNames.indexOf(className) > -1) {
+              return true;
+            }
         }
       }
       return false;
@@ -2268,6 +2313,7 @@
 
     Element.prototype.removeCSSClass = function(className) {
       var c, classNameIndex, classNames;
+      var _classNamesArr = className.split(' ');
       if (!this.hasCSSClass(className)) {
         return;
       }
@@ -2281,15 +2327,25 @@
         }
         return _results;
       }).call(this);
-      classNameIndex = classNames.indexOf(className);
-      if (classNameIndex > -1) {
-        classNames.splice(classNameIndex, 1);
+      
+      var _i;
+      var _found = false;
+      for(_i=0; _i<_classNamesArr.length; _i++){
+        classNameIndex = classNames.indexOf(_classNamesArr[_i]);
+        if (classNameIndex > -1) {
+            _found = true;
+            classNames.splice(classNameIndex, 1);
+        }
       }
-      if (classNames.length) {
-        this.attr('class', classNames.join(' '));
-      } else {
-        this.removeAttr('class');
-      }
+      
+      if (_found === true) {
+            if (classNames.length) {
+                this.attr('class', classNames.join(' '));
+            } else {
+                this.removeAttr('class');
+            }
+        }
+      
       this._removeCSSClass(className);
       return this.taint();
     };
