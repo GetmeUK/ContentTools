@@ -7038,7 +7038,7 @@
       })(this));
       ContentEdit.Root.get().bind('paste', (function(_this) {
         return function(element, ev) {
-          return _this.paste(element, ev.clipboardData.getData('text/plain'));
+          return _this.paste(element, ev.clipboardData);
         };
       })(this));
       ContentEdit.Root.get().bind('next-region', (function(_this) {
@@ -7122,8 +7122,9 @@
       return this._addDOMEventListeners();
     };
 
-    _EditorApp.prototype.paste = function(element, content) {
-      var className, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, selection, tail, tip, _i, _len;
+    _EditorApp.prototype.paste = function(element, clipboardData) {
+      var className, content, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, selection, tail, tip, _i, _len;
+      content = clipboardData.getData('text/plain');
       lines = content.split('\n');
       lines = lines.filter(function(line) {
         return line.trim() !== '';
