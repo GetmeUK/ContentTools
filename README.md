@@ -1,4 +1,7 @@
 # ContentTools
+
+[![Join the chat at https://gitter.im/GetmeUK/ContentTools](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/GetmeUK/ContentTools?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A JS library for building WYSIWYG editors for HTML content.
 
 ## Building
@@ -37,4 +40,5 @@ The current aim is for all the libraries to support IE9+, Chrome and Firefox. Te
 There will be some visual differences for ContentTools in IE9 as I use CSS animations for some of the UI feedback.
 
 ## Roadmap
-- Complete test suite for library.
+- Complete the test suite for the library.
+- Support for loading additional language translations.
