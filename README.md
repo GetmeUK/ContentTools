@@ -1,4 +1,6 @@
 # ContentTools
+
+[![Join the chat at https://gitter.im/GetmeUK/ContentTools](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/GetmeUK/ContentTools?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A JS library for building WYSIWYG editors for HTML content.
 
 ## Building
