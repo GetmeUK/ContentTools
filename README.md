@@ -41,4 +41,3 @@ There will be some visual differences for ContentTools in IE9 as I use CSS anima
 
 ## Roadmap
 - Complete the test suite for the library.
-- Support for loading additional language translations.
