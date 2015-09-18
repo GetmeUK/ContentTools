@@ -6281,7 +6281,7 @@
     function PropertiesDialog(element) {
       var _ref;
       this.element = element;
-      PropertiesDialog.__super__.constructor.call(this, "Properties: " + (this.element.tagName()));
+      PropertiesDialog.__super__.constructor.call(this, 'Properties');
       this._attributeUIs = [];
       this._focusedAttributeUI = null;
       this._styleUIs = [];

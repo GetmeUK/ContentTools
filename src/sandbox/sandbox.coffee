@@ -36,7 +36,7 @@ window.onload = () ->
     req.overrideMimeType('application/json')
     req.open(
         'GET',
-        'https://raw.githubusercontent.com/GetmeUK/ContentTools/develop/translations/lp.json',
+        'https://raw.githubusercontent.com/GetmeUK/ContentTools/master/translations/lp.json',
         true
         )
     req.onreadystatechange = (ev) ->

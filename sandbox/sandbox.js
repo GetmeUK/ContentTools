@@ -155,7 +155,7 @@
     });
     req = new XMLHttpRequest();
     req.overrideMimeType('application/json');
-    req.open('GET', 'https://raw.githubusercontent.com/GetmeUK/ContentTools/develop/translations/lp.json', true);
+    req.open('GET', 'https://raw.githubusercontent.com/GetmeUK/ContentTools/master/translations/lp.json', true);
     req.onreadystatechange = function(ev) {
       var translations;
       if (ev.target.readyState === 4) {

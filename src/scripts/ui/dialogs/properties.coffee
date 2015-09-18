@@ -3,7 +3,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
     # A dialog to support editing an elements properties
 
     constructor: (@element)->
-        super("Properties: #{ @element.tagName() }")
+        super('Properties')
 
         # A list of AttributeUI instances representing the element's attributes
         @_attributeUIs = []
