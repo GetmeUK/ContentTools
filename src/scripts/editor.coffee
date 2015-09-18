@@ -295,10 +295,8 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Check if there are any changes, and if there are make the user confirm
         # they want to lose them.
-        if ContentEdit.Root.get().lastModified() and not window.confirm('''
-                Your changes have not been saved, do you really want to lose
-                them?
-                ''')
+        if ContentEdit.Root.get().lastModified() and not window.confirm(
+                ContentEdit._('Your changes have not been saved, do you really want to lose them?'))
             return false
 
         # Revert the page to it's initial state
@@ -466,10 +464,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # editing and if so ask them to confirm the action.
         window.onbeforeunload = (ev) =>
             if @_state is ContentTools.EditorApp.EDITING
-                return '''
-                    Your changes have not been saved, do you really want to lose
-                    them?
-                    '''
+                return ContentEdit._('Your changes have not been saved, do you really want to lose them?')
 
         # When the page is unloaded we destroy the app to make sure everything
         # is cleaned up.

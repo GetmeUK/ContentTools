@@ -382,7 +382,7 @@ class ContentTools.Tools.Preformatted extends ContentTools.Tools.Heading
 
     ContentTools.ToolShelf.stow(@, 'preformatted')
 
-    @label = 'Pre-formatted'
+    @label = 'Preformatted'
     @icon = 'preformatted'
     @tagName = 'pre'
 

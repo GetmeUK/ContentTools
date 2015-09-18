@@ -95,6 +95,10 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
 
         # Styles
         @_domStyles = @createDiv(['ct-properties-dialog__styles'])
+        @_domStyles.setAttribute(
+            'data-ct-empty',
+            ContentEdit._('No styles available for this tag')
+            )
         @_domView.appendChild(@_domStyles)
 
         # Add the styles in the style palette for this element
@@ -160,7 +164,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--styles'
             ])
-        @_domStylesTab.setAttribute('data-tooltip', 'Styles')
+        @_domStylesTab.setAttribute('data-tooltip', ContentEdit._('Styles'))
         domTabs.appendChild(@_domStylesTab)
 
         # Attributes
@@ -169,7 +173,10 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--attributes'
             ])
-        @_domAttributesTab.setAttribute('data-tooltip', 'Attributes')
+        @_domAttributesTab.setAttribute(
+            'data-tooltip',
+            ContentEdit._('Attributes')
+            )
         domTabs.appendChild(@_domAttributesTab)
 
         # Code
@@ -178,7 +185,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--code'
             ])
-        @_domCodeTab.setAttribute('data-tooltip', 'Code')
+        @_domCodeTab.setAttribute('data-tooltip', ContentEdit._('Code'))
         domTabs.appendChild(@_domCodeTab)
 
         unless @_supportsCoding
@@ -191,7 +198,10 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--remove',
             'ct-control--muted'
             ])
-        @_domRemoveAttribute.setAttribute('data-tooltip', 'Remove')
+        @_domRemoveAttribute.setAttribute(
+            'data-tooltip',
+            ContentEdit._('Remove')
+            )
         domTabs.appendChild(@_domRemoveAttribute)
 
         # Actions
@@ -203,7 +213,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--text',
             'ct-control--apply'
             ])
-        @_domApply.textContent = 'Apply'
+        @_domApply.textContent = ContentEdit._('Apply')
         domActions.appendChild(@_domApply)
 
         # Check to see which tab was last active and restore it (defaults to the
@@ -527,7 +537,7 @@ class AttributeUI extends ContentTools.AnchoredComponentUI
         @_domName = document.createElement('input')
         @_domName.setAttribute('class', 'ct-attribute__name')
         @_domName.setAttribute('name', 'name')
-        @_domName.setAttribute('placeholder', 'Name')
+        @_domName.setAttribute('placeholder', ContentEdit._('Name'))
         @_domName.setAttribute('type', 'text')
         @_domName.setAttribute('value', @_initialName)
         @_domElement.appendChild(@_domName)
@@ -536,7 +546,7 @@ class AttributeUI extends ContentTools.AnchoredComponentUI
         @_domValue = document.createElement('input')
         @_domValue.setAttribute('class', 'ct-attribute__value')
         @_domValue.setAttribute('name', 'value')
-        @_domValue.setAttribute('placeholder', 'Value')
+        @_domValue.setAttribute('placeholder', ContentEdit._('Value'))
         @_domValue.setAttribute('type', 'text')
         @_domValue.setAttribute('value', @_initialValue)
         @_domElement.appendChild(@_domValue)

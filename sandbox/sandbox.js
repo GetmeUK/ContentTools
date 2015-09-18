@@ -137,12 +137,12 @@
   window.ImageUploader = ImageUploader;
 
   window.onload = function() {
-    var editor;
+    var editor, req;
     ContentTools.IMAGE_UPLOADER = ImageUploader.createImageUploader;
     ContentTools.StylePalette.add([new ContentTools.Style('By-line', 'article__by-line', ['p']), new ContentTools.Style('Caption', 'article__caption', ['p']), new ContentTools.Style('Example', 'example', ['pre']), new ContentTools.Style('Example + Good', 'example--good', ['pre']), new ContentTools.Style('Example + Bad', 'example--bad', ['pre'])]);
     editor = new ContentTools.EditorApp.get();
     editor.init('.editable', 'data-name');
-    return editor.bind('save', function(regions, autoSave) {
+    editor.bind('save', function(regions, autoSave) {
       var saved;
       editor.busy(true);
       saved = (function(_this) {
@@ -153,6 +153,16 @@
       })(this);
       return setTimeout(saved, 2000);
     });
+    req = new XMLHttpRequest();
+    req.overrideMimeType('application/json');
+    req.open('GET', 'https://github.com/GetmeUK/ContentTools/blob/develop/translations/lp.json', true);
+    return req.onreadystatechange = function(ev) {
+      if (ev.target.readyState === 4 && ev.target.status === '200') {
+        console.log(ev.target.responseText);
+        ContentEdit.addTranslations('lp', ev.target.responseText);
+        return ContentEdit.LANGUAGE('lp');
+      }
+    };
   };
 
 }).call(this);

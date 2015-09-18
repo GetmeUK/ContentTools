@@ -13,7 +13,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
     # to support image uploads.
 
     constructor: ()->
-        super('Insert image')
+        super(ContentEdit._('Insert image'))
 
         # If applied, this is a handle to the crop marks component for the
         # current image.
@@ -98,7 +98,10 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--rotate-ccw'
             ])
-        @_domRotateCCW.setAttribute('data-tooltip', 'Rotate -90°')
+        @_domRotateCCW.setAttribute(
+            'data-tooltip',
+            ContentEdit._('Rotate') + ' -90°'
+            )
         domTools.appendChild(@_domRotateCCW)
 
         # Rotate CW
@@ -107,7 +110,10 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--rotate-cw'
             ])
-        @_domRotateCW.setAttribute('data-tooltip', 'Rotate 90°')
+        @_domRotateCW.setAttribute(
+            'data-tooltip',
+            ContentEdit._('Rotate') + ' 90°'
+            )
         domTools.appendChild(@_domRotateCW)
 
         # Rotate CW
@@ -116,7 +122,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--crop'
             ])
-        @_domCrop.setAttribute('data-tooltip', 'Cropmarks')
+        @_domCrop.setAttribute('data-tooltip', ContentEdit._('Cropmarks'))
         domTools.appendChild(@_domCrop)
 
         # Progress bar
@@ -136,7 +142,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--text',
             'ct-control--upload'
             ])
-        @_domUpload.textContent = 'Upload'
+        @_domUpload.textContent = ContentEdit._('Upload')
         domActions.appendChild(@_domUpload)
 
         # File input for upload
@@ -153,7 +159,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--text',
             'ct-control--insert'
             ])
-        @_domInsert.textContent = 'Insert'
+        @_domInsert.textContent = ContentEdit._('Insert')
         domActions.appendChild(@_domInsert)
 
         # Cancel
@@ -162,7 +168,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--text',
             'ct-control--cancel'
             ])
-        @_domCancelUpload.textContent = 'Cancel'
+        @_domCancelUpload.textContent = ContentEdit._('Cancel')
         domActions.appendChild(@_domCancelUpload)
 
         # Clear
@@ -171,7 +177,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--text',
             'ct-control--clear'
             ])
-        @_domClear.textContent = 'Clear'
+        @_domClear.textContent = ContentEdit._('Clear')
         domActions.appendChild(@_domClear)
 
         # Add interaction handlers

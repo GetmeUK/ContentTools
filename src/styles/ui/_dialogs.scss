@@ -456,7 +456,7 @@
 
                 &:empty:before {
                     color: lighten($text-color, 25%);
-                    content: 'No styles available for this tag';
+                    content: attr(data-ct-empty);
                     display: block;
                     font-style: italic;
                     margin-top: 20px;

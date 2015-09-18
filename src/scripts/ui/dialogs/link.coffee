@@ -16,7 +16,10 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         @_domInput = document.createElement('input')
         @_domInput.setAttribute('class', 'ct-anchored-dialog__input')
         @_domInput.setAttribute('name', 'href')
-        @_domInput.setAttribute('placeholder', 'Enter a link...')
+        @_domInput.setAttribute(
+            'placeholder',
+            ContentEdit._('Enter a link') + '...'
+            )
         @_domInput.setAttribute('type', 'text')
         @_domInput.setAttribute('value', @_initialValue)
         @_domElement.appendChild(@_domInput)

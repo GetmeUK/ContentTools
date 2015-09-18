@@ -4,9 +4,9 @@ class ContentTools.TableDialog extends ContentTools.DialogUI
 
     constructor: (@table)->
         if @table
-            super('Update table')
+            super(ContentEdit._('Update table'))
         else
-            super('Insert table')
+            super(ContentEdit._('Insert table'))
 
     # Methods
 

@@ -1629,7 +1629,20 @@
     DROP_EDGE_SIZE: 50,
     HELPER_CHAR_LIMIT: 250,
     INDENT: '    ',
+    LANGUAGE: 'en',
     RESIZE_CORNER_SIZE: 15,
+    _translations: {},
+    _: function(s) {
+      var lang;
+      lang = ContentEdit.LANGUAGE;
+      if (ContentEdit._translations[lang] && ContentEdit._translations[lang][s]) {
+        return ContentEdit._translations[lang][s];
+      }
+      return s;
+    },
+    addTranslations: function(language, translations) {
+      return ContentEdit._translations[language] = translations;
+    },
     addCSSClass: function(domElement, className) {
       var c, classAttr, classNames;
       if (domElement.classList) {
@@ -2120,6 +2133,10 @@
       return this._domElement !== null;
     };
 
+    Element.prototype.typeName = function() {
+      return 'Element';
+    };
+
     Element.prototype.addCSSClass = function(className) {
       var modified;
       modified = false;
@@ -2166,6 +2183,7 @@
       }
       helper = document.createElement('div');
       helper.setAttribute('class', "ce-drag-helper ce-drag-helper--type-" + (this.cssTypeName()));
+      helper.setAttribute('data-ce-type', ContentEdit._(this.typeName()));
       return helper;
     };
 
@@ -3043,6 +3061,10 @@
       return 'static';
     };
 
+    Static.prototype.typeName = function() {
+      return 'Static';
+    };
+
     Static.prototype.html = function(indent) {
       if (indent == null) {
         indent = '';
@@ -3095,6 +3117,10 @@
 
     Text.prototype.cssTypeName = function() {
       return 'text';
+    };
+
+    Text.prototype.typeName = function() {
+      return 'Text';
     };
 
     Text.prototype.blur = function() {
@@ -3436,6 +3462,10 @@
       return 'pre-text';
     };
 
+    PreText.prototype.typeName = function() {
+      return 'Preformatted';
+    };
+
     PreText.prototype.html = function(indent) {
       var content;
       if (indent == null) {
@@ -3504,6 +3534,10 @@
 
     Image.prototype.cssTypeName = function() {
       return 'image';
+    };
+
+    Image.prototype.typeName = function() {
+      return 'Image';
     };
 
     Image.prototype.createDraggingDOMElement = function() {
@@ -3628,6 +3662,10 @@
       return 'video';
     };
 
+    Video.prototype.typeName = function() {
+      return 'Video';
+    };
+
     Video.prototype._title = function() {
       var src;
       src = '';
@@ -3743,6 +3781,10 @@
 
     List.prototype.cssTypeName = function() {
       return 'list';
+    };
+
+    List.prototype.typeName = function() {
+      return 'List';
     };
 
     List.prototype._onMouseOver = function(ev) {
@@ -4010,6 +4052,10 @@
       return 'list-item-text';
     };
 
+    ListItemText.prototype.typeName = function() {
+      return 'List item';
+    };
+
     ListItemText.prototype.blur = function() {
       if (this.content.isWhitespace()) {
         this.parent().remove();
@@ -4220,6 +4266,10 @@
       return 'table';
     };
 
+    Table.prototype.typeName = function() {
+      return 'Table';
+    };
+
     Table.prototype.firstSection = function() {
       var section;
       if (section = this.thead()) {
@@ -4393,6 +4443,10 @@
 
     TableRow.prototype.cssTypeName = function() {
       return 'table-row';
+    };
+
+    TableRow.prototype.typeName = function() {
+      return 'Table row';
     };
 
     TableRow.prototype._onMouseOver = function(ev) {

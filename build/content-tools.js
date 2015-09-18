@@ -1629,7 +1629,20 @@
     DROP_EDGE_SIZE: 50,
     HELPER_CHAR_LIMIT: 250,
     INDENT: '    ',
+    LANGUAGE: 'en',
     RESIZE_CORNER_SIZE: 15,
+    _translations: {},
+    _: function(s) {
+      var lang;
+      lang = ContentEdit.LANGUAGE;
+      if (ContentEdit._translations[lang] && ContentEdit._translations[lang][s]) {
+        return ContentEdit._translations[lang][s];
+      }
+      return s;
+    },
+    addTranslations: function(language, translations) {
+      return ContentEdit._translations[language] = translations;
+    },
     addCSSClass: function(domElement, className) {
       var c, classAttr, classNames;
       if (domElement.classList) {
@@ -2120,6 +2133,10 @@
       return this._domElement !== null;
     };
 
+    Element.prototype.typeName = function() {
+      return 'Element';
+    };
+
     Element.prototype.addCSSClass = function(className) {
       var modified;
       modified = false;
@@ -2166,6 +2183,7 @@
       }
       helper = document.createElement('div');
       helper.setAttribute('class', "ce-drag-helper ce-drag-helper--type-" + (this.cssTypeName()));
+      helper.setAttribute('data-ce-type', ContentEdit._(this.typeName()));
       return helper;
     };
 
@@ -3043,6 +3061,10 @@
       return 'static';
     };
 
+    Static.prototype.typeName = function() {
+      return 'Static';
+    };
+
     Static.prototype.html = function(indent) {
       if (indent == null) {
         indent = '';
@@ -3095,6 +3117,10 @@
 
     Text.prototype.cssTypeName = function() {
       return 'text';
+    };
+
+    Text.prototype.typeName = function() {
+      return 'Text';
     };
 
     Text.prototype.blur = function() {
@@ -3436,6 +3462,10 @@
       return 'pre-text';
     };
 
+    PreText.prototype.typeName = function() {
+      return 'Preformatted';
+    };
+
     PreText.prototype.html = function(indent) {
       var content;
       if (indent == null) {
@@ -3504,6 +3534,10 @@
 
     Image.prototype.cssTypeName = function() {
       return 'image';
+    };
+
+    Image.prototype.typeName = function() {
+      return 'Image';
     };
 
     Image.prototype.createDraggingDOMElement = function() {
@@ -3628,6 +3662,10 @@
       return 'video';
     };
 
+    Video.prototype.typeName = function() {
+      return 'Video';
+    };
+
     Video.prototype._title = function() {
       var src;
       src = '';
@@ -3743,6 +3781,10 @@
 
     List.prototype.cssTypeName = function() {
       return 'list';
+    };
+
+    List.prototype.typeName = function() {
+      return 'List';
     };
 
     List.prototype._onMouseOver = function(ev) {
@@ -4010,6 +4052,10 @@
       return 'list-item-text';
     };
 
+    ListItemText.prototype.typeName = function() {
+      return 'List item';
+    };
+
     ListItemText.prototype.blur = function() {
       if (this.content.isWhitespace()) {
         this.parent().remove();
@@ -4220,6 +4266,10 @@
       return 'table';
     };
 
+    Table.prototype.typeName = function() {
+      return 'Table';
+    };
+
     Table.prototype.firstSection = function() {
       var section;
       if (section = this.thead()) {
@@ -4393,6 +4443,10 @@
 
     TableRow.prototype.cssTypeName = function() {
       return 'table-row';
+    };
+
+    TableRow.prototype.typeName = function() {
+      return 'Table row';
     };
 
     TableRow.prototype._onMouseOver = function(ev) {
@@ -5615,7 +5669,7 @@
         before = null;
       }
       this._domElement = this.createDiv(['ct-tool', "ct-tool--" + this.tool.icon]);
-      this._domElement.setAttribute('data-tooltip', this.tool.label);
+      this._domElement.setAttribute('data-tooltip', ContentEdit._(this.tool.label));
       return ToolUI.__super__.mount.call(this, domParent, before);
     };
 
@@ -5805,7 +5859,7 @@
     __extends(ImageDialog, _super);
 
     function ImageDialog() {
-      ImageDialog.__super__.constructor.call(this, 'Insert image');
+      ImageDialog.__super__.constructor.call(this, ContentEdit._('Insert image'));
       this._cropmarks = null;
       this._imageURL = null;
       this._imageSize = null;
@@ -5851,13 +5905,13 @@
       domTools = this.createDiv(['ct-control-group', 'ct-control-group--left']);
       this._domControls.appendChild(domTools);
       this._domRotateCCW = this.createDiv(['ct-control', 'ct-control--icon', 'ct-control--rotate-ccw']);
-      this._domRotateCCW.setAttribute('data-tooltip', 'Rotate -90°');
+      this._domRotateCCW.setAttribute('data-tooltip', ContentEdit._('Rotate') + ' -90°');
       domTools.appendChild(this._domRotateCCW);
       this._domRotateCW = this.createDiv(['ct-control', 'ct-control--icon', 'ct-control--rotate-cw']);
-      this._domRotateCW.setAttribute('data-tooltip', 'Rotate 90°');
+      this._domRotateCW.setAttribute('data-tooltip', ContentEdit._('Rotate') + ' 90°');
       domTools.appendChild(this._domRotateCW);
       this._domCrop = this.createDiv(['ct-control', 'ct-control--icon', 'ct-control--crop']);
-      this._domCrop.setAttribute('data-tooltip', 'Cropmarks');
+      this._domCrop.setAttribute('data-tooltip', ContentEdit._('Cropmarks'));
       domTools.appendChild(this._domCrop);
       domProgressBar = this.createDiv(['ct-progress-bar']);
       domTools.appendChild(domProgressBar);
@@ -5866,7 +5920,7 @@
       domActions = this.createDiv(['ct-control-group', 'ct-control-group--right']);
       this._domControls.appendChild(domActions);
       this._domUpload = this.createDiv(['ct-control', 'ct-control--text', 'ct-control--upload']);
-      this._domUpload.textContent = 'Upload';
+      this._domUpload.textContent = ContentEdit._('Upload');
       domActions.appendChild(this._domUpload);
       this._domInput = document.createElement('input');
       this._domInput.setAttribute('class', 'ct-image-dialog__file-upload');
@@ -5875,13 +5929,13 @@
       this._domInput.setAttribute('accept', 'image/*');
       this._domUpload.appendChild(this._domInput);
       this._domInsert = this.createDiv(['ct-control', 'ct-control--text', 'ct-control--insert']);
-      this._domInsert.textContent = 'Insert';
+      this._domInsert.textContent = ContentEdit._('Insert');
       domActions.appendChild(this._domInsert);
       this._domCancelUpload = this.createDiv(['ct-control', 'ct-control--text', 'ct-control--cancel']);
-      this._domCancelUpload.textContent = 'Cancel';
+      this._domCancelUpload.textContent = ContentEdit._('Cancel');
       domActions.appendChild(this._domCancelUpload);
       this._domClear = this.createDiv(['ct-control', 'ct-control--text', 'ct-control--clear']);
-      this._domClear.textContent = 'Clear';
+      this._domClear.textContent = ContentEdit._('Clear');
       domActions.appendChild(this._domClear);
       this._addDOMEventListeners();
       return this.trigger('imageUploader.mount');
@@ -6166,7 +6220,7 @@
       this._domInput = document.createElement('input');
       this._domInput.setAttribute('class', 'ct-anchored-dialog__input');
       this._domInput.setAttribute('name', 'href');
-      this._domInput.setAttribute('placeholder', 'Enter a link...');
+      this._domInput.setAttribute('placeholder', ContentEdit._('Enter a link') + '...');
       this._domInput.setAttribute('type', 'text');
       this._domInput.setAttribute('value', this._initialValue);
       this._domElement.appendChild(this._domInput);
@@ -6296,6 +6350,7 @@
       ContentEdit.addCSSClass(this._domElement, 'ct-properties-dialog');
       ContentEdit.addCSSClass(this._domView, 'ct-properties-dialog__view');
       this._domStyles = this.createDiv(['ct-properties-dialog__styles']);
+      this._domStyles.setAttribute('data-ct-empty', ContentEdit._('No styles available for this tag'));
       this._domView.appendChild(this._domStyles);
       _ref = ContentTools.StylePalette.styles(this.element.tagName());
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -6333,24 +6388,24 @@
       domTabs = this.createDiv(['ct-control-group', 'ct-control-group--left']);
       this._domControls.appendChild(domTabs);
       this._domStylesTab = this.createDiv(['ct-control', 'ct-control--icon', 'ct-control--styles']);
-      this._domStylesTab.setAttribute('data-tooltip', 'Styles');
+      this._domStylesTab.setAttribute('data-tooltip', ContentEdit._('Styles'));
       domTabs.appendChild(this._domStylesTab);
       this._domAttributesTab = this.createDiv(['ct-control', 'ct-control--icon', 'ct-control--attributes']);
-      this._domAttributesTab.setAttribute('data-tooltip', 'Attributes');
+      this._domAttributesTab.setAttribute('data-tooltip', ContentEdit._('Attributes'));
       domTabs.appendChild(this._domAttributesTab);
       this._domCodeTab = this.createDiv(['ct-control', 'ct-control--icon', 'ct-control--code']);
-      this._domCodeTab.setAttribute('data-tooltip', 'Code');
+      this._domCodeTab.setAttribute('data-tooltip', ContentEdit._('Code'));
       domTabs.appendChild(this._domCodeTab);
       if (!this._supportsCoding) {
         ContentEdit.addCSSClass(this._domCodeTab, 'ct-control--muted');
       }
       this._domRemoveAttribute = this.createDiv(['ct-control', 'ct-control--icon', 'ct-control--remove', 'ct-control--muted']);
-      this._domRemoveAttribute.setAttribute('data-tooltip', 'Remove');
+      this._domRemoveAttribute.setAttribute('data-tooltip', ContentEdit._('Remove'));
       domTabs.appendChild(this._domRemoveAttribute);
       domActions = this.createDiv(['ct-control-group', 'ct-control-group--right']);
       this._domControls.appendChild(domActions);
       this._domApply = this.createDiv(['ct-control', 'ct-control--text', 'ct-control--apply']);
-      this._domApply.textContent = 'Apply';
+      this._domApply.textContent = ContentEdit._('Apply');
       domActions.appendChild(this._domApply);
       lastTab = window.localStorage.getItem('ct-properties-dialog-tab');
       if (lastTab === 'attributes') {
@@ -6602,14 +6657,14 @@
       this._domName = document.createElement('input');
       this._domName.setAttribute('class', 'ct-attribute__name');
       this._domName.setAttribute('name', 'name');
-      this._domName.setAttribute('placeholder', 'Name');
+      this._domName.setAttribute('placeholder', ContentEdit._('Name'));
       this._domName.setAttribute('type', 'text');
       this._domName.setAttribute('value', this._initialName);
       this._domElement.appendChild(this._domName);
       this._domValue = document.createElement('input');
       this._domValue.setAttribute('class', 'ct-attribute__value');
       this._domValue.setAttribute('name', 'value');
-      this._domValue.setAttribute('placeholder', 'Value');
+      this._domValue.setAttribute('placeholder', ContentEdit._('Value'));
       this._domValue.setAttribute('type', 'text');
       this._domValue.setAttribute('value', this._initialValue);
       this._domElement.appendChild(this._domValue);
@@ -6694,9 +6749,9 @@
     function TableDialog(table) {
       this.table = table;
       if (this.table) {
-        TableDialog.__super__.constructor.call(this, 'Update table');
+        TableDialog.__super__.constructor.call(this, ContentEdit._('Update table'));
       } else {
-        TableDialog.__super__.constructor.call(this, 'Insert table');
+        TableDialog.__super__.constructor.call(this, ContentEdit._('Insert table'));
       }
     }
 
@@ -7194,7 +7249,7 @@
     };
 
     _EditorApp.prototype.revert = function() {
-      if (ContentEdit.Root.get().lastModified() && !window.confirm('Your changes have not been saved, do you really want to lose\nthem?')) {
+      if (ContentEdit.Root.get().lastModified() && !window.confirm(ContentEdit._('Your changes have not been saved, do you really want to lose them?'))) {
         return false;
       }
       this.revertToSnapshot(this.history.goTo(0), false);
@@ -7331,7 +7386,7 @@
       window.onbeforeunload = (function(_this) {
         return function(ev) {
           if (_this._state === ContentTools.EditorApp.EDITING) {
-            return 'Your changes have not been saved, do you really want to lose\nthem?';
+            return ContentEdit._('Your changes have not been saved, do you really want to lose them?');
           }
         };
       })(this);
@@ -7952,7 +8007,7 @@
 
     ContentTools.ToolShelf.stow(Preformatted, 'preformatted');
 
-    Preformatted.label = 'Pre-formatted';
+    Preformatted.label = 'Preformatted';
 
     Preformatted.icon = 'preformatted';
 
