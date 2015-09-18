@@ -41,6 +41,18 @@
     @include animation-fill-mode(forwards);
 }
 
+.ct-app {
+    @include box-sizing(border-box);
+
+    * {
+        &,
+        &:before,
+        &:after {
+          @include box-sizing(border-box);
+        }
+    }
+}
+
 .ct--highlight {
     outline: 4px solid $highlight-color;
     @include animation--highlight();
