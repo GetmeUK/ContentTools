@@ -290,14 +290,15 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
     _removeDOMEventListeners: () ->
         # Remove DOM event listeners for the widget
 
+        # Remove mouse event handlers
+        if @isMounted()
+            @_domGrip.removeEventListener('mousedown', @_onStartDragging)
+
         # Delete events
         window.removeEventListener('keydown', @_handleKeyDown)
 
         # Remove key events
         window.removeEventListener('resize', @_handleResize)
-
-        # Remove mouse event handlers
-        @_domGrip.removeEventListener('mousedown', @_onStartDragging)
 
         # Remove resize handler
         window.removeEventListener('resize', @_handleResize)

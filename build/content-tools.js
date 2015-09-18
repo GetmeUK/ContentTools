@@ -5501,9 +5501,11 @@
     };
 
     ToolboxUI.prototype._removeDOMEventListeners = function() {
+      if (this.isMounted()) {
+        this._domGrip.removeEventListener('mousedown', this._onStartDragging);
+      }
       window.removeEventListener('keydown', this._handleKeyDown);
       window.removeEventListener('resize', this._handleResize);
-      this._domGrip.removeEventListener('mousedown', this._onStartDragging);
       window.removeEventListener('resize', this._handleResize);
       return clearInterval(this._updateToolsTimeout);
     };
