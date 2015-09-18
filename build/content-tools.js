@@ -5788,7 +5788,8 @@
       if (caption === void 0) {
         return this._caption;
       }
-      return this._domCaption.textContent = caption;
+      this._caption = caption;
+      return this._domCaption.textContent = ContentEdit._(caption);
     };
 
     DialogUI.prototype.mount = function() {
@@ -5802,8 +5803,8 @@
       domHeader = this.createDiv(['ct-dialog__header']);
       this._domElement.appendChild(domHeader);
       this._domCaption = this.createDiv(['ct-dialog__caption']);
-      this._domCaption.textContent = this._caption;
       domHeader.appendChild(this._domCaption);
+      this.caption(this._caption);
       this._domClose = this.createDiv(['ct-dialog__close']);
       domHeader.appendChild(this._domClose);
       domBody = this.createDiv(['ct-dialog__body']);
@@ -5860,7 +5861,7 @@
     __extends(ImageDialog, _super);
 
     function ImageDialog() {
-      ImageDialog.__super__.constructor.call(this, ContentEdit._('Insert image'));
+      ImageDialog.__super__.constructor.call(this, 'Insert image');
       this._cropmarks = null;
       this._imageURL = null;
       this._imageSize = null;
@@ -6280,7 +6281,7 @@
     function PropertiesDialog(element) {
       var _ref;
       this.element = element;
-      PropertiesDialog.__super__.constructor.call(this, ContentEdit._('Properties') + (": " + (this.element.tagName())));
+      PropertiesDialog.__super__.constructor.call(this, "Properties: " + (this.element.tagName()));
       this._attributeUIs = [];
       this._focusedAttributeUI = null;
       this._styleUIs = [];
@@ -6289,6 +6290,14 @@
         this._supportsCoding = true;
       }
     }
+
+    PropertiesDialog.prototype.caption = function(caption) {
+      if (caption === void 0) {
+        return this._caption;
+      }
+      this._caption = caption;
+      return this._domCaption.textContent = ContentEdit._(caption) + (": " + (this.element.tagName()));
+    };
 
     PropertiesDialog.prototype.changedAttributes = function() {
       var attributeUI, attributes, changedAttributes, name, restricted, value, _i, _len, _ref, _ref1;
@@ -6750,9 +6759,9 @@
     function TableDialog(table) {
       this.table = table;
       if (this.table) {
-        TableDialog.__super__.constructor.call(this, ContentEdit._('Update table'));
+        TableDialog.__super__.constructor.call(this, 'Update table');
       } else {
-        TableDialog.__super__.constructor.call(this, ContentEdit._('Insert table'));
+        TableDialog.__super__.constructor.call(this, 'Insert table');
       }
     }
 
@@ -6889,7 +6898,7 @@
     __extends(VideoDialog, _super);
 
     function VideoDialog() {
-      VideoDialog.__super__.constructor.call(this, ContentEdit._('Insert video'));
+      VideoDialog.__super__.constructor.call(this, 'Insert video');
     }
 
     VideoDialog.prototype.clearPreview = function() {

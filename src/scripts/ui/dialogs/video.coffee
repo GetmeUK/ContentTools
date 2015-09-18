@@ -3,7 +3,7 @@ class ContentTools.VideoDialog extends ContentTools.DialogUI
     # A dialog to support inserting a video
 
     constructor: ()->
-        super(ContentEdit._('Insert video'))
+        super('Insert video')
 
     clearPreview: () ->
         # Clear the current video preview

@@ -13,7 +13,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
     # to support image uploads.
 
     constructor: ()->
-        super(ContentEdit._('Insert image'))
+        super('Insert image')
 
         # If applied, this is a handle to the crop marks component for the
         # current image.

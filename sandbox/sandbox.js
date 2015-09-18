@@ -164,8 +164,7 @@
         return ContentEdit.LANGUAGE = 'lp';
       }
     };
-    req.send(null);
-    return console.log(123);
+    return req.send(null);
   };
 
 }).call(this);

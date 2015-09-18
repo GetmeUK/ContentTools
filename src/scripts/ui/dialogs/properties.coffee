@@ -3,7 +3,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
     # A dialog to support editing an elements properties
 
     constructor: (@element)->
-        super(ContentEdit._('Properties') + ": #{ @element.tagName() }")
+        super("Properties: #{ @element.tagName() }")
 
         # A list of AttributeUI instances representing the element's attributes
         @_attributeUIs = []
@@ -21,6 +21,16 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             @_supportsCoding = true
 
     # Methods
+
+    caption: (caption) ->
+        # Get/Set the caption for the dialog
+        if caption is undefined
+            return @_caption
+
+        # Replace any existing caption
+        this._caption = caption
+        @_domCaption.textContent = ContentEdit._(caption) +
+            ": #{ @element.tagName() }"
 
     changedAttributes: () ->
         # Return a map of attributes set in the dialog (only attributes that

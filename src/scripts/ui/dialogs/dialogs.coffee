@@ -82,10 +82,11 @@ class ContentTools.DialogUI extends ContentTools.WidgetUI
     caption: (caption) ->
         # Get/Set the caption for the dialog
         if caption is undefined
-            return this._caption
+            return @_caption
 
-        # Remove any existing caption
-        @_domCaption.textContent = caption
+        # Replace any existing caption
+        @_caption = caption
+        @_domCaption.textContent = ContentEdit._(caption)
 
     mount: () ->
         # Mount the widget to the DOM
@@ -111,8 +112,8 @@ class ContentTools.DialogUI extends ContentTools.WidgetUI
 
         # Caption
         @_domCaption = @createDiv(['ct-dialog__caption'])
-        @_domCaption.textContent = this._caption
         domHeader.appendChild(@_domCaption)
+        @caption(@_caption)
 
         # Close button
         @_domClose = @createDiv(['ct-dialog__close'])
