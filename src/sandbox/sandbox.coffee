@@ -46,4 +46,4 @@ window.onload = () ->
             ContentEdit.LANGUAGE = 'lp'
 
     # Uncomment the following line to use the editor with pig latin translation
-    req.send(null)
+    #req.send(null)
