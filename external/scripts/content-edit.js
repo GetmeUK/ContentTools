@@ -2183,6 +2183,7 @@
       }
       helper = document.createElement('div');
       helper.setAttribute('class', "ce-drag-helper ce-drag-helper--type-" + (this.cssTypeName()));
+      console.log(this.typeName(), ContentEdit._(this.typeName()));
       helper.setAttribute('data-ce-type', ContentEdit._(this.typeName()));
       return helper;
     };

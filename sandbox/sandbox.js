@@ -155,12 +155,13 @@
     });
     req = new XMLHttpRequest();
     req.overrideMimeType('application/json');
-    req.open('GET', 'https://github.com/GetmeUK/ContentTools/blob/develop/translations/lp.json', true);
+    req.open('GET', 'https://raw.githubusercontent.com/GetmeUK/ContentTools/develop/translations/lp.json', true);
     return req.onreadystatechange = function(ev) {
-      if (ev.target.readyState === 4 && ev.target.status === '200') {
-        console.log(ev.target.responseText);
-        ContentEdit.addTranslations('lp', ev.target.responseText);
-        return ContentEdit.LANGUAGE('lp');
+      var translations;
+      if (ev.target.readyState === 4) {
+        translations = JSON.parse(ev.target.responseText);
+        ContentEdit.addTranslations('lp', translations);
+        return ContentEdit.LANGUAGE = 'lp';
       }
     };
   };

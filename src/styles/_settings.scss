@@ -38,6 +38,7 @@ $highlight-color: rgba(#f39c12, 0.25);
  */
 @mixin type-tooltip(
     $parent-width: 0px,
+    $parent-height: 0px,
     $height: 20px,
     $offset-top: 5px,
     $width: 85px
@@ -52,9 +53,9 @@ $highlight-color: rgba(#f39c12, 0.25);
         left: -($width - $parent-width) / 2;
         line-height: $height;
         opacity: 0.0;
-        padding: 0 4px;
+        padding: 0 8px;
         position: absolute;
-        top: -($height + $offset-top);
+        bottom: ($parent-height + $offset-top);
         @include type-text($font-size: 12px, $line-height: $height);
         visibility: hidden;
         width: $width;

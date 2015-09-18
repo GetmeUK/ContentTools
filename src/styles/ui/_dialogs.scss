@@ -196,7 +196,10 @@
             line-height: $icon-size;
             text-align: center;
             @include type-icons;
-            @include type-tooltip($parent-width: 20px);
+            @include type-tooltip(
+                $parent-width: $icon-size,
+                $parent-height: $icon-size
+                );
             width: $icon-size;
 
             &:before {
@@ -289,11 +292,13 @@
             display: inline-block;
             font-weight: bold;
             height: 32px;
-            min-width: 80px;
-            padding: 0 16px;
+            overflow: hidden;
+            padding: 0 8px;
             text-align: center;
+            text-overflow: ellipsis;
             @include type-text($line-height: 32px);
             vertical-align: top;
+            width: 100px;
 
             &:hover {
                 background: lighten($bkg-color, 5%);
@@ -552,7 +557,7 @@
             padding: 0 4px;
             @include type-text;
             vertical-align: top;
-            width: 476px;
+            width: 456px;
 
             &:focus {
                 border-bottom: 1px solid darken(#eee, 5%);

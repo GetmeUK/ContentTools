@@ -2183,6 +2183,7 @@
       }
       helper = document.createElement('div');
       helper.setAttribute('class', "ce-drag-helper ce-drag-helper--type-" + (this.cssTypeName()));
+      console.log(this.typeName(), ContentEdit._(this.typeName()));
       helper.setAttribute('data-ce-type', ContentEdit._(this.typeName()));
       return helper;
     };
@@ -6279,7 +6280,7 @@
     function PropertiesDialog(element) {
       var _ref;
       this.element = element;
-      PropertiesDialog.__super__.constructor.call(this, "Properties: " + (this.element.tagName()));
+      PropertiesDialog.__super__.constructor.call(this, ContentEdit._('Properties') + (": " + (this.element.tagName())));
       this._attributeUIs = [];
       this._focusedAttributeUI = null;
       this._styleUIs = [];
@@ -6779,14 +6780,14 @@
       this._domHeadSection = this.createDiv(headCSSClasses);
       this._domView.appendChild(this._domHeadSection);
       domHeadLabel = this.createDiv(['ct-section__label']);
-      domHeadLabel.textContent = 'Table head';
+      domHeadLabel.textContent = ContentEdit._('Table head');
       this._domHeadSection.appendChild(domHeadLabel);
       this._domHeadSwitch = this.createDiv(['ct-section__switch']);
       this._domHeadSection.appendChild(this._domHeadSwitch);
       this._domBodySection = this.createDiv(['ct-section', 'ct-section--applied', 'ct-section--contains-input']);
       this._domView.appendChild(this._domBodySection);
       domBodyLabel = this.createDiv(['ct-section__label']);
-      domBodyLabel.textContent = 'Table body (columns)';
+      domBodyLabel.textContent = ContentEdit._('Table body (columns)');
       this._domBodySection.appendChild(domBodyLabel);
       this._domBodyInput = document.createElement('input');
       this._domBodyInput.setAttribute('class', 'ct-section__input');
@@ -6802,7 +6803,7 @@
       this._domFootSection = this.createDiv(footCSSClasses);
       this._domView.appendChild(this._domFootSection);
       domFootLabel = this.createDiv(['ct-section__label']);
-      domFootLabel.textContent = 'Table foot';
+      domFootLabel.textContent = ContentEdit._('Table foot');
       this._domFootSection.appendChild(domFootLabel);
       this._domFootSwitch = this.createDiv(['ct-section__switch']);
       this._domFootSection.appendChild(this._domFootSwitch);
@@ -6888,7 +6889,7 @@
     __extends(VideoDialog, _super);
 
     function VideoDialog() {
-      VideoDialog.__super__.constructor.call(this, 'Insert video');
+      VideoDialog.__super__.constructor.call(this, ContentEdit._('Insert video'));
     }
 
     VideoDialog.prototype.clearPreview = function() {
@@ -6908,11 +6909,11 @@
       this._domInput = document.createElement('input');
       this._domInput.setAttribute('class', 'ct-video-dialog__input');
       this._domInput.setAttribute('name', 'url');
-      this._domInput.setAttribute('placeholder', 'Paste YouTube or Vimeo URL...');
+      this._domInput.setAttribute('placeholder', ContentEdit._('Paste YouTube or Vimeo URL') + '...');
       this._domInput.setAttribute('type', 'text');
       domControlGroup.appendChild(this._domInput);
       this._domButton = this.createDiv(['ct-control', 'ct-control--text', 'ct-control--insert', 'ct-control--muted']);
-      this._domButton.textContent = 'Insert';
+      this._domButton.textContent = ContentEdit._('Insert');
       domControlGroup.appendChild(this._domButton);
       return this._addDOMEventListeners();
     };

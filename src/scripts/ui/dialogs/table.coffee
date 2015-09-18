@@ -39,7 +39,7 @@ class ContentTools.TableDialog extends ContentTools.DialogUI
         @_domView.appendChild(@_domHeadSection)
 
         domHeadLabel = @createDiv(['ct-section__label'])
-        domHeadLabel.textContent = 'Table head'
+        domHeadLabel.textContent = ContentEdit._('Table head')
         @_domHeadSection.appendChild(domHeadLabel)
 
         @_domHeadSwitch = @createDiv(['ct-section__switch'])
@@ -54,7 +54,7 @@ class ContentTools.TableDialog extends ContentTools.DialogUI
         @_domView.appendChild(@_domBodySection)
 
         domBodyLabel = @createDiv(['ct-section__label'])
-        domBodyLabel.textContent = 'Table body (columns)'
+        domBodyLabel.textContent = ContentEdit._('Table body (columns)')
         @_domBodySection.appendChild(domBodyLabel)
 
         @_domBodyInput = document.createElement('input')
@@ -73,7 +73,7 @@ class ContentTools.TableDialog extends ContentTools.DialogUI
         @_domView.appendChild(@_domFootSection)
 
         domFootLabel = @createDiv(['ct-section__label'])
-        domFootLabel.textContent = 'Table foot'
+        domFootLabel.textContent = ContentEdit._('Table foot')
         @_domFootSection.appendChild(domFootLabel)
 
         @_domFootSwitch = @createDiv(['ct-section__switch'])

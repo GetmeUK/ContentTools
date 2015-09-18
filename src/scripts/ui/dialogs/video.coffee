@@ -3,7 +3,7 @@ class ContentTools.VideoDialog extends ContentTools.DialogUI
     # A dialog to support inserting a video
 
     constructor: ()->
-        super('Insert video')
+        super(ContentEdit._('Insert video'))
 
     clearPreview: () ->
         # Clear the current video preview
@@ -29,7 +29,10 @@ class ContentTools.VideoDialog extends ContentTools.DialogUI
         @_domInput = document.createElement('input')
         @_domInput.setAttribute('class', 'ct-video-dialog__input')
         @_domInput.setAttribute('name', 'url')
-        @_domInput.setAttribute('placeholder', 'Paste YouTube or Vimeo URL...')
+        @_domInput.setAttribute(
+            'placeholder',
+            ContentEdit._('Paste YouTube or Vimeo URL') + '...'
+            )
         @_domInput.setAttribute('type', 'text')
         domControlGroup.appendChild(@_domInput)
 
@@ -40,7 +43,7 @@ class ContentTools.VideoDialog extends ContentTools.DialogUI
             'ct-control--insert'
             'ct-control--muted'
             ])
-        @_domButton.textContent = 'Insert'
+        @_domButton.textContent = ContentEdit._('Insert')
         domControlGroup.appendChild(@_domButton)
 
         # Add interaction handlers

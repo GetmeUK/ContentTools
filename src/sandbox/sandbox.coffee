@@ -36,15 +36,14 @@ window.onload = () ->
     req.overrideMimeType('application/json')
     req.open(
         'GET',
-        'https://github.com/GetmeUK/ContentTools/blob/develop/translations/lp.json',
+        'https://raw.githubusercontent.com/GetmeUK/ContentTools/develop/translations/lp.json',
         true
         )
     req.onreadystatechange = (ev) ->
-        if ev.target.readyState == 4 and ev.target.status == '200'
-            console.log ev.target.responseText
+        if ev.target.readyState == 4
+            translations = JSON.parse(ev.target.responseText)
+            ContentEdit.addTranslations('lp', translations)
+            ContentEdit.LANGUAGE = 'lp'
 
-            ContentEdit.addTranslations('lp', ev.target.responseText)
-            ContentEdit.LANGUAGE 'lp'
-
-    # Uncomment to use the editor with Pig latin translation
+    # Uncomment the following line to use the editor with pig latin translation
     #req.send(null)

@@ -90,7 +90,10 @@
         position: relative;
         text-align: center;
         @include type-icons;
-        @include type-tooltip($parent-width: $tool-size);
+        @include type-tooltip(
+            $parent-width: $tool-size,
+            $parent-height: $tool-size
+            );
         width: $tool-size;
 
         // We use the before puesdo element to display the tools associated icon
