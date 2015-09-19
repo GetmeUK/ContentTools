@@ -50,6 +50,7 @@ $highlight-color: rgba(#f39c12, 0.25);
         color: white;
         content: attr(data-tooltip);
         display: block;
+        @include hyphens(auto);
         left: -($width - $parent-width) / 2;
         line-height: $height;
         opacity: 0.0;
@@ -59,6 +60,7 @@ $highlight-color: rgba(#f39c12, 0.25);
         @include type-text($font-size: 12px, $line-height: $height);
         visibility: hidden;
         width: $width;
+        word-break: break-word;
     }
 
     &:hover {
