@@ -4717,7 +4717,7 @@
 }).call(this);
 
 (function() {
-  var AttributeUI, CropmarksUI, StyleUI, _EditorApp,
+  var AttributeUI, CropMarksUI, StyleUI, _EditorApp,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -5862,7 +5862,7 @@
 
     function ImageDialog() {
       ImageDialog.__super__.constructor.call(this, 'Insert image');
-      this._cropmarks = null;
+      this._cropMarks = null;
       this._imageURL = null;
       this._imageSize = null;
       this._progress = 0;
@@ -5873,18 +5873,18 @@
     }
 
     ImageDialog.prototype.cropRegion = function() {
-      if (this._cropmarks) {
-        return this._cropmarks.region();
+      if (this._cropMarks) {
+        return this._cropMarks.region();
       }
       return [0, 0, 1, 1];
     };
 
-    ImageDialog.prototype.addCropmarks = function() {
-      if (this._cropmarks) {
+    ImageDialog.prototype.addCropMarks = function() {
+      if (this._cropMarks) {
         return;
       }
-      this._cropmarks = new CropmarksUI(this._imageSize);
-      this._cropmarks.mount(this._domView);
+      this._cropMarks = new CropMarksUI(this._imageSize);
+      this._cropMarks.mount(this._domView);
       return ContentEdit.addCSSClass(this._domCrop, 'ct-control--active');
     };
 
@@ -5913,7 +5913,7 @@
       this._domRotateCW.setAttribute('data-tooltip', ContentEdit._('Rotate') + ' 90°');
       domTools.appendChild(this._domRotateCW);
       this._domCrop = this.createDiv(['ct-control', 'ct-control--icon', 'ct-control--crop']);
-      this._domCrop.setAttribute('data-tooltip', ContentEdit._('Cropmarks'));
+      this._domCrop.setAttribute('data-tooltip', ContentEdit._('Crop marks'));
       domTools.appendChild(this._domCrop);
       domProgressBar = this.createDiv(['ct-progress-bar']);
       domTools.appendChild(domProgressBar);
@@ -5965,12 +5965,12 @@
       return this._domProgress.style.width = "" + this._progress + "%";
     };
 
-    ImageDialog.prototype.removeCropmarks = function() {
-      if (!this._cropmarks) {
+    ImageDialog.prototype.removeCropMarks = function() {
+      if (!this._cropMarks) {
         return;
       }
-      this._cropmarks.unmount();
-      this._cropmarks = null;
+      this._cropMarks.unmount();
+      this._cropMarks = null;
       return ContentEdit.removeCSSClass(this._domCrop, 'ct-control--active');
     };
 
@@ -6030,28 +6030,28 @@
       })(this));
       this._domClear.addEventListener('click', (function(_this) {
         return function(ev) {
-          _this.removeCropmarks();
+          _this.removeCropMarks();
           return _this.trigger('imageUploader.clear');
         };
       })(this));
       this._domRotateCCW.addEventListener('click', (function(_this) {
         return function(ev) {
-          _this.removeCropmarks();
+          _this.removeCropMarks();
           return _this.trigger('imageUploader.rotateCCW');
         };
       })(this));
       this._domRotateCW.addEventListener('click', (function(_this) {
         return function(ev) {
-          _this.removeCropmarks();
+          _this.removeCropMarks();
           return _this.trigger('imageUploader.rotateCW');
         };
       })(this));
       this._domCrop.addEventListener('click', (function(_this) {
         return function(ev) {
-          if (_this._cropmarks) {
-            return _this.removeCropmarks();
+          if (_this._cropMarks) {
+            return _this.removeCropMarks();
           } else {
-            return _this.addCropmarks();
+            return _this.addCropMarks();
           }
         };
       })(this));
@@ -6066,47 +6066,47 @@
 
   })(ContentTools.DialogUI);
 
-  CropmarksUI = (function(_super) {
-    __extends(CropmarksUI, _super);
+  CropMarksUI = (function(_super) {
+    __extends(CropMarksUI, _super);
 
-    function CropmarksUI(imageSize) {
-      CropmarksUI.__super__.constructor.call(this);
+    function CropMarksUI(imageSize) {
+      CropMarksUI.__super__.constructor.call(this);
       this._bounds = null;
       this._dragging = null;
       this._draggingOrigin = null;
       this._imageSize = imageSize;
     }
 
-    CropmarksUI.prototype.mount = function(domParent, before) {
+    CropMarksUI.prototype.mount = function(domParent, before) {
       if (before == null) {
         before = null;
       }
-      this._domElement = this.createDiv(['ct-cropmarks']);
-      this._domClipper = this.createDiv(['ct-cropmarks__clipper']);
+      this._domElement = this.createDiv(['ct-crop-marks']);
+      this._domClipper = this.createDiv(['ct-crop-marks__clipper']);
       this._domElement.appendChild(this._domClipper);
-      this._domRulers = [this.createDiv(['ct-cropmarks__ruler', 'ct-cropmarks__ruler--top-left']), this.createDiv(['ct-cropmarks__ruler', 'ct-cropmarks__ruler--bottom-right'])];
+      this._domRulers = [this.createDiv(['ct-crop-marks__ruler', 'ct-crop-marks__ruler--top-left']), this.createDiv(['ct-crop-marks__ruler', 'ct-crop-marks__ruler--bottom-right'])];
       this._domClipper.appendChild(this._domRulers[0]);
       this._domClipper.appendChild(this._domRulers[1]);
-      this._domHandles = [this.createDiv(['ct-cropmarks__handle', 'ct-cropmarks__handle--top-left']), this.createDiv(['ct-cropmarks__handle', 'ct-cropmarks__handle--bottom-right'])];
+      this._domHandles = [this.createDiv(['ct-crop-marks__handle', 'ct-crop-marks__handle--top-left']), this.createDiv(['ct-crop-marks__handle', 'ct-crop-marks__handle--bottom-right'])];
       this._domElement.appendChild(this._domHandles[0]);
       this._domElement.appendChild(this._domHandles[1]);
-      CropmarksUI.__super__.mount.call(this, domParent, before);
+      CropMarksUI.__super__.mount.call(this, domParent, before);
       return this._fit(domParent);
     };
 
-    CropmarksUI.prototype.region = function() {
+    CropMarksUI.prototype.region = function() {
       return [parseFloat(this._domHandles[0].style.top) / this._bounds[1], parseFloat(this._domHandles[0].style.left) / this._bounds[0], parseFloat(this._domHandles[1].style.top) / this._bounds[1], parseFloat(this._domHandles[1].style.left) / this._bounds[0]];
     };
 
-    CropmarksUI.prototype.unmount = function() {
-      CropmarksUI.__super__.unmount.call(this);
+    CropMarksUI.prototype.unmount = function() {
+      CropMarksUI.__super__.unmount.call(this);
       this._domClipper = null;
       this._domHandles = null;
       return this._domRulers = null;
     };
 
-    CropmarksUI.prototype._addDOMEventListeners = function() {
-      CropmarksUI.__super__._addDOMEventListeners.call(this);
+    CropMarksUI.prototype._addDOMEventListeners = function() {
+      CropMarksUI.__super__._addDOMEventListeners.call(this);
       this._domHandles[0].addEventListener('mousedown', (function(_this) {
         return function(ev) {
           if (ev.button === 0) {
@@ -6123,7 +6123,7 @@
       })(this));
     };
 
-    CropmarksUI.prototype._drag = function(top, left) {
+    CropMarksUI.prototype._drag = function(top, left) {
       var height, minCrop, offsetLeft, offsetTop, width;
       if (this._dragging === null) {
         return;
@@ -6151,7 +6151,7 @@
       return this._domRulers[this._dragging].style.left = "" + offsetLeft + "px";
     };
 
-    CropmarksUI.prototype._fit = function(domParent) {
+    CropMarksUI.prototype._fit = function(domParent) {
       var height, heightScale, left, ratio, rect, top, width, widthScale;
       rect = domParent.getBoundingClientRect();
       widthScale = rect.width / this._imageSize[0];
@@ -6176,7 +6176,7 @@
       return this._bounds = [width, height];
     };
 
-    CropmarksUI.prototype._startDrag = function(handleIndex, top, left) {
+    CropMarksUI.prototype._startDrag = function(handleIndex, top, left) {
       var domHandle;
       domHandle = this._domHandles[handleIndex];
       this._dragging = handleIndex;
@@ -6195,14 +6195,14 @@
       return document.addEventListener('mouseup', this._onMouseUp);
     };
 
-    CropmarksUI.prototype._stopDrag = function() {
+    CropMarksUI.prototype._stopDrag = function() {
       document.removeEventListener('mousemove', this._onMouseMove);
       document.removeEventListener('mouseup', this._onMouseUp);
       this._dragging = null;
       return this._draggingOrigin = null;
     };
 
-    return CropmarksUI;
+    return CropMarksUI;
 
   })(ContentTools.AnchoredComponentUI);
 

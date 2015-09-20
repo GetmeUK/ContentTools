@@ -17,7 +17,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
 
         # If applied, this is a handle to the crop marks component for the
         # current image.
-        @_cropmarks = null
+        @_cropMarks = null
 
         # If the dialog is populated, this is the URL of the image
         @_imageURL = null
@@ -42,21 +42,21 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
         # Return the defined crop-region (top, left, bottom, right), values are
         # normalized to the range 0.0 - 1.0. If no crop region is defined then
         # the maximum region will be returned (e.g [0, 0, 1, 1])
-        if @_cropmarks
-            return @_cropmarks.region()
+        if @_cropMarks
+            return @_cropMarks.region()
 
         return [0, 0, 1, 1]
 
     # Methods
 
-    addCropmarks: () ->
-        # Add cropmarks to the current image
-        if @_cropmarks
+    addCropMarks: () ->
+        # Add crop marks to the current image
+        if @_cropMarks
             return
 
         # Determine the crop region
-        @_cropmarks = new CropmarksUI(@_imageSize)
-        @_cropmarks.mount(@_domView)
+        @_cropMarks = new CropMarksUI(@_imageSize)
+        @_cropMarks.mount(@_domView)
 
         # Mark the crop control as active
         ContentEdit.addCSSClass(@_domCrop, 'ct-control--active')
@@ -122,7 +122,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--crop'
             ])
-        @_domCrop.setAttribute('data-tooltip', ContentEdit._('Cropmarks'))
+        @_domCrop.setAttribute('data-tooltip', ContentEdit._('Crop marks'))
         domTools.appendChild(@_domCrop)
 
         # Progress bar
@@ -216,13 +216,13 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
 
         @_domProgress.style.width = "#{ @_progress }%"
 
-    removeCropmarks: () ->
-        # Remove cropmarks from the current image
-        if not @_cropmarks
+    removeCropMarks: () ->
+        # Remove crop marks from the current image
+        if not @_cropMarks
             return
 
-        @_cropmarks.unmount()
-        @_cropmarks = null
+        @_cropMarks.unmount()
+        @_cropMarks = null
 
         # Mark the crop control as no longer active
         ContentEdit.removeCSSClass(@_domCrop, 'ct-control--active')
@@ -299,30 +299,30 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
 
         # Clear image
         @_domClear.addEventListener 'click', (ev) =>
-            @removeCropmarks()
+            @removeCropMarks()
             @trigger('imageUploader.clear')
 
         # Rotate the image
         @_domRotateCCW.addEventListener 'click', (ev) =>
-            @removeCropmarks()
+            @removeCropMarks()
             @trigger('imageUploader.rotateCCW')
 
         @_domRotateCW.addEventListener 'click', (ev) =>
-            @removeCropmarks()
+            @removeCropMarks()
             @trigger('imageUploader.rotateCW')
 
         @_domCrop.addEventListener 'click', (ev) =>
-            if @_cropmarks
-                @removeCropmarks()
+            if @_cropMarks
+                @removeCropMarks()
 
             else
-                @addCropmarks()
+                @addCropMarks()
 
         @_domInsert.addEventListener 'click', (ev) =>
             @trigger('imageUploader.save')
 
 
-class CropmarksUI extends ContentTools.AnchoredComponentUI
+class CropMarksUI extends ContentTools.AnchoredComponentUI
 
     # Crop marks widget. Allows a crop region to be defined for images in the
     # image dialog.
@@ -331,7 +331,7 @@ class CropmarksUI extends ContentTools.AnchoredComponentUI
         super()
 
         # Set when the component is mounted/fitted, holds the region the
-        # cropmarks are restricted to.
+        # crop marks are restricted to.
         @_bounds = null
 
         # The handle currently being dragged
@@ -348,21 +348,21 @@ class CropmarksUI extends ContentTools.AnchoredComponentUI
 
     mount: (domParent, before=null) ->
         # Crop marks
-        @_domElement = @createDiv(['ct-cropmarks'])
+        @_domElement = @createDiv(['ct-crop-marks'])
 
         # Clippers
-        @_domClipper = @createDiv(['ct-cropmarks__clipper'])
+        @_domClipper = @createDiv(['ct-crop-marks__clipper'])
         @_domElement.appendChild(@_domClipper)
 
         # Rulers
         @_domRulers = [
             @createDiv([
-                'ct-cropmarks__ruler',
-                'ct-cropmarks__ruler--top-left'
+                'ct-crop-marks__ruler',
+                'ct-crop-marks__ruler--top-left'
                 ]),
             @createDiv([
-                'ct-cropmarks__ruler',
-                'ct-cropmarks__ruler--bottom-right'
+                'ct-crop-marks__ruler',
+                'ct-crop-marks__ruler--bottom-right'
                 ])
             ]
         @_domClipper.appendChild(@_domRulers[0])
@@ -371,12 +371,12 @@ class CropmarksUI extends ContentTools.AnchoredComponentUI
         # Handles
         @_domHandles = [
             @createDiv([
-                'ct-cropmarks__handle',
-                'ct-cropmarks__handle--top-left'
+                'ct-crop-marks__handle',
+                'ct-crop-marks__handle--top-left'
                 ]),
             @createDiv([
-                'ct-cropmarks__handle',
-                'ct-cropmarks__handle--bottom-right'
+                'ct-crop-marks__handle',
+                'ct-crop-marks__handle--bottom-right'
                 ])
             ]
         @_domElement.appendChild(@_domHandles[0])
@@ -464,7 +464,7 @@ class CropmarksUI extends ContentTools.AnchoredComponentUI
         @_domRulers[@_dragging].style.left = "#{ offsetLeft }px"
 
     _fit: (domParent) ->
-        # Fit the cropmarks element to reflect/overlap the image (displayed in
+        # Fit the crop marks element to reflect/overlap the image (displayed in
         # the background of the domParent.
 
         # Calculate the ratio required to fit the image into the parent DOM
@@ -473,13 +473,13 @@ class CropmarksUI extends ContentTools.AnchoredComponentUI
         heightScale = rect.height / @_imageSize[1]
         ratio = Math.min(widthScale, heightScale)
 
-        # Calculate the position and size for the cropmarks element
+        # Calculate the position and size for the crop marks element
         width = ratio * @_imageSize[0]
         height = ratio * @_imageSize[1]
         left = (rect.width - width) / 2
         top = (rect.height - height) / 2
 
-        # Set the position and size of cropmarks element
+        # Set the position and size of crop marks element
         @_domElement.style.width = "#{ width }px"
         @_domElement.style.height = "#{ height }px"
         @_domElement.style.top = "#{ top }px"
