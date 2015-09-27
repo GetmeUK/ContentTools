@@ -22,6 +22,55 @@
     });
   });
 
+  describe('ContentTools.FlashUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      editor.init('.editable');
+      return editor.start();
+    });
+    afterEach(function() {
+      editor.stop();
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.FlashUI()', function() {
+      it('should return an instance of a FlashUI', function() {
+        var flash;
+        flash = new ContentTools.FlashUI('ok');
+        return expect(flash instanceof ContentTools.FlashUI).toBe(true);
+      });
+      it('should automatically mount the component', function() {
+        var flash;
+        flash = new ContentTools.FlashUI('ok');
+        return expect(flash.isMounted()).toBe(true);
+      });
+      return it('should automatically unmount the component after X seconds', function(done) {
+        var checkUnmounted, flash;
+        flash = new ContentTools.FlashUI('ok');
+        checkUnmounted = function() {
+          expect(flash.isMounted()).toBe(false);
+          return done();
+        };
+        return setTimeout(checkUnmounted, 3000);
+      });
+    });
+    return describe('ContentTools.FlashUI.mount()', function() {
+      return it('should mount the component and apply the specified modifier', function() {
+        var classes, flash;
+        flash = new ContentTools.FlashUI('ok');
+        expect(flash.isMounted()).toBe(true);
+        classes = flash.domElement().getAttribute('class').split(' ');
+        return expect(classes.indexOf('ct-flash--ok') > -1).toBe(true);
+      });
+    });
+  });
+
   describe('ContentTools.ToolShelf.stow()', function() {
     return it('should store a `ContentTools.Tool` instance against a name', function() {
       var tool;

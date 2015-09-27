@@ -124,7 +124,7 @@ module.exports = (grunt) ->
                 tasks: ['sandbox']
 
             spec:
-                files: ['src/spec/*.coffee']
+                files: ['src/spec/**/*.coffee']
                 tasks: ['spec']
     })
 

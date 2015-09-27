@@ -17,7 +17,7 @@ window.onload = () ->
         new ContentTools.Style('Example + Bad', 'example--bad', ['pre'])
         ])
 
-    editor = new ContentTools.EditorApp.get()
+    editor = ContentTools.EditorApp.get()
     editor.init('.editable', 'data-name')
 
     editor.bind 'save', (regions, autoSave) ->
