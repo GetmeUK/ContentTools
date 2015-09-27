@@ -16,7 +16,6 @@ module.exports = (grunt) ->
 
                         # UI
                         'src/scripts/ui/ui.coffee'
-                        'src/scripts/ui/dialogs.coffee'
                         'src/scripts/ui/flashes.coffee'
                         'src/scripts/ui/ignition.coffee'
                         'src/scripts/ui/inspector.coffee'
@@ -50,12 +49,28 @@ module.exports = (grunt) ->
                     'spec/spec-helper.js': 'src/spec/spec-helper.coffee'
                     'spec/content-tools-spec.js': [
                         'src/spec/namespace.coffee'
+
+                        # UI
+                        'src/spec/ui/ui.coffee'
+                        'src/spec/ui/flashes.coffee'
+                        'src/spec/ui/ignition.coffee'
+                        'src/spec/ui/inspector.coffee'
+                        'src/spec/ui/modal.coffee'
+                        'src/spec/ui/toolbox.coffee'
+
+                        # UI - Dialogs
+                        'src/spec/ui/dialogs/dialogs.coffee'
+                        'src/spec/ui/dialogs/image.coffee'
+                        'src/spec/ui/dialogs/link.coffee'
+                        'src/spec/ui/dialogs/properties.coffee'
+                        'src/spec/ui/dialogs/table.coffee'
+                        'src/spec/ui/dialogs/video.coffee'
+
+                        # Other
+                        'src/spec/editor.coffee'
                         'src/spec/history.coffee'
-                        'src/spec/inspector.coffee'
-                        'src/spec/shortcuts.coffee'
                         'src/spec/tools.coffee'
                         'src/spec/styles.coffee'
-                        'src/spec/ui.coffee'
                         ]
 
         sass:
