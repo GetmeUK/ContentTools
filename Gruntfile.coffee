@@ -49,6 +49,7 @@ module.exports = (grunt) ->
                 files:
                     'spec/spec-helper.js': 'src/spec/spec-helper.coffee'
                     'spec/content-tools-spec.js': [
+                        'src/spec/namespace.coffee'
                         'src/spec/history.coffee'
                         'src/spec/inspector.coffee'
                         'src/spec/shortcuts.coffee'

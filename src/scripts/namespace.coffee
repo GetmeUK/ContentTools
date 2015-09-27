@@ -88,7 +88,8 @@ window.ContentTools =
         domains = {
             'www.youtube.com': 'youtube',
             'youtu.be': 'youtube',
-            'vimeo.com': 'vimeo'
+            'vimeo.com': 'vimeo',
+            'player.vimeo.com': 'vimeo'
             }
 
         # Parse the URL into components
