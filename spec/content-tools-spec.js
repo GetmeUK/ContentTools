@@ -31,11 +31,9 @@
       div.setAttribute('class', 'editable');
       document.body.appendChild(div);
       editor = ContentTools.EditorApp.get();
-      editor.init('.editable');
-      return editor.start();
+      return editor.init('.editable');
     });
     afterEach(function() {
-      editor.stop();
       editor.destroy();
       return document.body.removeChild(div);
     });
@@ -67,6 +65,97 @@
         expect(flash.isMounted()).toBe(true);
         classes = flash.domElement().getAttribute('class').split(' ');
         return expect(classes.indexOf('ct-flash--ok') > -1).toBe(true);
+      });
+    });
+  });
+
+  describe('ContentTools.ModalUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.ModalUI()', function() {
+      it('should return an instance of a ModalUI', function() {
+        var modal;
+        modal = new ContentTools.ModalUI(true, false);
+        return expect(modal instanceof ContentTools.ModalUI).toBe(true);
+      });
+      return it('should trigger a `click` event if clicked', function() {
+        var clickEvent, foo, modal;
+        modal = new ContentTools.ModalUI(true, true);
+        editor.attach(modal);
+        modal.show();
+        foo = {
+          handleFoo: function() {}
+        };
+        spyOn(foo, 'handleFoo');
+        modal.bind('click', foo.handleFoo);
+        clickEvent = new MouseEvent('click', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        modal.domElement().dispatchEvent(clickEvent);
+        return expect(foo.handleFoo).toHaveBeenCalled();
+      });
+    });
+    describe('ContentTools.ModalUI.mount()', function() {
+      it('should mount the component', function() {
+        var modal;
+        modal = new ContentTools.ModalUI(true, true);
+        editor.attach(modal);
+        modal.show();
+        expect(modal.isMounted()).toBe(true);
+        return editor.detatch(modal);
+      });
+      it('should apply transparent flag', function() {
+        var classes, modal;
+        modal = new ContentTools.ModalUI(true, true);
+        editor.attach(modal);
+        modal.show();
+        classes = modal.domElement().getAttribute('class').split(' ');
+        expect(classes.indexOf('ct-modal--transparent') > -1).toBe(true);
+        return editor.detatch(modal);
+      });
+      return it('should apply no-scrolling flag', function() {
+        var classes, modal;
+        modal = new ContentTools.ModalUI(true, false);
+        editor.attach(modal);
+        modal.show();
+        classes = (document.body.getAttribute('class') || '').split(' ');
+        expect(classes.indexOf('ct--no-scroll') > -1).toBe(true);
+        return editor.detatch(modal);
+      });
+    });
+    return describe('ContentTools.ModalUI.unmount()', function() {
+      it('should unmount the component', function() {
+        var modal;
+        modal = new ContentTools.ModalUI(true, true);
+        editor.attach(modal);
+        modal.show();
+        modal.unmount();
+        expect(modal.isMounted()).toBe(false);
+        return editor.detatch(modal);
+      });
+      return it('should remove no-scrolling flag', function() {
+        var classes, modal;
+        modal = new ContentTools.ModalUI(true, false);
+        editor.attach(modal);
+        modal.show();
+        modal.unmount();
+        classes = (document.body.getAttribute('class') || '').split(' ');
+        expect(classes.indexOf('ct--no-scroll') > -1).toBe(false);
+        return editor.detatch(modal);
       });
     });
   });

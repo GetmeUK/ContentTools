@@ -14,11 +14,9 @@ describe 'ContentTools.FlashUI', () ->
         # Initialize the editor
         editor = ContentTools.EditorApp.get()
         editor.init('.editable')
-        editor.start()
 
     afterEach ->
         # Shutdown the editor
-        editor.stop()
         editor.destroy()
 
         # Remove the editable region
