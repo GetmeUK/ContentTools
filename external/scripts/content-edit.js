@@ -3064,6 +3064,20 @@
       return 'Static';
     };
 
+    Static.prototype.createDraggingDOMElement = function() {
+      var helper, text;
+      if (!this.isMounted()) {
+        return;
+      }
+      helper = Static.__super__.createDraggingDOMElement.call(this);
+      text = this._domElement.textContent;
+      if (text.length > ContentEdit.HELPER_CHAR_LIMIT) {
+        text = text.substr(0, ContentEdit.HELPER_CHAR_LIMIT);
+      }
+      helper.innerHTML = text;
+      return helper;
+    };
+
     Static.prototype.html = function(indent) {
       if (indent == null) {
         indent = '';
@@ -3087,9 +3101,32 @@
 
     Static.prototype.focus = void 0;
 
+    Static.prototype._onMouseDown = function(ev) {
+      Static.__super__._onMouseDown.call(this);
+      if (this.attr('data-ce-moveable') !== void 0) {
+        clearTimeout(this._dragTimeout);
+        return this._dragTimeout = setTimeout((function(_this) {
+          return function() {
+            return _this.drag(ev.pageX, ev.pageY);
+          };
+        })(this), 150);
+      }
+    };
+
     Static.prototype._onMouseOver = function(ev) {
       Static.__super__._onMouseOver.call(this, ev);
       return this._removeCSSClass('ce-element--over');
+    };
+
+    Static.prototype._onMouseUp = function(ev) {
+      Static.__super__._onMouseUp.call(this);
+      if (this._dragTimeout) {
+        return clearTimeout(this._dragTimeout);
+      }
+    };
+
+    Static.droppers = {
+      'Static': ContentEdit.Element._dropVert
     };
 
     Static.fromDOMElement = function(domElement) {
