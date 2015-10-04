@@ -5,21 +5,22 @@
 
 .ct-widget {
 
-    .ct-progress-bar {
-        border: 1px solid #eee;
-        height: 32px;
-        line-height: 32px;
-        padding: 1px;
-        width: 456px;
+  .ct-progress-bar {
+    height: 32px;
+    width: 456px;
+    border: 1px solid #eee;
+    padding: 1px;
+    line-height: 32px;
 
-        /**
-         * Note: The width of the progress bar should be set (as a percentage)
-         * programatially, e.g `progressBarDOM.style.width = '50%'`.
-         */
-        &__progress {
-            background: #2980b9;
-            height: 28px;
-        }
+    /**
+     * Note: The width of the progress bar should be set (as a percentage)
+     * programatially, e.g `progressBarDOM.style.width = '50%'`.
+     */
+    &__progress {
+      background: #2980b9;
+      height: 28px;
     }
+
+  }
 
 }

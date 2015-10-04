@@ -17,45 +17,53 @@
  */
 
 @include keyframes(highlight) {
-    0% {
-        outline-color: rgba(white, 0);
-        @include transform(background-color);
-    }
-    25% {
-        outline-color: $highlight-color;
-        @include transform(background-color);
-    }
-    50% {
-        outline-color: $highlight-color;
-        @include transform(background-color);
-    }
-    100% {
-        outline-color: rgba(white, 0);
-        @include transform(background-color);
-    }
+
+  0% {
+    @include transform(background-color);
+    outline-color: rgba(white, 0);
+  }
+
+  25% {
+    @include transform(background-color);
+    outline-color: $highlight-color;
+  }
+
+  50% {
+    @include transform(background-color);
+    outline-color: $highlight-color;
+  }
+
+  100% {
+    @include transform(background-color);
+    outline-color: rgba(white, 0);
+  }
+
 }
 
 @mixin animation--highlight() {
-    @include animation(highlight 0.5s ease-in);
-    @include animation-iteration-count(infinite);
-    @include animation-fill-mode(forwards);
+  @include animation(highlight 0.5s ease-in);
+  @include animation-iteration-count(infinite);
+  @include animation-fill-mode(forwards);
 }
 
 .ct-app {
-    @include box-sizing(border-box);
+  @include box-sizing(border-box);
 
-    * {
-        &,
-        &:before,
-        &:after {
-          @include box-sizing(border-box);
-        }
+  * {
+
+    &,
+    &:before,
+    &:after {
+      @include box-sizing(border-box);
     }
+
+  }
+
 }
 
 .ct--highlight {
-    outline: 4px solid $highlight-color;
-    @include animation--highlight();
+  @include animation--highlight();
+  outline: 4px solid $highlight-color;
 }
 
 /**
@@ -64,7 +72,7 @@
  * scrolling is either undesirable or relevant only to the overlayed content.
  */
 .ct--no-scroll {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 /**
@@ -76,5 +84,5 @@
  * Once focus is returned to the element the class should be removed.
  */
 .ct--puesdo-select {
-    background: rgba(black, 0.1);
+  background: rgba(black, 0.1);
 }

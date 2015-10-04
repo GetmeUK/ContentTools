@@ -37,43 +37,45 @@ $highlight-color: rgba(#f39c12, 0.25);
  * configured using a mixin.
  */
 @mixin type-tooltip(
-    $parent-width: 0px,
-    $parent-height: 0px,
-    $height: 20px,
-    $offset-top: 5px,
-    $width: 85px
-    ) {
+  $parent-width: 0px,
+  $parent-height: 0px,
+  $height: 20px,
+  $offset-top: 5px,
+  $width: 85px
+  ) {
+
+  &:after {
+    background: black;
+    border-radius: 2px;
+    color: white;
+    content: attr(data-tooltip);
+    display: block;
+    @include hyphens(auto);
+    left: -($width - $parent-width) / 2;
+    line-height: $height;
+    opacity: 0.0;
+    padding: 0 8px;
+    position: absolute;
+    bottom: ($parent-height + $offset-top);
+    @include type-text($font-size: 12px, $line-height: $height);
+    visibility: hidden;
+    width: $width;
+    word-break: break-word;
+  }
+
+  &:hover {
 
     &:after {
-        background: black;
-        border-radius: 2px;
-        color: white;
-        content: attr(data-tooltip);
-        display: block;
-        @include hyphens(auto);
-        left: -($width - $parent-width) / 2;
-        line-height: $height;
-        opacity: 0.0;
-        padding: 0 8px;
-        position: absolute;
-        bottom: ($parent-height + $offset-top);
-        @include type-text($font-size: 12px, $line-height: $height);
-        visibility: hidden;
-        width: $width;
-        word-break: break-word;
+      @include transition-property(opacity);
+      @include transition-duration(0.0s);
+      @include transition-timing-function(ease-in);
+      @include transition-delay(2.0s);
+      opacity: 0.8;
+      visibility:visible;
     }
 
-    &:hover {
-        &:after {
-            opacity: 0.8;
-            visibility:visible;
+  }
 
-            @include transition-property(opacity);
-            @include transition-duration(0.0s);
-            @include transition-timing-function(ease-in);
-            @include transition-delay(2.0s);
-        }
-    }
 }
 
 /**
@@ -87,10 +89,10 @@ $highlight-color: rgba(#f39c12, 0.25);
 
 // Icon font-face
 @font-face {
-    font-family: 'icon';
-    src: url('icons.woff');
-    font-weight: normal;
-    font-style: normal;
+  font-family: 'icon';
+  src: url('icons.woff');
+  font-weight: normal;
+  font-style: normal;
 }
 
 // Text colours
@@ -99,21 +101,21 @@ $text-color: #646464;
 
 // Type mixins
 @mixin type-text($font-size: 14px, $line-height: 18px) {
-    font-family: arial, sans-serif;
-    font-size: $font-size;
-    line-height: $line-height;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  font-family: arial, sans-serif;
+  font-size: $font-size;
+  line-height: $line-height;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @mixin type-icons($font-size: 16px) {
-    font-family: 'icon';
-    font-size: $font-size;
-    font-style: normal;
-    font-weight: normal;
-    font-variant: normal;
-    speak: none;
-    text-transform: none;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  font-family: 'icon';
+  font-size: $font-size;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  speak: none;
+  text-transform: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

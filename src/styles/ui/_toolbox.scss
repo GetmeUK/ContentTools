@@ -4,186 +4,253 @@
  */
 
 .ct-widget {
+  /**
+   * Define the spacing for the toolbox:
+   *
+   * spacing / 1 = the padding around the contents of the toolbox.
+   * spacing / 1 = the vertical padding around the toolbox's grip.
+   * spacing / 2 = the margin between each tool.
+   * spacing / 2 = the vertical padding around each tool group.
+   */
+  $spacing: 8px;
+
+  /**
+   * The size of a tool.
+   */
+  $tool-size: 32px;
+
+  &.ct-toolbox {
     /**
-     * Define the spacing for the toolbox:
-     *
-     * spacing / 1 = the padding around the contents of the toolbox.
-     * spacing / 1 = the vertical padding around the toolbox's grip.
-     * spacing / 2 = the margin between each tool.
-     * spacing / 2 = the vertical padding around each tool group.
+     * The position of the toolbox is typically determined by the position
+     * the user last placed it (this information is stored in local
+     * storage). However we set a default position for the first time the
+     * toolbox is displayed.
      */
-    $spacing: 8px;
+    position: fixed;
+    top: 128px;
+    left: 128px;
+    width: 138px;
+    border: 1px solid rgba(lighten($in-page-background, 10%), 0.5);
+    padding: $spacing;
+    background: rgba($in-page-background, 0.9);
+    box-shadow: 0 3px 3px $shadow-color;
 
     /**
-     * The size of a tool.
+     * When the toolbox is being dragged to a new position by the user the
+     * dragging modifier is applied. Whilst being dragged we reduce the
+     * opacity of the toolbox to make it easier for the user to see the
+     * content being dragged over.
      */
-    $tool-size: 32px;
-
-    &.ct-toolbox {
-        /**
-         * The position of the toolbox is typically determined by the position
-         * the user last placed it (this information is stored in local
-         * storage). However we set a default position for the first time the
-         * toolbox is displayed.
-         */
-        background: rgba($in-page-background, 0.9);
-        border: 1px solid rgba(lighten($in-page-background, 10%), 0.5);
-        box-shadow: 0 3px 3px $shadow-color;
-        left: 128px;
-        padding: $spacing;
-        position: fixed;
-        top: 128px;
-        width: 138px;
-
-        /**
-         * When the toolbox is being dragged to a new position by the user the
-         * dragging modifier is applied. Whilst being dragged we reduce the
-         * opacity of the toolbox to make it easier for the user to see the
-         * content being dragged over.
-         */
-        &--dragging {
-            opacity: 0.5;
-        }
+    &--dragging {
+      opacity: 0.5;
     }
 
+  }
 
-    /**
-     * The grip is positioned at the top of the toolbox. If the user clicks and
-     * holds the mouse down whilst over the grip then the toolbox will be
-     * draggable until they release the mouse button.
-     */
-    .ct-toolbox {
-        &__grip {
-            padding: $spacing 0;
-        }
+
+  /**
+   * The grip is positioned at the top of the toolbox. If the user clicks and
+   * holds the mouse down whilst over the grip then the toolbox will be
+   * draggable until they release the mouse button.
+   */
+  .ct-toolbox {
+
+    &__grip {
+      padding: $spacing 0;
     }
 
+  }
 
+
+  /**
+   * Tools are organized into groups of related tools.
+   */
+  .ct-tool-group {
     /**
-     * Tools are organized into groups of related tools.
+     * Tools are floated to align horizontally so each group must clear its
+     * children.
      */
-    .ct-tool-group {
-        /**
-         * Tools are floated to align horizontally so each group must clear its
-         * children.
-         */
-        @include clearfix;
-        padding: $spacing / 2 0;
+    @include clearfix;
+    padding: $spacing / 2 0;
 
-        &:first-child {
-            padding-top: 0;
-        }
+    &:first-child {
+      padding-top: 0;
     }
 
+  }
+
+
+  /**
+   * The toolbox features a set of tools for editing the page content.
+   */
+  .ct-tool {
+    @include type-icons;
+    @include type-tooltip( $parent-width: $tool-size, $parent-height: $tool-size);
+    position: relative;
+    float: left;
+    height: $tool-size;
+    width: $tool-size;
+    margin: $spacing / 2;
+    margin-right: 4px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 2px;
+    color: $icon-color;
+
+    // We use the before puesdo element to display the tools associated icon
+    &:before {
+      line-height: $tool-size;
+    }
 
     /**
-     * The toolbox features a set of tools for editing the page content.
+     * Tools are displayed in rows of 3 so re remove margin from the last
+     * (3rd) tool in every row.
      */
-    .ct-tool {
-        border-radius: 2px;
-        color: $icon-color;
-        cursor: pointer;
-        float: left;
-        height: $tool-size;
-        margin: $spacing / 2;
-        margin-right: 4px;
-        position: relative;
-        text-align: center;
-        @include type-icons;
-        @include type-tooltip(
-            $parent-width: $tool-size,
-            $parent-height: $tool-size
-            );
-        width: $tool-size;
+    &:nth-child(3n) {
+      margin-right: 0;
+    }
 
-        // We use the before puesdo element to display the tools associated icon
-        &:before {
-            line-height: $tool-size;
-        }
+    &:hover {
+      background: rgba(white, 0.5);
+    }
 
-        /**
-         * Tools are displayed in rows of 3 so re remove margin from the last
-         * (3rd) tool in every row.
-         */
-        &:nth-child(3n) {
-            margin-right: 0;
-        }
+    /**
+     * The following modifiers reflect the state of the tool.
+     */
 
-        &:hover {
-            background: rgba(white, 0.5);
-        }
+    /**
+     * The tools is currently disabled and cannot be selected (the hover
+     * style is also disabled).
+     */
+    &--disabled {
+      color: rgba($icon-color, 0.33);
 
-        /**
-         * The following modifiers reflect the state of the tool.
-         */
+      &:hover {
+        background: transparent;
+      }
 
-        /**
-         * The tools is currently disabled and cannot be selected (the hover
-         * style is also disabled).
-         */
-        &--disabled {
-            color: rgba($icon-color, 0.33);
+    }
 
-            &:hover {
-                background: transparent;
-            }
-        }
+    /**
+     * The button has been clicked on and the mouse button is still in the
+     * down state.
+     */
+    &--down {
+      background: rgba(black, 0.025);
+      box-shadow: inset 0 1px 3px rgba(black, 0.25);
+      line-height: $tool-size + 2;
 
-        /**
-         * The button has been clicked on and the mouse button is still in the
-         * down state.
-         */
-        &--down {
-            background: rgba(black, 0.025);
-            box-shadow: inset 0 1px 3px rgba(black, 0.25);
-            line-height: $tool-size + 2;
+      &:hover {
+        background: rgba(black, 0.025);
+      }
 
-            &:hover {
-                background: rgba(black, 0.025);
-            }
-        }
+    }
 
-        /**
-         * The tool is currently applied to the selected element, and if there
-         * is one text selection.
-         */
-        &--applied {
-            background: rgba(black, 0.1);
-            box-shadow: inset 0 1px 3px rgba(black, 0.25);
+    /**
+     * The tool is currently applied to the selected element, and if there
+     * is one text selection.
+     */
+    &--applied {
+      background: rgba(black, 0.1);
+      box-shadow: inset 0 1px 3px rgba(black, 0.25);
 
-            &:hover {
-                background: rgba(black, 0.15);
-            }
-        }
+      &:hover {
+        background: rgba(black, 0.15);
+      }
 
-        /**
-         * Each of the modifiers below sets the content of the puesdo before
-         * element to match the required icon. The list is ordered by the
-         * position each tool in the default toolbox (as opposed to
-         * alphabetically).
-         */
-        &--bold:before           { content: "\ea62"; }
-        &--heading:before        { content: "H"    ; font-weight: bold; }
-        &--subheading:before     { content: "H"    ; }
-        &--paragraph:before      { content: "P"    ; }
-        &--preformatted:before   { content: "\ea80"; }
-        &--italic:before         { content: "\ea64"; }
-        &--link:before           { content: "\e9cb"; }
-        &--align-left:before     { content: "\ea77"; }
-        &--align-center:before   { content: "\ea78"; }
-        &--align-right:before    { content: "\ea79"; }
-        &--unordered-list:before { content: "\e9ba"; }
-        &--ordered-list:before   { content: "\e9b9"; }
-        &--table:before          { content: "\ea71"; }
-        &--indent:before         { content: "\ea7b"; }
-        &--unindent:before       { content: "\ea7c"; }
-        &--line-break:before     { content: "\ea6e"; }
-        &--image:before          { content: "\e90d"; }
-        &--video:before          { content: "\ea98"; }
-        &--undo:before           { content: "\e965"; }
-        &--redo:before           { content: "\e966"; }
-        &--remove:before         { content: "\e9ac"; }
+    }
 
-    } // .ct-tool
+    /**
+     * Each of the modifiers below sets the content of the puesdo before
+     * element to match the required icon. The list is ordered by the
+     * position each tool in the default toolbox (as opposed to
+     * alphabetically).
+     */
+    &--bold:before {
+      content: "\ea62";
+    }
+
+    &--heading:before {
+      content: "H";
+      font-weight: bold;
+    }
+
+    &--subheading:before {
+      content: "H";
+    }
+
+    &--paragraph:before {
+      content: "P";
+    }
+
+    &--preformatted:before {
+      content: "\ea80";
+    }
+
+    &--italic:before {
+      content: "\ea64";
+    }
+
+    &--link:before {
+      content: "\e9cb";
+    }
+
+    &--align-left:before {
+      content: "\ea77";
+    }
+
+    &--align-center:before {
+      content: "\ea78";
+    }
+
+    &--align-right:before {
+      content: "\ea79";
+    }
+
+    &--unordered-list:before {
+      content: "\e9ba";
+    }
+
+    &--ordered-list:before {
+      content: "\e9b9";
+    }
+
+    &--table:before {
+      content: "\ea71";
+    }
+
+    &--indent:before {
+      content: "\ea7b";
+    }
+
+    &--unindent:before {
+      content: "\ea7c";
+    }
+
+    &--line-break:before {
+      content: "\ea6e";
+    }
+
+    &--image:before {
+      content: "\e90d";
+    }
+
+    &--video:before {
+      content: "\ea98";
+    }
+
+    &--undo:before {
+      content: "\e965";
+    }
+
+    &--redo:before {
+      content: "\e966";
+    }
+
+    &--remove:before {
+      content: "\e9ac";
+    }
+
+  } // .ct-tool
 
 } // .ct-widget

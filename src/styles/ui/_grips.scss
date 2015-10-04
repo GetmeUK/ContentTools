@@ -6,30 +6,31 @@
 
 .ct-widget {
 
-    .ct-grip {
+  .ct-grip {
+    @include user-select(none);
+    font-size: 0;
+    text-align: center;
+    cursor: move;
 
-        cursor: move;
-        font-size: 0;
-        text-align: center;
-        @include user-select(none);
+    /**
+     * Grips consist of one or more bumps, elements that appear to be sunk
+     * or raised and therefore provide grip.
+     */
+    &__bump {
+      $grip-size: 12px;
+      display: inline-block;
+      height: $grip-size;
+      width: $grip-size;
+      margin-left: $grip-size;
+      background: rgba($icon-color, 0.15);
+      border-radius: $grip-size;
 
-        /**
-         * Grips consist of one or more bumps, elements that appear to be sunk
-         * or raised and therefore provide grip.
-         */
-        &__bump {
-            $grip-size: 12px;
-            background: rgba($icon-color, 0.15);
-            border-radius: $grip-size;
-            display: inline-block;
-            height: $grip-size;
-            margin-left: $grip-size;
-            width: $grip-size;
+      &:first-child {
+        margin-left: 0;
+      }
 
-            &:first-child {
-                margin-left: 0;
-            }
-        }
     }
+
+  }
 
 }
