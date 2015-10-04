@@ -6,50 +6,52 @@
  */
 .ct-widget {
 
-    .ct-attribute {
-        border-bottom: 1px solid #eee;
-        @include clearfix;
-        height: 48px;
-        vertical-align: top;
+  .ct-attribute {
+    @include clearfix;
+    vertical-align: top;
+    height: 48px;
+    border-bottom: 1px solid #eee;
 
-        /**
-         * Each section has a name and value component, both of which can be
-         * modified.
-         */
-        &__name {
-            background: #f6f6f6;
-            border: none;
-            color: $text-color;
-            float: left;
-            height: 47px;
-            outline: none;
-            padding: 0 16px;
-            @include type-text($line-height: 48px);
-            width: 25%;
+    /**
+     * Each section has a name and value component, both of which can be
+     * modified.
+     */
+    &__name {
+      @include type-text($line-height: 48px);
+      float: left;
+      border: none;
+      height: 47px;
+      width: 25%;
+      padding: 0 16px;
+      background: #f6f6f6;
+      color: $text-color;
+      outline: none;
 
-            /**
-             * If the the attributes name is invalid then the `invalid` modifier
-             * is set against the input (programmatically).
-             */
-            &--invalid {
-                color: $cancel-action-color;
-            }
-        }
+      /**
+       * If the the attributes name is invalid then the `invalid` modifier
+       * is set against the input (programmatically).
+       */
+      &--invalid {
+        color: $cancel-action-color;
+      }
 
-        &__value {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-
-            background: white;
-            border: none;
-            color: $text-color;
-            float: right;
-            height: 47px;
-            outline: none;
-            padding: 0 16px;
-            @include type-text($line-height: 48px);
-            width: 75%;
-        }
     }
+
+    &__value {
+      @include type-text($line-height: 48px);
+      float: right;
+      border: none;
+      height: 47px;
+      width: 75%;
+      padding: 0 16px;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background: white;
+      color: $text-color;
+      outline: none;
+    }
+
+  }
+
 }

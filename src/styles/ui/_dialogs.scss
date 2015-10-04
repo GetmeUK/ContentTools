@@ -12,139 +12,150 @@
  * uses an animation (a rotating cog) defined below.
  */
 @include keyframes(busy-dialog) {
-    0% {
-        transform: translate(-50%, -50%) rotate(0deg);
-        @include transform(transform);
-    }
-    100% {
-        transform: translate(-50%, -50%) rotate(359deg);
-        @include transform(transform);
-    }
+
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+    @include transform(transform);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(359deg);
+    @include transform(transform);
+  }
+
 }
 
 @mixin animation--busy-dialog() {
-    @include animation(busy-dialog 5s linear);
-    @include animation-iteration-count(infinite);
-    @include animation-fill-mode(forwards);
+
+  @include animation(busy-dialog 5s linear);
+  @include animation-iteration-count(infinite);
+  @include animation-fill-mode(forwards);
+
 }
 
 .ct-widget {
 
-    $dialogWidth: 700px;
-    $dialogHeight: 480px;
+  $dialogWidth: 700px;
+  $dialogHeight: 480px;
 
-    &.ct-dialog {
-        background: white;
-        box-shadow: 0 8px 8px $shadow-color;
-        border-radius: 2px;
-        height: $dialogHeight;
-        left: 50%;
-        margin-left: -($dialogWidth / 2);
-        margin-top: -($dialogHeight / 2);
+  &.ct-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: $base-z-index + 100;
+    height: $dialogHeight;
+    width: $dialogWidth;
+    margin-left: -($dialogWidth / 2);
+    margin-top: -($dialogHeight / 2);
+    background: white;
+    border-radius: 2px;
+    box-shadow: 0 8px 8px $shadow-color;
+
+    /**
+     * The `busy` modifier maybe programatically applied to a dialog to
+     * prevent any further interaction with the dialog until a task has been
+     * completed.
+     */
+    &--busy {
+
+      .ct-dialog__busy {
+        display: block;
+      }
+
+      .ct-dialog__body {
+        opacity: 0.1;
+      }
+
+    }
+
+  }
+
+  .ct-dialog {
+
+    /**
+     * The `header`, `caption` and `close` components of the dialog make up
+     * what might traditionally be thought of as a title bar for a window.
+     */
+    &__header {
+      position: relative;
+      height: 48px;
+      border-bottom: 1px solid #eee;
+      padding: 0 16px;
+      color: lighten($text-color, 25%);
+    }
+
+    &__caption {
+      @include type-text($font-size: 18px, $line-height: 48px);
+    }
+
+    &__close {
+      @include type-icons;
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 48px;
+      width:48px;
+      border-left: 1px solid #eee;
+      line-height: 48px;
+      text-align: center;
+      cursor: pointer;
+
+      &:before {
+        content: '\ea0f';
+      }
+
+      &:hover {
+
+        &:before {
+          color: $text-color;
+        }
+
+      }
+
+    }
+
+    /**
+     * The dialog `body` is typically composed of a `view` and `controls`
+     * component. The `view` component contains the dialogs content (e.g an
+     * image) and the `controls` component the controls (e.g crop, rotate,
+     * insert).
+     */
+    &__body {
+      width: $dialogWidth - 128px;
+      margin: auto;
+    }
+
+    &__view {
+      height: 320px;
+      margin-top: 32px;
+    }
+
+    &__controls {
+      @include clearfix;
+      margin-top: 16px;
+    }
+
+    /**
+     * If the dialog is in a busy state then the `busy` component is
+     * displayed.
+     */
+    &__busy {
+      position: absolute;
+      display: none;
+
+      &:before {
+        @include animation--busy-dialog();
+        @include type-icons($font-size: 80px);
         position: fixed;
+        left: 50%;
         top: 50%;
-        width: $dialogWidth;
-        z-index: $base-z-index + 100;
+        content: "\e994";
+        color: lighten($text-color, 25%);
+      }
 
-        /**
-         * The `busy` modifier maybe programatically applied to a dialog to
-         * prevent any further interaction with the dialog until a task has been
-         * completed.
-         */
-        &--busy {
-            .ct-dialog__busy {
-                display: block;
-            }
-            .ct-dialog__body {
-                opacity: 0.1;
-            }
-        }
     }
 
-    .ct-dialog {
-
-        /**
-         * The `header`, `caption` and `close` components of the dialog make up
-         * what might traditionally be thought of as a title bar for a window.
-         */
-        &__header {
-            color: lighten($text-color, 25%);
-            border-bottom: 1px solid #eee;
-            height: 48px;
-            padding: 0 16px;
-            position: relative;
-        }
-
-        &__caption {
-            @include type-text(
-                $font-size: 18px,
-                $line-height: 48px
-                );
-        }
-
-        &__close {
-            border-left: 1px solid #eee;
-            cursor: pointer;
-            height: 48px;
-            line-height: 48px;
-            position: absolute;
-            right: 0;
-            text-align: center;
-            top: 0;
-            @include type-icons;
-            width:48px;
-
-            &:before {
-                content: '\ea0f';
-            }
-
-            &:hover {
-                &:before {
-                    color: $text-color;
-                }
-            }
-        }
-
-        /**
-         * The dialog `body` is typically composed of a `view` and `controls`
-         * component. The `view` component contains the dialogs content (e.g an
-         * image) and the `controls` component the controls (e.g crop, rotate,
-         * insert).
-         */
-        &__body {
-            margin: auto;
-            width: $dialogWidth - 128px;
-        }
-
-        &__view {
-            height: 320px;
-            margin-top: 32px;
-        }
-
-        &__controls {
-            @include clearfix;
-            margin-top: 16px;
-        }
-
-        /**
-         * If the dialog is in a busy state then the `busy` component is
-         * displayed.
-         */
-        &__busy {
-            display: none;
-            position: absolute;
-
-            &:before {
-                @include animation--busy-dialog();
-                color: lighten($text-color, 25%);
-                content: "\e994";
-                left: 50%;
-                position: fixed;
-                top: 50%;
-                @include type-icons($font-size: 80px);
-            }
-        }
-    }
+  }
 
 
     /**
@@ -157,19 +168,20 @@
       * group can coexist but the central group can only be used on it's own.
       */
     .ct-control-group {
-        font-size: 0;
+      font-size: 0;
 
-        &--center {
-            text-align: center;
-        }
+      &--center {
+        text-align: center;
+      }
 
-        &--left {
-            float: left;
-        }
+      &--left {
+        float: left;
+      }
 
-        &--right {
-            float: right;
-        }
+      &--right {
+        float: right;
+      }
+
     }
 
     /**
@@ -177,167 +189,186 @@
      * set against the component (`text` or `icon` respectively).
      */
     .ct-control {
-        margin-left: 16px;
-        position: relative;
+      position: relative;
+      margin-left: 16px;
 
-        &:first-child {
-            margin-left: 0;
+      &:first-child {
+        margin-left: 0;
+      }
+
+      // Icons
+      &--icon {
+        $icon-size: 32px;
+        @include type-icons;
+        @include type-tooltip($parent-width: $icon-size, $parent-height: $icon-size);
+        display: inline-block;
+        height: $icon-size;
+        width: $icon-size;
+        line-height: $icon-size;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 2px;
+        color: lighten($text-color, 25%);
+
+        &:before {
+          content: '';
         }
 
-        // Icons
-        &--icon {
-            $icon-size: 32px;
-
-            border-radius: 2px;
-            color: lighten($text-color, 25%);
-            cursor: pointer;
-            display: inline-block;
-            height: $icon-size;
-            line-height: $icon-size;
-            text-align: center;
-            @include type-icons;
-            @include type-tooltip(
-                $parent-width: $icon-size,
-                $parent-height: $icon-size
-                );
-            width: $icon-size;
-
-            &:before {
-                content: '';
-            }
-
-            &:hover {
-                background: #eee;
-                color: $text-color;
-            }
+        &:hover {
+          background: #eee;
+          color: $text-color;
         }
 
-        // Icon modifiers
+      }
 
-        &--active,
-        &--on {
-            background: lighten($text-color, 25%);
-            color: white;
+      // Icon modifiers
 
-            &:hover {
-                background: $text-color;
-                color: white;
-            }
+      &--active,
+      &--on {
+        background: lighten($text-color, 25%);
+        color: white;
+
+        &:hover {
+          background: $text-color;
+          color: white;
         }
 
-        &--rotate-ccw {
-            &:before {
-                content: '\e965';
-            }
+      }
+
+      &--rotate-ccw {
+
+        &:before {
+          content: '\e965';
         }
 
-        &--rotate-cw {
-            &:before {
-                content: '\e966';
-            }
+      }
+
+      &--rotate-cw {
+
+        &:before {
+          content: '\e966';
         }
 
-        &--crop {
-            &:before {
-                content: '\ea57';
-            }
+      }
+
+      &--crop {
+
+        &:before {
+          content: '\ea57';
         }
 
-        &--remove {
-            &:before {
-                content: '\e9ac';
-            }
+      }
+
+      &--remove {
+
+        &:before {
+          content: '\e9ac';
         }
 
-        &--styles {
-            &:before {
-                content: '\e90b';
-            }
+      }
+
+      &--styles {
+
+        &:before {
+          content: '\e90b';
         }
 
-        &--attributes {
-            &:before {
-                content: '\e994';
-            }
+      }
+
+      &--attributes {
+
+        &:before {
+          content: '\e994';
         }
 
-        &--code {
-            &:before {
-                content: '\ea80';
-            }
+      }
+
+      &--code {
+
+        &:before {
+          content: '\ea80';
         }
 
-        &--icon.ct-control--muted {
-            cursor: default;
+      }
 
-            &:before {
-                opacity: 0.5;
-            }
+      &--icon.ct-control--muted {
+        cursor: default;
 
-            &:hover {
-                color: lighten($text-color, 25%);
-                background: transparent;
-            }
+        &:before {
+          opacity: 0.5;
         }
 
-        // Text modifiers
-
-        &--text {
-            $bkg-color: #2980b9;
-
-            background: $bkg-color;
-            border-radius: 2px;
-            color: white;
-            cursor: pointer;
-            display: inline-block;
-            font-weight: bold;
-            height: 32px;
-            overflow: hidden;
-            padding: 0 8px;
-            text-align: center;
-            text-overflow: ellipsis;
-            @include type-text($line-height: 32px);
-            vertical-align: top;
-            width: 100px;
-
-            &:hover {
-                background: lighten($bkg-color, 5%);
-            }
+        &:hover {
+          color: lighten($text-color, 25%);
+          background: transparent;
         }
 
-        // Text modifiers
+      }
 
-        &--apply,
-        &--insert,
-        &--ok {
-            $bkg-color: #27ae60;
-            background: $bkg-color;
-            &:hover {
-                background: lighten($bkg-color, 5%);
-            }
+      // Text modifiers
+      &--text {
+        $bkg-color: #2980b9;
+        vertical-align: top;
+        display: inline-block;
+        overflow: hidden;
+        height: 32px;
+        width: 100px;
+        padding: 0 8px;
+        border-radius: 2px;
+        font-weight: bold;
+        text-align: center;
+        text-overflow: ellipsis;
+        cursor: pointer;
+        @include type-text($line-height: 32px);
+        background: $bkg-color;
+        color: white;
+
+        &:hover {
+          background: lighten($bkg-color, 5%);
         }
 
-        &--cancel,
-        &--clear {
-            $bkg-color: #e74c3c;
-            background: $bkg-color;
-            &:hover {
-                background: lighten($bkg-color, 5%);
-            }
+      }
+
+      // Text modifiers
+
+      &--apply,
+      &--insert,
+      &--ok {
+        $bkg-color: #27ae60;
+        background: $bkg-color;
+
+        &:hover {
+          background: lighten($bkg-color, 5%);
         }
 
-        &--text.ct-control--muted {
-            $bkg-color: #ccc;
-            background: $bkg-color;
-            cursor: default;
-            &:hover {
-                background: $bkg-color;
-            }
+      }
+
+      &--cancel,
+      &--clear {
+        $bkg-color: #e74c3c;
+        background: $bkg-color;
+
+        &:hover {
+          background: lighten($bkg-color, 5%);
         }
 
-        &--upload {
-            overflow: hidden;
+      }
+
+      &--text.ct-control--muted {
+        $bkg-color: #ccc;
+        background: $bkg-color;
+        cursor: default;
+
+        &:hover {
+          background: $bkg-color;
         }
+
+      }
+
+      &--upload {
+        overflow: hidden;
+      }
+
     }
 
 
@@ -351,92 +382,95 @@
      */
     &.ct-image-dialog {
 
-        // States
+      // States
 
-        // No image file specified
-        &--empty {
+      // No image file specified
+      &--empty {
 
-            .ct-progress-bar,
-            .ct-control--rotate-ccw,
-            .ct-control--rotate-cw,
-            .ct-control--crop,
-            .ct-control--insert,
-            .ct-control--cancel,
-            .ct-control--clear {
-                display: none;
-            }
-
+        .ct-progress-bar,
+        .ct-control--rotate-ccw,
+        .ct-control--rotate-cw,
+        .ct-control--crop,
+        .ct-control--insert,
+        .ct-control--cancel,
+        .ct-control--clear {
+          display: none;
         }
 
-        // An image file is currently being uploaded to the server
-        &--uploading {
+      }
 
-            .ct-control--rotate-ccw,
-            .ct-control--rotate-cw,
-            .ct-control--crop,
-            .ct-control--upload,
-            .ct-control--insert,
-            .ct-control--clear {
-                display: none;
-            }
+      // An image file is currently being uploaded to the server
+      &--uploading {
 
+        .ct-control--rotate-ccw,
+        .ct-control--rotate-cw,
+        .ct-control--crop,
+        .ct-control--upload,
+        .ct-control--insert,
+        .ct-control--clear {
+          display: none;
         }
 
-        // The dialog is displaying an image uploaded to the server ready to be
-        // inserted into the page.
-        &--populated {
+      }
 
-            .ct-progress-bar,
-            .ct-control--upload,
-            .ct-control--cancel {
-                display: none;
-            }
+      // The dialog is displaying an image uploaded to the server ready to be
+      // inserted into the page.
+      &--populated {
 
+        .ct-progress-bar,
+        .ct-control--upload,
+        .ct-control--cancel {
+          display: none;
         }
+
+      }
 
     }
 
     .ct-image-dialog {
 
-        &__view {
-            background: #eee;
-            position: relative;
+      &__view {
+        background: #eee;
+        position: relative;
 
-            &:empty {
-                @include type-icons($font-size: 80px);
-                line-height: 320px;
-                text-align: center;
+        &:empty {
+          @include type-icons($font-size: 80px);
+          line-height: 320px;
+          text-align: center;
 
-                &:before {
-                    color: white;
-                    content: '\e90d';
-                }
-            }
+          &:before {
+            color: white;
+            content: '\e90d';
+          }
+
         }
 
-        &__image {
-            background-color: transparent;
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-size: contain;
-            height: 100%;
-            width: 100%;
-        }
+      }
 
-        /**
-         * HACK: We style the file upload button as a control, however to ensure
-         * the user activates the system file browser dialog we hide the file
-         * input in the control and use a large font to ensure it covers the
-         * whole control.
-         */
-        &__file-upload {
-            cursor: pointer;
-            font-size: 400px;
-            left: 0;
-            opacity: 0;
-            position: absolute;
-            top: 0;
-        }
+      &__image {
+        background-color: transparent;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        height: 100%;
+        width: 100%;
+      }
+
+      /**
+       * HACK: We style the file upload button as a control, however to ensure
+       * the user activates the system file browser dialog we hide the file
+       * input in the control and use a large font to ensure it covers the
+       * whole control.
+       */
+      &__file-upload {
+        cursor: pointer;
+        font-size: 400px;
+        left: 0;
+        opacity: 0;
+        position: absolute;
+        top: 0;
+      }
+
     }
 
 
@@ -446,71 +480,74 @@
      */
     &.ct-properties-dialog {
 
-        &--attributes {
+      &--attributes {
 
-            .ct-properties-dialog__attributes {
-                display: block;
-            }
+        .ct-properties-dialog__attributes {
+          display: block;
+        }
+
+      }
+
+      &--styles {
+
+        .ct-properties-dialog__styles {
+          display: block;
+
+          &:empty:before {
+            color: lighten($text-color, 25%);
+            content: attr(data-ct-empty);
+            display: block;
+            font-style: italic;
+            margin-top: 20px;
+            text-align: center;
+          }
 
         }
 
-        &--styles {
+      }
 
-            .ct-properties-dialog__styles {
-                display: block;
+      &--code {
 
-                &:empty:before {
-                    color: lighten($text-color, 25%);
-                    content: attr(data-ct-empty);
-                    display: block;
-                    font-style: italic;
-                    margin-top: 20px;
-                    text-align: center;
-                }
-            }
-
+        .ct-properties-dialog__code {
+          display: block;
         }
 
-        &--code {
-
-            .ct-properties-dialog__code {
-                display: block;
-            }
-
-        }
+      }
 
     }
 
     .ct-properties-dialog {
 
-        &__view {
-            border: 1px solid #ddd;
-            overflow: auto;
+      &__view {
+        border: 1px solid #ddd;
+        overflow: auto;
+      }
+
+      &__attributes,
+      &__code,
+      &__styles {
+        display: none;
+      }
+
+      /**
+       * The code tab supports an textarea for editing inner HTML.
+       */
+      &__inner-html {
+        border: none;
+        display: block;
+        font-family: courier, $monospace;
+        height: 318px;
+        padding: 16px;
+        outline: none;
+        resize: none;
+        width: 100%;
+
+        &--invalid {
+          color: $cancel-action-color;
         }
 
-        &__attributes,
-        &__code,
-        &__styles {
-            display: none;
-        }
+      }
 
-        /**
-         * The code tab supports an textarea for editing inner HTML.
-         */
-        &__inner-html {
-            border: none;
-            display: block;
-            font-family: courier, $monospace;
-            height: 318px;
-            padding: 16px;
-            outline: none;
-            resize: none;
-            width: 100%;
-
-            &--invalid {
-                color: $cancel-action-color;
-            }
-        }
     }
 
 
@@ -519,10 +556,10 @@
      */
     .ct-table-dialog {
 
-        &__view {
-            border: 1px solid #ddd;
-            overflow: auto;
-        }
+      &__view {
+        border: 1px solid #ddd;
+        overflow: auto;
+      }
 
     }
 
@@ -532,37 +569,40 @@
      */
     .ct-video-dialog {
 
-        &__preview {
+      &__preview {
 
-            &:empty {
-                background: #eee;
-                @include type-icons($font-size: 80px);
-                line-height: 320px;
-                text-align: center;
+        &:empty {
+          background: #eee;
+          @include type-icons($font-size: 80px);
+          line-height: 320px;
+          text-align: center;
 
-                &:before {
-                    color: white;
-                    content: '\ea98';
-                }
-            }
+          &:before {
+            color: white;
+            content: '\ea98';
+          }
 
         }
 
-        &__input {
-            border: none;
-            border-bottom: 1px solid #eee;
-            height: 32px;
-            line-height: 32px;
-            outline: none;
-            padding: 0 4px;
-            @include type-text;
-            vertical-align: top;
-            width: 456px;
+      }
 
-            &:focus {
-                border-bottom: 1px solid darken(#eee, 5%);
-            }
+      &__input {
+        border: none;
+        border-bottom: 1px solid #eee;
+        height: 32px;
+        line-height: 32px;
+        outline: none;
+        padding: 0 4px;
+        @include type-text;
+        vertical-align: top;
+        width: 456px;
+
+        &:focus {
+          border-bottom: 1px solid darken(#eee, 5%);
         }
+
+      }
+
     }
 
 
@@ -575,63 +615,64 @@
      * Anchored dialogs support an single text input and a confirm button only.
      */
     &.ct-anchored-dialog {
-        $bkg-color: #27ae60;
+      $bkg-color: #27ae60;
+      border-bottom: 2px solid $bkg-color;
+      box-shadow: 0 3px 3px $shadow-color;
+      font-size: 0;
+      height: 34px;
+      left: 0;
+      margin-left: -144px;
+      margin-top: -48px;
+      position: absolute;
+      top: 0;
+      z-index: $base-z-index + 100;
 
-        border-bottom: 2px solid $bkg-color;
-        box-shadow: 0 3px 3px $shadow-color;
-        font-size: 0;
-        height: 34px;
-        left: 0;
-        margin-left: -144px;
-        margin-top: -48px;
+      &:after {
+        border: 16px solid rgba(white, 0);
+        border-top-color: $bkg-color;
+        content: '';
+        left: 128px;
         position: absolute;
-        top: 0;
-        z-index: $base-z-index + 100;
+        top: 34px;
+      }
 
-        &:after {
-            border: 16px solid rgba(white, 0);
-            border-top-color: $bkg-color;
-            content: '';
-            left: 128px;
-            position: absolute;
-            top: 34px;
-        }
     }
 
     .ct-anchored-dialog {
-        $bkg-color: #27ae60;
+      $bkg-color: #27ae60;
 
-        &__input {
-            border: none;
-            color: $text-color;
-            height: 32px;
-            outline: none;
-            @include type-text($line-height: 32px);
-            padding: 0 16px;
-            vertical-align: top;
-            width: 256px;
+      &__input {
+        border: none;
+        color: $text-color;
+        height: 32px;
+        outline: none;
+        @include type-text($line-height: 32px);
+        padding: 0 16px;
+        vertical-align: top;
+        width: 256px;
+      }
+
+      &__button {
+        background: $bkg-color;
+        cursor: pointer;
+        display: inline-block;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        @include type-icons;
+        width: 32px;
+
+        &:before {
+          color: white;
+          content: '\ea10';
         }
 
-        &__button {
-            background: $bkg-color;
-            cursor: pointer;
-            display: inline-block;
-            height: 32px;
-            line-height: 32px;
-            text-align: center;
-            @include type-icons;
-            width: 32px;
-
-            &:before {
-                color: white;
-                content: '\ea10';
-            }
-
-            &:hover {
-                background: lighten($bkg-color, 5%);
-            }
+        &:hover {
+          background: lighten($bkg-color, 5%);
         }
 
-    }
+      }
+
+  }
 
 }
