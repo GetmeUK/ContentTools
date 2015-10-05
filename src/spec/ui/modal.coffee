@@ -30,33 +30,6 @@ describe 'ContentTools.ModalUI', () ->
             modal = new ContentTools.ModalUI(true, false)
             expect(modal instanceof ContentTools.ModalUI).toBe true
 
-        it 'should trigger a `click` event if clicked', () ->
-
-            modal = new ContentTools.ModalUI(true, true)
-            editor.attach(modal)
-            modal.show()
-
-            # Create function we can spy on to ensure the event is triggered
-            foo = {
-                handleFoo: () ->
-                    return
-            }
-            spyOn(foo, 'handleFoo')
-
-            # Bind the spied on function to the event
-            modal.bind('click', foo.handleFoo)
-
-            # Create a fake click event against the modal's DOM element
-            clickEvent = new MouseEvent('click', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-                })
-            modal.domElement().dispatchEvent(clickEvent)
-
-            expect(foo.handleFoo).toHaveBeenCalled()
-
-
     describe 'ContentTools.ModalUI.mount()', () ->
 
         it 'should mount the component', () ->
@@ -91,8 +64,6 @@ describe 'ContentTools.ModalUI', () ->
             classes = (document.body.getAttribute('class') or '').split(' ')
             expect(classes.indexOf('ct--no-scroll') > -1).toBe true
 
-            editor.detatch(modal)
-
 
     describe 'ContentTools.ModalUI.unmount()', () ->
 
@@ -117,4 +88,33 @@ describe 'ContentTools.ModalUI', () ->
             classes = (document.body.getAttribute('class') or '').split(' ')
             expect(classes.indexOf('ct--no-scroll') > -1).toBe false
 
-            editor.detatch(modal)
+
+    # Events
+
+    describe 'ContentTools.ModalUI > Events', () ->
+
+        it 'should trigger a `click` event if clicked', () ->
+
+            modal = new ContentTools.ModalUI(true, true)
+            editor.attach(modal)
+            modal.show()
+
+            # Create function we can spy on to ensure the event is triggered
+            foo = {
+                handleFoo: () ->
+                    return
+            }
+            spyOn(foo, 'handleFoo')
+
+            # Bind the spied on function to the event
+            modal.bind('click', foo.handleFoo)
+
+            # Create a fake click event against the modal's DOM element
+            clickEvent = new MouseEvent('click', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+                })
+            modal.domElement().dispatchEvent(clickEvent)
+
+            expect(foo.handleFoo).toHaveBeenCalled()

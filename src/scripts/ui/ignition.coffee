@@ -17,7 +17,7 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
         # useful when you want to prevent the user from attempting to start the
         # editor, for example during a save request.
         if busy is undefined
-            return @_state == 'busy'
+            return @_busy
 
         # Check the ignition isn't already busy
         if @_busy is busy

@@ -69,6 +69,127 @@
     });
   });
 
+  describe('ContentTools.IgnitionUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.IgnitionUI()', function() {
+      return it('should return an instance of a IgnitionUI', function() {
+        var ignition;
+        ignition = new ContentTools.IgnitionUI();
+        return expect(ignition instanceof ContentTools.IgnitionUI).toBe(true);
+      });
+    });
+    describe('ContentTools.IgnitionUI.busy()', function() {
+      return it('should set/get the busy state for the ignition', function() {
+        var ignition;
+        ignition = new ContentTools.IgnitionUI();
+        expect(ignition.busy()).toBe(false);
+        ignition.busy(true);
+        return expect(ignition.busy()).toBe(true);
+      });
+    });
+    describe('ContentTools.IgnitionUI.changeState()', function() {
+      it('should change the state of the ignition switch to editing', function() {
+        var classes, ignition;
+        ignition = editor._ignition;
+        ignition.changeState('editing');
+        classes = ignition.domElement().getAttribute('class').split(' ');
+        return expect(classes.indexOf('ct-ignition--editing') > -1).toBe(true);
+      });
+      return it('should change the state of the ignition switch to ready', function() {
+        var classes, ignition;
+        ignition = editor._ignition;
+        ignition.changeState('editing');
+        ignition.changeState('ready');
+        classes = ignition.domElement().getAttribute('class').split(' ');
+        return expect(classes.indexOf('ct-ignition--ready') > -1).toBe(true);
+      });
+    });
+    describe('ContentTools.IgnitionUI.mount()', function() {
+      return it('should mount the component', function() {
+        var ignition;
+        ignition = new ContentTools.IgnitionUI();
+        editor.attach(ignition);
+        ignition.mount();
+        return expect(ignition.isMounted()).toBe(true);
+      });
+    });
+    describe('ContentTools.IgnitionUI.unmount()', function() {
+      return it('should unmount the component', function() {
+        var ignition;
+        ignition = new ContentTools.IgnitionUI();
+        editor.attach(ignition);
+        ignition.mount();
+        ignition.unmount();
+        return expect(ignition.isMounted()).toBe(false);
+      });
+    });
+    return describe('ContentTools.IgnitionUI > Events', function() {
+      it('should trigger a `start` event if edit button clicked', function() {
+        var clickEvent, foo, ignition;
+        ignition = editor._ignition;
+        foo = {
+          handleFoo: function() {}
+        };
+        spyOn(foo, 'handleFoo');
+        ignition.bind('start', foo.handleFoo);
+        clickEvent = new MouseEvent('click', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        ignition._domEdit.dispatchEvent(clickEvent);
+        return expect(foo.handleFoo).toHaveBeenCalled();
+      });
+      it('should trigger a `stop` event with a value of true if confirm button button clicked', function() {
+        var clickEvent, foo, ignition;
+        ignition = editor._ignition;
+        foo = {
+          handleFoo: function(confirmed) {}
+        };
+        spyOn(foo, 'handleFoo');
+        ignition.bind('stop', foo.handleFoo);
+        clickEvent = new MouseEvent('click', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        ignition._domEdit.dispatchEvent(clickEvent);
+        ignition._domConfirm.dispatchEvent(clickEvent);
+        return expect(foo.handleFoo).toHaveBeenCalledWith(true);
+      });
+      return it('should trigger a `stop` event with a value of false if cancel button clicked', function() {
+        var clickEvent, foo, ignition;
+        ignition = editor._ignition;
+        foo = {
+          handleFoo: function(confirmed) {}
+        };
+        spyOn(foo, 'handleFoo');
+        ignition.bind('stop', foo.handleFoo);
+        clickEvent = new MouseEvent('click', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        ignition._domEdit.dispatchEvent(clickEvent);
+        ignition._domCancel.dispatchEvent(clickEvent);
+        return expect(foo.handleFoo).toHaveBeenCalledWith(false);
+      });
+    });
+  });
+
   describe('ContentTools.ModalUI', function() {
     var div, editor;
     div = null;
@@ -85,28 +206,10 @@
       return document.body.removeChild(div);
     });
     describe('ContentTools.ModalUI()', function() {
-      it('should return an instance of a ModalUI', function() {
+      return it('should return an instance of a ModalUI', function() {
         var modal;
         modal = new ContentTools.ModalUI(true, false);
         return expect(modal instanceof ContentTools.ModalUI).toBe(true);
-      });
-      return it('should trigger a `click` event if clicked', function() {
-        var clickEvent, foo, modal;
-        modal = new ContentTools.ModalUI(true, true);
-        editor.attach(modal);
-        modal.show();
-        foo = {
-          handleFoo: function() {}
-        };
-        spyOn(foo, 'handleFoo');
-        modal.bind('click', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
-        modal.domElement().dispatchEvent(clickEvent);
-        return expect(foo.handleFoo).toHaveBeenCalled();
       });
     });
     describe('ContentTools.ModalUI.mount()', function() {
@@ -133,11 +236,10 @@
         editor.attach(modal);
         modal.show();
         classes = (document.body.getAttribute('class') || '').split(' ');
-        expect(classes.indexOf('ct--no-scroll') > -1).toBe(true);
-        return editor.detatch(modal);
+        return expect(classes.indexOf('ct--no-scroll') > -1).toBe(true);
       });
     });
-    return describe('ContentTools.ModalUI.unmount()', function() {
+    describe('ContentTools.ModalUI.unmount()', function() {
       it('should unmount the component', function() {
         var modal;
         modal = new ContentTools.ModalUI(true, true);
@@ -154,8 +256,27 @@
         modal.show();
         modal.unmount();
         classes = (document.body.getAttribute('class') || '').split(' ');
-        expect(classes.indexOf('ct--no-scroll') > -1).toBe(false);
-        return editor.detatch(modal);
+        return expect(classes.indexOf('ct--no-scroll') > -1).toBe(false);
+      });
+    });
+    return describe('ContentTools.ModalUI > Events', function() {
+      return it('should trigger a `click` event if clicked', function() {
+        var clickEvent, foo, modal;
+        modal = new ContentTools.ModalUI(true, true);
+        editor.attach(modal);
+        modal.show();
+        foo = {
+          handleFoo: function() {}
+        };
+        spyOn(foo, 'handleFoo');
+        modal.bind('click', foo.handleFoo);
+        clickEvent = new MouseEvent('click', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        modal.domElement().dispatchEvent(clickEvent);
+        return expect(foo.handleFoo).toHaveBeenCalled();
       });
     });
   });

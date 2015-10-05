@@ -5003,7 +5003,9 @@
           }
         };
       })(this);
-      return setTimeout(monitorForHidden, 250);
+      if (this.isMounted()) {
+        return setTimeout(monitorForHidden, 250);
+      }
     };
 
     return WidgetUI;
@@ -5071,7 +5073,7 @@
 
     IgnitionUI.prototype.busy = function(busy) {
       if (busy === void 0) {
-        return this._state === 'busy';
+        return this._busy;
       }
       if (this._busy === busy) {
         return;

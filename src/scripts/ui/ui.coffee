@@ -207,7 +207,8 @@ class ContentTools.WidgetUI extends ContentTools.ComponentUI
             else
                 setTimeout(monitorForHidden, 250)
 
-        setTimeout(monitorForHidden, 250)
+        if @isMounted()
+            setTimeout(monitorForHidden, 250)
 
 
 class ContentTools.AnchoredComponentUI extends ContentTools.ComponentUI
