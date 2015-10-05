@@ -7397,12 +7397,14 @@
       this._handleHighlightOn = (function(_this) {
         return function(ev) {
           var _ref;
-          clearTimeout(_this._highlightTimeout);
           if ((_ref = ev.keyCode) === 17 || _ref === 224) {
             _this._ctrlDown = true;
             return;
           }
           if (ev.keyCode === 16) {
+            if (_this._highlightTimeout) {
+              return;
+            }
             _this._shiftDown = true;
             return _this._highlightTimeout = setTimeout(function() {
               return _this.highlightRegions(true);
@@ -7421,6 +7423,7 @@
             _this._shiftDown = false;
             if (_this._highlightTimeout) {
               clearTimeout(_this._highlightTimeout);
+              _this._highlightTimeout = null;
             }
             return _this.highlightRegions(false);
           }

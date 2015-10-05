@@ -432,13 +432,16 @@ class _EditorApp extends ContentTools.ComponentUI
         # In addition we monitor the Crtl/Meta and Shift key statuses so that
         # they can be tested independently of a ui event.
         @_handleHighlightOn = (ev) =>
-            clearTimeout(@_highlightTimeout)
-
             if ev.keyCode in [17, 224] # Ctrl/Cmd
                 @_ctrlDown = true
                 return
 
             if ev.keyCode is 16 # Shift
+                # Check for repeating key in which case we don't want to create
+                # additional timeouts.
+                if @_highlightTimeout
+                    return
+
                 @_shiftDown = true
                 @_highlightTimeout = setTimeout(
                     () => @highlightRegions(true),
@@ -446,7 +449,7 @@ class _EditorApp extends ContentTools.ComponentUI
                     )
 
         @_handleHighlightOff = (ev) =>
-
+            # Ignore repeated key press events
             if ev.keyCode in [17, 224] # Ctrl/Cmd
                 @_ctrlDown = false
                 return
@@ -455,6 +458,7 @@ class _EditorApp extends ContentTools.ComponentUI
                 @_shiftDown = false
                 if @_highlightTimeout
                     clearTimeout(@_highlightTimeout)
+                    @_highlightTimeout = null
                 @highlightRegions(false)
 
         document.addEventListener('keydown', @_handleHighlightOn)
