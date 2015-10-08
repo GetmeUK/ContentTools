@@ -408,6 +408,8 @@ class _EditorApp extends ContentTools.ComponentUI
 
         @busy(false)
 
+        @trigger('start')
+
     stop: () ->
         # Stop editing the page.
 
@@ -428,6 +430,8 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Set the application state to ready to edit
         @_state = ContentTools.EditorApp.READY
+
+        @trigger('stop')
 
     # Private methods
 
