@@ -7397,7 +7397,8 @@
       ContentEdit.Root.get().commit();
       this._toolbox.show();
       this._inspector.show();
-      return this.busy(false);
+      this.busy(false);
+      return this.trigger('start');
     };
 
     _EditorApp.prototype.stop = function() {
@@ -7409,7 +7410,8 @@
       this._toolbox.hide();
       this._inspector.hide();
       this._regions = {};
-      return this._state = ContentTools.EditorApp.READY;
+      this._state = ContentTools.EditorApp.READY;
+      return this.trigger('stop');
     };
 
     _EditorApp.prototype._addDOMEventListeners = function() {
