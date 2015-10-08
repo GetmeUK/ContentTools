@@ -22,7 +22,7 @@ class ContentTools.VideoDialog extends ContentTools.DialogUI
         ContentEdit.addCSSClass(@_domView, 'ct-video-dialog__preview')
 
         # Add controls
-        domControlGroup = @createDiv(['ct-control-group'])
+        domControlGroup = @constructor.createDiv(['ct-control-group'])
         @_domControls.appendChild(domControlGroup)
 
         # Input
@@ -37,7 +37,7 @@ class ContentTools.VideoDialog extends ContentTools.DialogUI
         domControlGroup.appendChild(@_domInput)
 
         # Insert button
-        @_domButton = @createDiv([
+        @_domButton = @constructor.createDiv([
             'ct-control',
             'ct-control--text',
             'ct-control--insert'

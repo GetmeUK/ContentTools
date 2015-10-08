@@ -183,7 +183,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
     mount: () ->
         # Mount the widget to the DOM
-        @_domElement = @createDiv(['ct-app'])
+        @_domElement = @constructor.createDiv(['ct-app'])
         document.body.insertBefore(@_domElement, null)
         @_addDOMEventListeners()
 
@@ -278,11 +278,19 @@ class _EditorApp extends ContentTools.ComponentUI
 
     unmount: () ->
         # Unmount the widget from the DOM
+
+        # Check the editor is mounted
+        if not @isMounted()
+            return
+
+        # Remove the DOM element
         @_domElement.parentNode.removeChild(@_domElement)
         @_domElement = null
 
+        # Remove any DOM event bindings
         @_removeDOMEventListeners()
 
+        # Reset child component handles
         @_ignition = null
         @_inspector = null
         @_toolbox = null

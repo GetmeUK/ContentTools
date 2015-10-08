@@ -1,6 +1,6 @@
 class ContentTools.ComponentUI
 
-    # toAll UI compontents inherit from the CompontentUI class which provides base
+    # All UI compontents inherit from the CompontentUI class which provides base
     # functionality and a common API.
 
     constructor: () ->
@@ -27,13 +27,13 @@ class ContentTools.ComponentUI
         # Return the mounted DOM element for the component
         return @_domElement
 
-    parent: () ->
-        # Return the parent of the component
-        return @_parent
-
     isMounted: () ->
         # Return true if the component is mounted to the DOM
         return @_domElement != null
+
+    parent: () ->
+        # Return the parent of the component
+        return @_parent
 
     # Methods
 
@@ -59,6 +59,14 @@ class ContentTools.ComponentUI
 
     detatch: (component) ->
         # Detach a child component from this component
+
+        # Find the component to detatch (if not found return)
+        componentIndex = @_children.indexOf(component)
+        if componentIndex == -1
+            return
+
+        # Remove the component from the components children
+        @_children.splice(componentIndex, 1)
 
     mount: () ->
         # Mount the component to the DOM
@@ -136,9 +144,7 @@ class ContentTools.ComponentUI
     _removeDOMEventListeners: () ->
         # Remove all event bindings for the DOM element in this method
 
-    # Class methods
-
-    createDiv: (classNames, attributes, content) ->
+    @createDiv: (classNames, attributes, content) ->
         # All UI components are constructed entirely from one or more nested
         # <div>s, this class method provides a shortcut for creating a <div>
         # including the initial CSS class names, attributes and content.
@@ -170,8 +176,15 @@ class ContentTools.WidgetUI extends ContentTools.ComponentUI
         # Attach a component as a child of this component
         super(component, index)
 
-        if @isMounted()
+        if not @isMounted()
             component.mount()
+
+    detatch: () ->
+        # Detach a child component from this component
+        super(component, index)
+
+        if @isMounted()
+            component.unmount()
 
     show: () ->
         # Show the widget

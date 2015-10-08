@@ -24,7 +24,7 @@ class ContentTools.ModalUI extends ContentTools.WidgetUI
         # Mount the widget to the DOM
 
         # Modal
-        @_domElement = @createDiv([
+        @_domElement = @constructor.createDiv([
             'ct-widget',
             'ct-modal'
             ])

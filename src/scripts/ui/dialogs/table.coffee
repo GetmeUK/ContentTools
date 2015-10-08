@@ -35,25 +35,25 @@ class ContentTools.TableDialog extends ContentTools.DialogUI
         headCSSClasses = ['ct-section']
         if cfg.head
             headCSSClasses.push('ct-section--applied')
-        @_domHeadSection = @createDiv(headCSSClasses)
+        @_domHeadSection = @constructor.createDiv(headCSSClasses)
         @_domView.appendChild(@_domHeadSection)
 
-        domHeadLabel = @createDiv(['ct-section__label'])
+        domHeadLabel = @constructor.createDiv(['ct-section__label'])
         domHeadLabel.textContent = ContentEdit._('Table head')
         @_domHeadSection.appendChild(domHeadLabel)
 
-        @_domHeadSwitch = @createDiv(['ct-section__switch'])
+        @_domHeadSwitch = @constructor.createDiv(['ct-section__switch'])
         @_domHeadSection.appendChild(@_domHeadSwitch)
 
         # Body
-        @_domBodySection = @createDiv([
+        @_domBodySection = @constructor.createDiv([
             'ct-section',
             'ct-section--applied',
             'ct-section--contains-input'
             ])
         @_domView.appendChild(@_domBodySection)
 
-        domBodyLabel = @createDiv(['ct-section__label'])
+        domBodyLabel = @constructor.createDiv(['ct-section__label'])
         domBodyLabel.textContent = ContentEdit._('Table body (columns)')
         @_domBodySection.appendChild(domBodyLabel)
 
@@ -69,23 +69,23 @@ class ContentTools.TableDialog extends ContentTools.DialogUI
         footCSSClasses = ['ct-section']
         if cfg.foot
             footCSSClasses.push('ct-section--applied')
-        @_domFootSection = @createDiv(footCSSClasses)
+        @_domFootSection = @constructor.createDiv(footCSSClasses)
         @_domView.appendChild(@_domFootSection)
 
-        domFootLabel = @createDiv(['ct-section__label'])
+        domFootLabel = @constructor.createDiv(['ct-section__label'])
         domFootLabel.textContent = ContentEdit._('Table foot')
         @_domFootSection.appendChild(domFootLabel)
 
-        @_domFootSwitch = @createDiv(['ct-section__switch'])
+        @_domFootSwitch = @constructor.createDiv(['ct-section__switch'])
         @_domFootSection.appendChild(@_domFootSwitch)
 
         # Add controls
-        domControlGroup = @createDiv(
+        domControlGroup = @constructor.createDiv(
             ['ct-control-group', 'ct-control-group--right'])
         @_domControls.appendChild(domControlGroup)
 
         # Apply button
-        @_domApply = @createDiv([
+        @_domApply = @constructor.createDiv([
             'ct-control',
             'ct-control--text',
             'ct-control--apply'

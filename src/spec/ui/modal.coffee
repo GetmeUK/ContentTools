@@ -38,7 +38,6 @@ describe 'ContentTools.ModalUI', () ->
             editor.attach(modal)
             modal.show()
             expect(modal.isMounted()).toBe true
-            editor.detatch(modal)
 
         it 'should apply transparent flag', () ->
 
@@ -50,8 +49,6 @@ describe 'ContentTools.ModalUI', () ->
             # Check transparency flag is set
             classes = modal.domElement().getAttribute('class').split(' ')
             expect(classes.indexOf('ct-modal--transparent') > -1).toBe true
-
-            editor.detatch(modal)
 
         it 'should apply no-scrolling flag', () ->
 
@@ -74,7 +71,6 @@ describe 'ContentTools.ModalUI', () ->
             modal.show()
             modal.unmount()
             expect(modal.isMounted()).toBe false
-            editor.detatch(modal)
 
         it 'should remove no-scrolling flag', () ->
 

@@ -67,28 +67,28 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
         # Mount the widget to the DOM
 
         # Toolbox
-        @_domElement = @createDiv([
+        @_domElement = @constructor.createDiv([
             'ct-widget',
             'ct-toolbox'
             ])
         @parent().domElement().appendChild(@_domElement)
 
         # Grip
-        @_domGrip = @createDiv([
+        @_domGrip = @constructor.createDiv([
             'ct-toolbox__grip',
             'ct-grip'
             ])
         @_domElement.appendChild(@_domGrip)
 
-        @_domGrip.appendChild(@createDiv(['ct-grip__bump']))
-        @_domGrip.appendChild(@createDiv(['ct-grip__bump']))
-        @_domGrip.appendChild(@createDiv(['ct-grip__bump']))
+        @_domGrip.appendChild(@constructor.createDiv(['ct-grip__bump']))
+        @_domGrip.appendChild(@constructor.createDiv(['ct-grip__bump']))
+        @_domGrip.appendChild(@constructor.createDiv(['ct-grip__bump']))
 
         # Tools
         for toolGroup, i in @_tools
 
             # Create a group for the tools
-            domToolGroup = @createDiv(['ct-tool-group'])
+            domToolGroup = @constructor.createDiv(['ct-tool-group'])
             @_domElement.appendChild(domToolGroup)
 
             # Create an associated ToolUI compontent for each tool in the group
@@ -433,7 +433,7 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
     mount: (domParent, before=null) ->
         # Mount the component to the DOM
 
-        @_domElement = @createDiv([
+        @_domElement = @constructor.createDiv([
             'ct-tool',
             "ct-tool--#{ @tool.icon }"
             ])

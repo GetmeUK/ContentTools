@@ -21,7 +21,7 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
         # appropriate point.
 
         # Create the dialog
-        @_domElement = @createDiv([
+        @_domElement = @constructor.createDiv([
             'ct-widget',
             'ct-anchored-dialog'
             ])
@@ -103,36 +103,36 @@ class ContentTools.DialogUI extends ContentTools.WidgetUI
             ]
         if @_busy
             dialogCSSClasses.push('ct-dialog--busy')
-        @_domElement = @createDiv(dialogCSSClasses)
+        @_domElement = @constructor.createDiv(dialogCSSClasses)
         @parent().domElement().appendChild(@_domElement)
 
         # Add the dialog header
-        domHeader = @createDiv(['ct-dialog__header'])
+        domHeader = @constructor.createDiv(['ct-dialog__header'])
         @_domElement.appendChild(domHeader)
 
         # Caption
-        @_domCaption = @createDiv(['ct-dialog__caption'])
+        @_domCaption = @constructor.createDiv(['ct-dialog__caption'])
         domHeader.appendChild(@_domCaption)
         @caption(@_caption)
 
         # Close button
-        @_domClose = @createDiv(['ct-dialog__close'])
+        @_domClose = @constructor.createDiv(['ct-dialog__close'])
         domHeader.appendChild(@_domClose)
 
         # Body
-        domBody = @createDiv(['ct-dialog__body'])
+        domBody = @constructor.createDiv(['ct-dialog__body'])
         @_domElement.appendChild(domBody)
 
         # View
-        @_domView = @createDiv(['ct-dialog__view'])
+        @_domView = @constructor.createDiv(['ct-dialog__view'])
         domBody.appendChild(@_domView)
 
         # Controls
-        @_domControls = @createDiv(['ct-dialog__controls'])
+        @_domControls = @constructor.createDiv(['ct-dialog__controls'])
         domBody.appendChild(@_domControls)
 
         # Busy
-        @_domBusy = @createDiv(['ct-dialog__busy'])
+        @_domBusy = @constructor.createDiv(['ct-dialog__busy'])
         @_domElement.appendChild(@_domBusy)
 
     unmount: () ->

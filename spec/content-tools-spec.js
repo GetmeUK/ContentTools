@@ -22,6 +22,161 @@
     });
   });
 
+  describe('ContentTools.ComponentUI()', function() {
+    return it('should return an instance of a ComponentUI', function() {
+      var component;
+      component = new ContentTools.ComponentUI();
+      return expect(component instanceof ContentTools.ComponentUI).toBe(true);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.children()', function() {
+    return it('should return a list of children attached to the component', function() {
+      var child, parent;
+      parent = new ContentTools.ComponentUI();
+      child = new ContentTools.ComponentUI();
+      parent.attach(child);
+      return expect(parent.children()).toEqual([child]);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.domElement()', function() {
+    return it('should return a DOM element for the component if it\'s mounted', function() {
+      var component, domElement;
+      component = new ContentTools.ComponentUI();
+      domElement = document.createElement('div');
+      component._domElement = domElement;
+      return expect(component.domElement()).toBe(domElement);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.isMounted()', function() {
+    return it('should return true if the component is mounted', function() {
+      var component, domElement;
+      component = new ContentTools.ComponentUI();
+      expect(component.isMounted()).toBe(false);
+      domElement = document.createElement('div');
+      component._domElement = domElement;
+      return expect(component.isMounted()).toBe(true);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.parent()', function() {
+    return it('should return a the parent the component is attached to', function() {
+      var child, parent;
+      parent = new ContentTools.ComponentUI();
+      child = new ContentTools.ComponentUI();
+      parent.attach(child);
+      return expect(child.parent()).toBe(parent);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.attach()', function() {
+    return it('should attach a component as a child of another component', function() {
+      var child, parent;
+      parent = new ContentTools.ComponentUI();
+      child = new ContentTools.ComponentUI();
+      parent.attach(child);
+      return expect(parent.children()).toEqual([child]);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.addCSSClass()', function() {
+    return it('should add a CSS class to the component\'s DOM element', function() {
+      var component, domElement;
+      component = new ContentTools.ComponentUI();
+      domElement = document.createElement('div');
+      component._domElement = domElement;
+      component.addCSSClass('foo');
+      return expect(domElement.getAttribute('class')).toBe('foo');
+    });
+  });
+
+  describe('ContentTools.ComponentUI.detatch()', function() {
+    return it('should detatch a child component', function() {
+      var child, parent;
+      parent = new ContentTools.ComponentUI();
+      child = new ContentTools.ComponentUI();
+      parent.attach(child);
+      parent.detatch(child);
+      return expect(parent.children()).toEqual([]);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.mount()', function() {
+    return it('should do nothing, `mount()` is a placeholder method only', function() {
+      var component;
+      component = new ContentTools.ComponentUI();
+      component.mount();
+      return expect(component.isMounted()).toBe(false);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.removeCSSClass()', function() {
+    return it('should remove a CSS class from the component\'s DOM element', function() {
+      var component, domElement;
+      component = new ContentTools.ComponentUI();
+      domElement = document.createElement('div');
+      component._domElement = domElement;
+      component.addCSSClass('foo');
+      component.addCSSClass('bar');
+      component.removeCSSClass('foo');
+      return expect(domElement.getAttribute('class')).toBe('bar');
+    });
+  });
+
+  describe('ContentTools.ComponentUI.unmount()', function() {
+    return it('should remove a CSS class from the component\'s DOM element', function() {
+      var component, domElement;
+      component = new ContentTools.ComponentUI();
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+      component._domElement = domElement;
+      component.unmount();
+      return expect(component.isMounted()).toBe(false);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.bind()', function() {
+    return it('should bind a function so that it\'s called whenever the event is triggered against the component', function() {
+      var component, foo;
+      foo = {
+        handleFoo: function() {}
+      };
+      spyOn(foo, 'handleFoo');
+      component = new ContentTools.ComponentUI();
+      component.bind('foo', foo.handleFoo);
+      component.trigger('foo');
+      return expect(foo.handleFoo).toHaveBeenCalled();
+    });
+  });
+
+  describe('ContentTools.ComponentUI.trigger()', function() {
+    return it('should trigger an event against the component with specified arguments', function() {
+      var component, foo;
+      foo = {
+        handleFoo: function() {}
+      };
+      spyOn(foo, 'handleFoo');
+      component = new ContentTools.ComponentUI();
+      component.bind('foo', foo.handleFoo);
+      component.trigger('foo', 123);
+      return expect(foo.handleFoo).toHaveBeenCalledWith(123);
+    });
+  });
+
+  describe('ContentTools.ComponentUI.createDiv()', function() {
+    return it('should create a DOM element with the specified classes, attributes and content', function() {
+      var domElement;
+      domElement = ContentTools.ComponentUI.createDiv(['foo'], {
+        'bar': 'foo'
+      }, 'foo bar');
+      expect(domElement.getAttribute('class')).toBe('foo');
+      expect(domElement.getAttribute('bar')).toBe('foo');
+      return expect(domElement.innerHTML).toBe('foo bar');
+    });
+  });
+
   describe('ContentTools.FlashUI', function() {
     var div, editor;
     div = null;
@@ -218,8 +373,7 @@
         modal = new ContentTools.ModalUI(true, true);
         editor.attach(modal);
         modal.show();
-        expect(modal.isMounted()).toBe(true);
-        return editor.detatch(modal);
+        return expect(modal.isMounted()).toBe(true);
       });
       it('should apply transparent flag', function() {
         var classes, modal;
@@ -227,8 +381,7 @@
         editor.attach(modal);
         modal.show();
         classes = modal.domElement().getAttribute('class').split(' ');
-        expect(classes.indexOf('ct-modal--transparent') > -1).toBe(true);
-        return editor.detatch(modal);
+        return expect(classes.indexOf('ct-modal--transparent') > -1).toBe(true);
       });
       return it('should apply no-scrolling flag', function() {
         var classes, modal;
@@ -246,8 +399,7 @@
         editor.attach(modal);
         modal.show();
         modal.unmount();
-        expect(modal.isMounted()).toBe(false);
-        return editor.detatch(modal);
+        return expect(modal.isMounted()).toBe(false);
       });
       return it('should remove no-scrolling flag', function() {
         var classes, modal;

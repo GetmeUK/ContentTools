@@ -25,7 +25,7 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         @_domElement.appendChild(@_domInput)
 
         # Create the confirm button
-        @_domButton = @createDiv(['ct-anchored-dialog__button'])
+        @_domButton = @constructor.createDiv(['ct-anchored-dialog__button'])
         @_domElement.appendChild(@_domButton)
 
         # Add interaction handlers
