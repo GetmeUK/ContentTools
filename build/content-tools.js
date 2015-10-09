@@ -8733,6 +8733,11 @@
       var app, list, row, table;
       app = ContentTools.EditorApp.get();
       element.blur();
+      if (element.nextContent()) {
+        element.nextContent().focus();
+      } else if (element.previousContent()) {
+        element.previousContent().focus();
+      }
       switch (element.constructor.name) {
         case 'ListItemText':
           if (app.ctrlDown()) {

@@ -1035,6 +1035,12 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
         # even when detached.
         element.blur()
 
+        # Focus on the next element
+        if element.nextContent()
+            element.nextContent().focus()
+        else if element.previousContent()
+            element.previousContent().focus()
+
         # Remove the element
         switch element.constructor.name
             when 'ListItemText'
