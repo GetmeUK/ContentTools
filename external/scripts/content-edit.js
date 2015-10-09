@@ -263,7 +263,7 @@
     };
 
     String.prototype.html = function() {
-      var c, closingTag, closingTags, head, html, openHeads, openTag, openTags, tag, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4;
+      var c, closingTag, closingTags, head, html, openHeads, openTag, openTags, tag, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1, _ref2, _ref3;
       html = '';
       openTags = [];
       openHeads = [];
@@ -298,18 +298,14 @@
             }
           }
         }
-        _ref3 = c._tags;
-        for (_m = 0, _len4 = _ref3.length; _m < _len4; _m++) {
-          tag = _ref3[_m];
-          if (tag.selfClosing()) {
-            html += tag.head();
-          }
+        if (c._tags.length > 0 && c._tags[0].selfClosing()) {
+          html += c._tags[0].head();
         }
         html += c.c();
       }
-      _ref4 = openTags.reverse();
-      for (_n = 0, _len5 = _ref4.length; _n < _len5; _n++) {
-        tag = _ref4[_n];
+      _ref3 = openTags.reverse();
+      for (_m = 0, _len4 = _ref3.length; _m < _len4; _m++) {
+        tag = _ref3[_m];
         html += tag.tail();
       }
       return html;
