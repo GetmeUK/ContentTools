@@ -263,7 +263,7 @@
     };
 
     String.prototype.html = function() {
-      var c, closingTag, closingTags, head, html, openHeads, openTag, openTags, tag, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref, _ref1, _ref2, _ref3;
+      var c, closingTag, closingTags, head, html, openHeads, openTag, openTags, tag, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4;
       html = '';
       openTags = [];
       openHeads = [];
@@ -290,19 +290,26 @@
         for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
           tag = _ref2[_l];
           if (openHeads.indexOf(tag.head()) === -1) {
-            head = tag.head();
-            html += head;
             if (!tag.selfClosing()) {
+              head = tag.head();
+              html += head;
               openTags.push(tag);
               openHeads.push(head);
             }
           }
         }
+        _ref3 = c._tags;
+        for (_m = 0, _len4 = _ref3.length; _m < _len4; _m++) {
+          tag = _ref3[_m];
+          if (tag.selfClosing()) {
+            html += tag.head();
+          }
+        }
         html += c.c();
       }
-      _ref3 = openTags.reverse();
-      for (_m = 0, _len4 = _ref3.length; _m < _len4; _m++) {
-        tag = _ref3[_m];
+      _ref4 = openTags.reverse();
+      for (_n = 0, _len5 = _ref4.length; _n < _len5; _n++) {
+        tag = _ref4[_n];
         html += tag.tail();
       }
       return html;
@@ -1325,6 +1332,7 @@
   })();
 
 }).call(this);
+
 (function() {
   var SELF_CLOSING_NODE_NAMES, _containedBy, _getChildNodeAndOffset, _getNodeRange, _getOffsetOfChildNode,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
