@@ -2191,21 +2191,28 @@
     };
 
     Element.prototype.drag = function(x, y) {
+      var root;
       if (!this.isMounted()) {
         return;
       }
-      return ContentEdit.Root.get().startDragging(this, x, y);
+      root = ContentEdit.Root.get();
+      root.startDragging(this, x, y);
+      return root.trigger('drag', this);
     };
 
     Element.prototype.drop = function(element, placement) {
+      var root;
       if (element) {
         element._removeCSSClass('ce-element--drop');
         element._removeCSSClass("ce-element--drop-" + placement[0]);
         element._removeCSSClass("ce-element--drop-" + placement[1]);
+        root = ContentEdit.Root.get();
         if (this.constructor.droppers[element.constructor.name]) {
-          return this.constructor.droppers[element.constructor.name](this, element, placement);
+          this.constructor.droppers[element.constructor.name](this, element, placement);
+          return root.trigger('drop', this, element, placement);
         } else if (element.constructor.droppers[this.constructor.name]) {
-          return element.constructor.droppers[this.constructor.name](this, element, placement);
+          element.constructor.droppers[this.constructor.name](this, element, placement);
+          return root.trigger('drop', this, element, placement);
         }
       }
     };
