@@ -8024,7 +8024,7 @@
 
     ContentTools.ToolShelf.stow(Subheading, 'subheading');
 
-    Subheading.label = 'Subeading';
+    Subheading.label = 'Subheading';
 
     Subheading.icon = 'subheading';
 

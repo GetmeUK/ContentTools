@@ -329,7 +329,7 @@ class ContentTools.Tools.Subheading extends ContentTools.Tools.Heading
 
     ContentTools.ToolShelf.stow(@, 'subheading')
 
-    @label = 'Subeading'
+    @label = 'Subheading'
     @icon = 'subheading'
     @tagName = 'h2'
 
