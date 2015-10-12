@@ -2202,19 +2202,22 @@
 
     Element.prototype.drop = function(element, placement) {
       var root;
+      root = ContentEdit.Root.get();
       if (element) {
         element._removeCSSClass('ce-element--drop');
         element._removeCSSClass("ce-element--drop-" + placement[0]);
         element._removeCSSClass("ce-element--drop-" + placement[1]);
-        root = ContentEdit.Root.get();
         if (this.constructor.droppers[element.constructor.name]) {
           this.constructor.droppers[element.constructor.name](this, element, placement);
-          return root.trigger('drop', this, element, placement);
+          root.trigger('drop', this, element, placement);
+          return;
         } else if (element.constructor.droppers[this.constructor.name]) {
           element.constructor.droppers[this.constructor.name](this, element, placement);
-          return root.trigger('drop', this, element, placement);
+          root.trigger('drop', this, element, placement);
+          return;
         }
       }
+      return root.trigger('drop', this, null, null);
     };
 
     Element.prototype.focus = function(supressDOMFocus) {
