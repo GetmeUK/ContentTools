@@ -177,6 +177,108 @@
     });
   });
 
+  describe('ContentTools.WidgetUI()', function() {
+    return it('should return an instance of a WidgetUI', function() {
+      var widget;
+      widget = new ContentTools.WidgetUI();
+      return expect(widget instanceof ContentTools.WidgetUI).toBe(true);
+    });
+  });
+
+  describe('ContentTools.WidgetUI.attach()', function() {
+    return it('should attach a widget as a child of another widget and mount it', function() {
+      var child, parent;
+      parent = new ContentTools.WidgetUI();
+      child = new ContentTools.WidgetUI();
+      spyOn(child, 'mount');
+      parent.attach(child);
+      expect(parent.children()).toEqual([child]);
+      return expect(child.mount).toHaveBeenCalledWith();
+    });
+  });
+
+  describe('ContentTools.WidgetUI.detatch()', function() {
+    return it('should detatch a child widget and unmount it', function() {
+      var child, domElement, parent;
+      parent = new ContentTools.WidgetUI();
+      child = new ContentTools.WidgetUI();
+      spyOn(child, 'unmount');
+      parent.attach(child);
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+      parent._domElement = domElement;
+      parent.detatch(child);
+      expect(parent.children()).toEqual([]);
+      return expect(child.unmount).toHaveBeenCalled();
+    });
+  });
+
+  describe('ContentTools.WidgetUI.show()', function() {
+    return it('should add the `--active` CSS modifier class to a widget', function(done) {
+      var checkShown, domElement, widget;
+      widget = new ContentTools.WidgetUI();
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+      widget._domElement = domElement;
+      widget.show();
+      checkShown = function() {
+        var classes;
+        classes = widget.domElement().getAttribute('class').split(' ');
+        expect(classes.indexOf('ct-widget--active') > -1).toBe(true);
+        return done();
+      };
+      return setTimeout(checkShown, 500);
+    });
+  });
+
+  describe('ContentTools.WidgetUI.hide()', function() {
+    var widget;
+    widget = null;
+    beforeEach(function() {
+      var domElement;
+      widget = new ContentTools.WidgetUI();
+      domElement = document.createElement('div');
+      domElement.setAttribute('class', 'ct-widget');
+      document.body.appendChild(domElement);
+      return widget._domElement = domElement;
+    });
+    it('should remove the `--active` CSS modifier class from a widget', function() {
+      var classes;
+      widget.hide();
+      classes = (widget.domElement().getAttribute('class') || '').split(' ');
+      return expect(classes.indexOf('ct-widget--active') === -1).toBe(true);
+    });
+    return it('should unmount the component after X seconds', function(done) {
+      var checkUnmounted;
+      widget.hide();
+      checkUnmounted = function() {
+        expect(widget.isMounted()).toBe(false);
+        return done();
+      };
+      return setTimeout(checkUnmounted, 1000);
+    });
+  });
+
+  describe('ContentTools.AnchoredComponentUI()', function() {
+    return it('should return an instance of a AnchoredComponentUI', function() {
+      var anchored;
+      anchored = new ContentTools.AnchoredComponentUI();
+      return expect(anchored instanceof ContentTools.AnchoredComponentUI).toBe(true);
+    });
+  });
+
+  describe('ContentTools.AnchoredComponentUI.mount()', function() {
+    return it('should mount the component to a DOM element', function() {
+      var anchored, domElement, parentDOMElement;
+      domElement = document.createElement('div');
+      parentDOMElement = document.createElement('div');
+      anchored = new ContentTools.AnchoredComponentUI();
+      anchored._domElement = domElement;
+      anchored.mount(parentDOMElement);
+      return expect(anchored.domElement().parentNode).toEqual(parentDOMElement);
+    });
+  });
+
   describe('ContentTools.FlashUI', function() {
     var div, editor;
     div = null;
@@ -198,12 +300,12 @@
         flash = new ContentTools.FlashUI('ok');
         return expect(flash instanceof ContentTools.FlashUI).toBe(true);
       });
-      it('should automatically mount the component', function() {
+      it('should mount the component', function() {
         var flash;
         flash = new ContentTools.FlashUI('ok');
         return expect(flash.isMounted()).toBe(true);
       });
-      return it('should automatically unmount the component after X seconds', function(done) {
+      return it('should unmount the component after X seconds', function(done) {
         var checkUnmounted, flash;
         flash = new ContentTools.FlashUI('ok');
         checkUnmounted = function() {

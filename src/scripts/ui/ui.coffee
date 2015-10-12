@@ -179,9 +179,9 @@ class ContentTools.WidgetUI extends ContentTools.ComponentUI
         if not @isMounted()
             component.mount()
 
-    detatch: () ->
+    detatch: (component) ->
         # Detach a child component from this component
-        super(component, index)
+        super(component)
 
         if @isMounted()
             component.unmount()

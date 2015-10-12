@@ -30,12 +30,12 @@ describe 'ContentTools.FlashUI', () ->
             flash = new ContentTools.FlashUI('ok')
             expect(flash instanceof ContentTools.FlashUI).toBe true
 
-        it 'should automatically mount the component', () ->
+        it 'should mount the component', () ->
 
             flash = new ContentTools.FlashUI('ok')
             expect(flash.isMounted()).toBe true
 
-        it 'should automatically unmount the component after X seconds', (done) ->
+        it 'should unmount the component after X seconds', (done) ->
 
             flash = new ContentTools.FlashUI('ok')
 
@@ -43,7 +43,7 @@ describe 'ContentTools.FlashUI', () ->
                 expect(flash.isMounted()).toBe false
                 done();
 
-            setTimeout(checkUnmounted, 3000);
+            setTimeout(checkUnmounted, 3000)
 
 
     describe 'ContentTools.FlashUI.mount()', () ->

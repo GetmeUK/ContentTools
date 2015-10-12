@@ -4996,8 +4996,8 @@
       }
     };
 
-    WidgetUI.prototype.detatch = function() {
-      WidgetUI.__super__.detatch.call(this, component, index);
+    WidgetUI.prototype.detatch = function(component) {
+      WidgetUI.__super__.detatch.call(this, component);
       if (this.isMounted()) {
         return component.unmount();
       }
