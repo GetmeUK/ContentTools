@@ -7126,12 +7126,16 @@
       return this._ignition.busy(busy);
     };
 
-    _EditorApp.prototype.init = function(query, namingProp) {
+    _EditorApp.prototype.init = function(queryOrDOMElements, namingProp) {
       if (namingProp == null) {
         namingProp = 'id';
       }
       this._namingProp = namingProp;
-      this._domRegions = document.querySelectorAll(query);
+      if (queryOrDOMElements.length > 0 && queryOrDOMElements[0].nodeType === Node.ELEMENT_NODE) {
+        this._domRegions = queryOrDOMElements;
+      } else {
+        this._domRegions = document.querySelectorAll(queryOrDOMElements);
+      }
       if (this._domRegions.length === 0) {
         return;
       }

@@ -51,14 +51,22 @@ class _EditorApp extends ContentTools.ComponentUI
         # the ignition).
         return @_ignition.busy(busy)
 
-    init: (query, namingProp='id') ->
+    init: (queryOrDOMElements, namingProp='id') ->
         # Initialize the editor application
 
         # The property used to extract a name/key for a region
         @_namingProp = namingProp
 
-        # Select DOM elements that have been flagged as editable content
-        @_domRegions = document.querySelectorAll(query)
+        # Assign the DOM regions
+        if queryOrDOMElements.length > 0 and
+                queryOrDOMElements[0].nodeType is Node.ELEMENT_NODE
+            # If a list has been provided then assume it contains a list of DOM
+            # elements each of which is a region.
+            @_domRegions = queryOrDOMElements
+        else
+            # If a CSS query has been specified then use that to select the
+            # regions in the DOM.
+            @_domRegions = document.querySelectorAll(queryOrDOMElements)
 
         # If there aren't any editiable regions return early leaving the app
         # DORMANT.
