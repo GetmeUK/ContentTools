@@ -7652,6 +7652,9 @@
         region = element.closest(function(node) {
           return node.constructor.name === 'Region';
         });
+        if (!region) {
+          return;
+        }
         _ref1 = this._regions;
         for (name in _ref1) {
           other_region = _ref1[name];

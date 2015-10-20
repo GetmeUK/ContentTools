@@ -145,12 +145,18 @@ class ContentTools.History
 
         # Store any selection state information
         element = ContentEdit.Root.get().focused()
+
         if element
             snapshot.selected = {}
 
             # Determine the selected region
             region = element.closest (node) ->
                 return node.constructor.name == 'Region'
+
+            # Check a region can be found (this catches cases where the focused
+            # element isn't attached to the region.
+            if not region
+                return
 
             for name, other_region of @_regions
                 if region == other_region
