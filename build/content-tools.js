@@ -5239,6 +5239,7 @@
         tag = _ref[_i];
         tag.unmount();
       }
+      this._tagUIs = [];
       if (!element) {
         return;
       }
