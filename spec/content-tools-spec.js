@@ -22,6 +22,8 @@
     });
   });
 
+  window.getComputedStyle = null;
+
   describe('ContentTools.ComponentUI()', function() {
     return it('should return an instance of a ComponentUI', function() {
       var component;
@@ -402,11 +404,8 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('start', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domEdit.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalled();
       });
@@ -418,12 +417,8 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('stop', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
-        ignition._domEdit.dispatchEvent(clickEvent);
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domConfirm.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalledWith(true);
       });
@@ -435,11 +430,8 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('stop', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domEdit.dispatchEvent(clickEvent);
         ignition._domCancel.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalledWith(false);
@@ -585,11 +577,8 @@
         };
         spyOn(foo, 'handleFoo');
         modal.bind('click', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         modal.domElement().dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalled();
       });
