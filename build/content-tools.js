@@ -3174,12 +3174,17 @@
     };
 
     Text.prototype.blur = function() {
+      var error;
       if (this.content.isWhitespace()) {
         if (this.parent()) {
           this.parent().detach(this);
         }
       } else if (this.isMounted()) {
-        this._domElement.blur();
+        try {
+          this._domElement.blur();
+        } catch (_error) {
+          error = _error;
+        }
         this._domElement.removeAttribute('contenteditable');
       }
       return Text.__super__.blur.call(this);
