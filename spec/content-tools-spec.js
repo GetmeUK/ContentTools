@@ -22,6 +22,8 @@
     });
   });
 
+  window.getComputedStyle = null;
+
   describe('ContentTools.ComponentUI()', function() {
     return it('should return an instance of a ComponentUI', function() {
       var component;
@@ -402,11 +404,8 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('start', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domEdit.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalled();
       });
@@ -418,12 +417,8 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('stop', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
-        ignition._domEdit.dispatchEvent(clickEvent);
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domConfirm.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalledWith(true);
       });
@@ -435,14 +430,72 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('stop', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domEdit.dispatchEvent(clickEvent);
         ignition._domCancel.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalledWith(false);
+      });
+    });
+  });
+
+  describe('ContentTools.InspectorUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      div.setAttribute('id', 'foo');
+      document.body.appendChild(div);
+      div.innerHTML = '<p>bar</p>\n<ul>\n    <li>zee</li>\n</ul>';
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.InspectorUI()', function() {
+      return it('should return an instance of a InspectorUI', function() {
+        var inspector;
+        inspector = new ContentTools.InspectorUI();
+        return expect(inspector instanceof ContentTools.InspectorUI).toBe(true);
+      });
+    });
+    describe('ContentTools.InspectorUI.mount()', function() {
+      return it('should mount the component', function() {
+        var inspector;
+        inspector = new ContentTools.InspectorUI();
+        editor.attach(inspector);
+        inspector.mount();
+        return expect(inspector.isMounted()).toBe(true);
+      });
+    });
+    describe('ContentTools.InspectorUI.unmount()', function() {
+      return it('should unmount the component', function() {
+        var inspector;
+        inspector = new ContentTools.InspectorUI();
+        editor.attach(inspector);
+        inspector.mount();
+        inspector.unmount();
+        return expect(inspector.isMounted()).toBe(false);
+      });
+    });
+    return describe('ContentTools.InspectorUI.updateTags()', function() {
+      return it('should update the tags displayed to reflect the path to the current element', function() {
+        var elements, inspector, region;
+        editor.start();
+        inspector = editor._inspector;
+        region = editor.regions()['foo'];
+        elements = region.children;
+        elements[0].focus();
+        expect(inspector._tagUIs.length).toEqual(1);
+        expect(inspector._tagUIs[0].element.tagName()).toEqual('p');
+        elements[1].children[0].children[0].focus();
+        expect(inspector._tagUIs.length).toEqual(2);
+        expect(inspector._tagUIs[0].element.tagName()).toEqual('ul');
+        return expect(inspector._tagUIs[1].element.tagName()).toEqual('li');
       });
     });
   });
@@ -524,11 +577,8 @@
         };
         spyOn(foo, 'handleFoo');
         modal.bind('click', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         modal.domElement().dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalled();
       });

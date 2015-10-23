@@ -1,5 +1,6 @@
 # ContentTools
 
+[![Build Status](https://travis-ci.org/GetmeUK/ContentTools.svg?branch=master)](https://travis-ci.org/GetmeUK/ContentTools)
 [![Join the chat at https://gitter.im/GetmeUK/ContentTools](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/GetmeUK/ContentTools?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 > A JS library for building WYSIWYG editors for HTML content.
@@ -33,6 +34,8 @@ unzip jasmine-standalone-2.0.3.zip
 
 Then open `ContentTools/SpecRunner.html` in a browser to run the tests.
 
+Alternatively you can use `grunt jasmine` to run the tests from the command line.
+
 ## Documentation
 Full documentation is available at http://getcontenttools.com/api/content-tools
 
@@ -40,6 +43,3 @@ Full documentation is available at http://getcontenttools.com/api/content-tools
 The current aim is for all the libraries to support IE9+, Chrome and Firefox. Test suites are complete for all the libraries except ContentTools and I'm using Jasmine to check that the tests pass in those browsers.
 
 There will be some visual differences for ContentTools in IE9 as I use CSS animations for some of the UI feedback.
-
-## Roadmap
-- Complete the test suite for the library.

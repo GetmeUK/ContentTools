@@ -61,6 +61,8 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         for tag in @_tagUIs
             tag.unmount()
 
+        @_tagUIs = []
+
         # If there's no element selected we're done
         if not element
             return

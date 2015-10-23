@@ -1,3 +1,8 @@
+# HACK: Disable getComputedStyle so that transitions/animations are not
+# considered for the purpose of testing.
+window.getComputedStyle = null
+
+
 # UI
 
 # ComponentUI
