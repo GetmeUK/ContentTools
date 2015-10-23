@@ -7114,6 +7114,8 @@
       this._state = ContentTools.EditorApp.DORMANT;
       this._regions = null;
       this._orderedRegions = null;
+      this._rootLastModified = null;
+      this._regionsLastModified = {};
       this._ignition = null;
       this._inspector = null;
       this._toolbox = null;
@@ -7393,9 +7395,10 @@
     };
 
     _EditorApp.prototype.save = function() {
-      var args, child, html, modifiedRegions, name, passive, region, _ref;
+      var args, child, html, modifiedRegions, name, passive, region, root, _ref;
       passive = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      if (!ContentEdit.Root.get().lastModified() && passive) {
+      root = ContentEdit.Root.get();
+      if (root.lastModified() === this._rootLastModified && passive) {
         return;
       }
       modifiedRegions = {};
@@ -7409,11 +7412,15 @@
             html = '';
           }
         }
-        modifiedRegions[name] = html;
         if (!passive) {
-          region.domElement().innerHTML = modifiedRegions[name];
+          region.domElement().innerHTML = html;
         }
+        if (region.lastModified() === this._regionsLastModified[name]) {
+          continue;
+        }
+        modifiedRegions[name] = html;
       }
+      console.log(modifiedRegions);
       return this.trigger.apply(this, ['save', modifiedRegions].concat(__slice.call(args)));
     };
 
@@ -7435,12 +7442,13 @@
         }
         this._regions[name] = new ContentEdit.Region(domRegion);
         this._orderedRegions.push(name);
+        this._regionsLastModified[name] = this._regions[name].lastModified();
       }
+      this._rootLastModified = ContentEdit.Root.get().lastModified();
       this._preventEmptyRegions();
       this.history = new ContentTools.History(this._regions);
       this.history.watch();
       this._state = ContentTools.EditorApp.EDITING;
-      ContentEdit.Root.get().commit();
       this._toolbox.show();
       this._inspector.show();
       return this.busy(false);

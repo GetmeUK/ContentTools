@@ -19,6 +19,10 @@ class _EditorApp extends ContentTools.ComponentUI
         # A list of the mapped regions used to determine their order
         @_orderedRegions = null
 
+        # The last modified dates for the root node and regions
+        @_rootLastModified = null
+        @_regionsLastModified = {}
+
         # The UI widgets that form the editor's interface
         @_ignition = null
         @_inspector = null
@@ -352,7 +356,8 @@ class _EditorApp extends ContentTools.ComponentUI
         # Save changes to the current page
 
         # Check the document has changed, if not we don't need do anything
-        if not ContentEdit.Root.get().lastModified() and passive
+        root = ContentEdit.Root.get()
+        if root.lastModified() == @_rootLastModified and passive
             return
 
         # Build a map of the modified regions
@@ -365,12 +370,19 @@ class _EditorApp extends ContentTools.ComponentUI
                 if child.content and not child.content.html()
                     html = ''
 
-            modifiedRegions[name] = html
-
             # Apply the changes made to the DOM (affectively reseting the DOM to
             # a non-editable state).
             unless passive
-                region.domElement().innerHTML = modifiedRegions[name]
+                region.domElement().innerHTML = html
+
+            # Check the region has been modified, if not we don't include it in
+            # the output.
+            if region.lastModified() == @_regionsLastModified[name]
+                continue
+
+            modifiedRegions[name] = html
+
+        console.log modifiedRegions
 
         # Trigger the save event with a region HTML map for the changed
         # content.
@@ -397,6 +409,14 @@ class _EditorApp extends ContentTools.ComponentUI
             @_regions[name] = new ContentEdit.Region(domRegion)
             @_orderedRegions.push(name)
 
+            # Store the date at which the region was last modified so we can
+            # check for changes on save.
+            @_regionsLastModified[name] = @_regions[name].lastModified()
+
+        # Store the date at which the root was last modified so we can check for
+        # changes on save.
+        @_rootLastModified = ContentEdit.Root.get().lastModified()
+
         # Ensure no region is empty
         @_preventEmptyRegions()
 
@@ -406,9 +426,6 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Set the application state to editing
         @_state = ContentTools.EditorApp.EDITING
-
-        # Mark the document as untainted
-        ContentEdit.Root.get().commit()
 
         # Display the editing tools
         @_toolbox.show()
