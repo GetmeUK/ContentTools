@@ -257,7 +257,7 @@
         expect(widget.isMounted()).toBe(false);
         return done();
       };
-      return setTimeout(checkUnmounted, 1000);
+      return setTimeout(checkUnmounted, 500);
     });
   });
 
@@ -314,7 +314,7 @@
           expect(flash.isMounted()).toBe(false);
           return done();
         };
-        return setTimeout(checkUnmounted, 3000);
+        return setTimeout(checkUnmounted, 500);
       });
     });
     return describe('ContentTools.FlashUI.mount()', function() {
@@ -433,6 +433,7 @@
         clickEvent = document.createEvent('CustomEvent');
         clickEvent.initCustomEvent('click', false, false, null);
         ignition._domEdit.dispatchEvent(clickEvent);
+        ContentEdit.Root.get().commit();
         ignition._domCancel.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalledWith(false);
       });
@@ -495,7 +496,81 @@
         elements[1].children[0].children[0].focus();
         expect(inspector._tagUIs.length).toEqual(2);
         expect(inspector._tagUIs[0].element.tagName()).toEqual('ul');
-        return expect(inspector._tagUIs[1].element.tagName()).toEqual('li');
+        expect(inspector._tagUIs[1].element.tagName()).toEqual('li');
+        return editor.stop();
+      });
+    });
+  });
+
+  describe('ContentTools.TagUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      div.setAttribute('id', 'foo');
+      document.body.appendChild(div);
+      div.innerHTML = '<p>bar</p>\n<ul>\n    <li>zee</li>\n</ul>';
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.TagUI()', function() {
+      return it('should return an instance of a TagUI', function() {
+        var tag;
+        tag = new ContentTools.TagUI();
+        return expect(tag instanceof ContentTools.TagUI).toBe(true);
+      });
+    });
+    describe('ContentTools.TagUI.mount()', function() {
+      return it('should mount the component', function() {
+        var elements, inspector, region, tag;
+        editor.start();
+        inspector = editor._inspector;
+        region = editor.regions()['foo'];
+        elements = region.children;
+        tag = new ContentTools.TagUI(elements[0]);
+        tag.mount(inspector._domTags);
+        return expect(tag.isMounted()).toBe(true);
+      });
+    });
+    return describe('ContentTools.TagUI > Interaction', function() {
+      return it('should allow the properties dialog to be used', function() {
+        var app, clickEvent, dialog, element, inspector, region, tag;
+        editor.start();
+        inspector = editor._inspector;
+        region = editor.regions()['foo'];
+        element = region.children[0];
+        element.focus();
+        tag = inspector._tagUIs[0];
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('mousedown', false, false, null);
+        tag.domElement().dispatchEvent(clickEvent);
+        app = ContentTools.EditorApp.get();
+        dialog = app.children()[app.children().length - 1];
+        expect(dialog instanceof ContentTools.PropertiesDialog).toBe(true);
+        dialog.trigger('save', {
+          title: 'bar'
+        }, {
+          'zee': true
+        }, 'foo');
+        expect(element.attr('title')).toBe('bar');
+        expect(element.hasCSSClass('zee')).toBe(true);
+        expect(element.content.html()).toBe('foo');
+        tag.domElement().dispatchEvent(clickEvent);
+        dialog = app.children()[app.children().length - 1];
+        dialog.trigger('save', {
+          title: null
+        }, {
+          'zee': false
+        }, 'bar');
+        expect(element.attr('title')).toBe(void 0);
+        expect(element.hasCSSClass('zee')).toBe(false);
+        return expect(element.content.html()).toBe('bar');
       });
     });
   });
@@ -581,6 +656,30 @@
         clickEvent.initCustomEvent('click', false, false, null);
         modal.domElement().dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('ContentTools.ToolboxUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    return describe('ContentTools.ToolboxUI()', function() {
+      return it('should return an instance of a ToolboxUI', function() {
+        var toolbox;
+        toolbox = new ContentTools.ToolboxUI();
+        return expect(toolbox instanceof ContentTools.ToolboxUI).toBe(true);
       });
     });
   });

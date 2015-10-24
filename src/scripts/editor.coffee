@@ -315,8 +315,9 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Check if there are any changes, and if there are make the user confirm
         # they want to lose them.
-        if ContentEdit.Root.get().lastModified() and not window.confirm(
-                ContentEdit._('Your changes have not been saved, do you really want to lose them?'))
+        confirmMessage = ContentEdit._('Your changes have not been saved, do you really want to lose them?')
+        if ContentEdit.Root.get().lastModified() > @_rootLastModified and
+                not window.confirm(confirmMessage)
             return false
 
         # Revert the page to it's initial state
@@ -382,8 +383,6 @@ class _EditorApp extends ContentTools.ComponentUI
 
             modifiedRegions[name] = html
 
-        console.log modifiedRegions
-
         # Trigger the save event with a region HTML map for the changed
         # content.
         @trigger('save', modifiedRegions, args...)
@@ -413,12 +412,12 @@ class _EditorApp extends ContentTools.ComponentUI
             # check for changes on save.
             @_regionsLastModified[name] = @_regions[name].lastModified()
 
+        # Ensure no region is empty
+        @_preventEmptyRegions()
+
         # Store the date at which the root was last modified so we can check for
         # changes on save.
         @_rootLastModified = ContentEdit.Root.get().lastModified()
-
-        # Ensure no region is empty
-        @_preventEmptyRegions()
 
         # Create a new history instance to store the page changes against
         @history = new ContentTools.History(@_regions)
@@ -521,6 +520,10 @@ class _EditorApp extends ContentTools.ComponentUI
             # becoming empty.
             placeholder = new ContentEdit.Text('p', {}, '')
             region.attach(placeholder)
+
+            # This action will mark the region as modified which it technically
+            # isn't and so we commit the change to nullify this.
+            region.commit()
 
     _removeDOMEventListeners: () ->
         # Remove DOM event listeners for the widget

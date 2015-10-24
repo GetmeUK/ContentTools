@@ -43,7 +43,7 @@ describe 'ContentTools.FlashUI', () ->
                 expect(flash.isMounted()).toBe false
                 done();
 
-            setTimeout(checkUnmounted, 3000)
+            setTimeout(checkUnmounted, 500)
 
 
     describe 'ContentTools.FlashUI.mount()', () ->

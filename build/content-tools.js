@@ -7361,7 +7361,9 @@
     };
 
     _EditorApp.prototype.revert = function() {
-      if (ContentEdit.Root.get().lastModified() && !window.confirm(ContentEdit._('Your changes have not been saved, do you really want to lose them?'))) {
+      var confirmMessage;
+      confirmMessage = ContentEdit._('Your changes have not been saved, do you really want to lose them?');
+      if (ContentEdit.Root.get().lastModified() > this._rootLastModified && !window.confirm(confirmMessage)) {
         return false;
       }
       this.revertToSnapshot(this.history.goTo(0), false);
@@ -7420,7 +7422,6 @@
         }
         modifiedRegions[name] = html;
       }
-      console.log(modifiedRegions);
       return this.trigger.apply(this, ['save', modifiedRegions].concat(__slice.call(args)));
     };
 
@@ -7444,8 +7445,8 @@
         this._orderedRegions.push(name);
         this._regionsLastModified[name] = this._regions[name].lastModified();
       }
-      this._rootLastModified = ContentEdit.Root.get().lastModified();
       this._preventEmptyRegions();
+      this._rootLastModified = ContentEdit.Root.get().lastModified();
       this.history = new ContentTools.History(this._regions);
       this.history.watch();
       this._state = ContentTools.EditorApp.EDITING;
@@ -7528,7 +7529,8 @@
           continue;
         }
         placeholder = new ContentEdit.Text('p', {}, '');
-        _results.push(region.attach(placeholder));
+        region.attach(placeholder);
+        _results.push(region.commit());
       }
       return _results;
     };

@@ -309,7 +309,7 @@ describe 'ContentTools.WidgetUI.hide()', () ->
             expect(widget.isMounted()).toBe false
             done();
 
-        setTimeout(checkUnmounted, 1000)
+        setTimeout(checkUnmounted, 500)
 
 
 # AnchoredComponentUI

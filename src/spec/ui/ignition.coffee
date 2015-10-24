@@ -155,6 +155,7 @@ describe 'ContentTools.IgnitionUI', () ->
             clickEvent.initCustomEvent('click', false, false, null)
 
             ignition._domEdit.dispatchEvent(clickEvent)
+            ContentEdit.Root.get().commit()
             ignition._domCancel.dispatchEvent(clickEvent)
 
             expect(foo.handleFoo).toHaveBeenCalledWith(false)
