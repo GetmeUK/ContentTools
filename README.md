@@ -43,3 +43,10 @@ Full documentation is available at http://getcontenttools.com/api/content-tools
 The current aim is for all the libraries to support IE9+, Chrome and Firefox. Test suites are complete for all the libraries except ContentTools and I'm using Jasmine to check that the tests pass in those browsers.
 
 There will be some visual differences for ContentTools in IE9 as I use CSS animations for some of the UI feedback.
+
+## Helpful organizations
+I'm using a number of tools/services to help develop ContentTools some of which are provided for free by nice folks at organizations committed to supporting open-source projects:
+
+- [BrowserStack](http://www.browserstack.com)
+- [GitHub](https://github.com)
+- [Travis CI](https://travis-ci.org)
