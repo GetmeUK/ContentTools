@@ -45,8 +45,4 @@ The current aim is for all the libraries to support IE9+, Chrome and Firefox. Te
 There will be some visual differences for ContentTools in IE9 as I use CSS animations for some of the UI feedback.
 
 ## Helpful organizations
-I'm using a number of tools/services to help develop ContentTools some of which are provided for free by nice folks at organizations committed to supporting open-source projects:
-
-- [BrowserStack](http://www.browserstack.com)
-- [GitHub](https://github.com)
-- [Travis CI](https://travis-ci.org)
+ContentTools is developed using a number of tools & services provided for free by nice folks at organizations committed to supporting open-source projects including [BrowserStack](http://www.browserstack.com), [GitHub](https://github.com) and [Travis CI](https://travis-ci.org).
