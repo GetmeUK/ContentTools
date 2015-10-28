@@ -41,7 +41,7 @@ describe 'ContentTools.FlashUI', () ->
 
             checkUnmounted = () ->
                 expect(flash.isMounted()).toBe false
-                done();
+                done()
 
             setTimeout(checkUnmounted, 500)
 

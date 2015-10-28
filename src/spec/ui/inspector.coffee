@@ -161,9 +161,9 @@ describe 'ContentTools.TagUI', () ->
             tag = inspector._tagUIs[0]
 
             # Click the tag and check if a properties dialog is opened
-            clickEvent = document.createEvent('CustomEvent')
-            clickEvent.initCustomEvent('mousedown', false, false, null)
-            tag.domElement().dispatchEvent(clickEvent)
+            mouseDownEvent = document.createEvent('CustomEvent')
+            mouseDownEvent.initCustomEvent('mousedown', false, false, null)
+            tag.domElement().dispatchEvent(mouseDownEvent)
 
             # Check a properties dialog was opened
             app = ContentTools.EditorApp.get()
@@ -178,7 +178,7 @@ describe 'ContentTools.TagUI', () ->
             expect(element.content.html()).toBe 'foo'
 
             # Test the changes can be reverted
-            tag.domElement().dispatchEvent(clickEvent)
+            tag.domElement().dispatchEvent(mouseDownEvent)
             dialog = app.children()[app.children().length - 1]
 
             dialog.trigger('save', {title: null}, {'zee': false}, 'bar')

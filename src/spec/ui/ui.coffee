@@ -2,6 +2,9 @@
 # considered for the purpose of testing.
 window.getComputedStyle = null
 
+# HACK: Force the appVersion to be linux for testing
+navigator.appVersion = 'Linux'
+
 
 # UI
 

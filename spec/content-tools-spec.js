@@ -24,6 +24,8 @@
 
   window.getComputedStyle = null;
 
+  navigator.appVersion = 'Linux';
+
   describe('ContentTools.ComponentUI()', function() {
     return it('should return an instance of a ComponentUI', function() {
       var component;
@@ -540,16 +542,16 @@
     });
     return describe('ContentTools.TagUI > Interaction', function() {
       return it('should allow the properties dialog to be used', function() {
-        var app, clickEvent, dialog, element, inspector, region, tag;
+        var app, dialog, element, inspector, mouseDownEvent, region, tag;
         editor.start();
         inspector = editor._inspector;
         region = editor.regions()['foo'];
         element = region.children[0];
         element.focus();
         tag = inspector._tagUIs[0];
-        clickEvent = document.createEvent('CustomEvent');
-        clickEvent.initCustomEvent('mousedown', false, false, null);
-        tag.domElement().dispatchEvent(clickEvent);
+        mouseDownEvent = document.createEvent('CustomEvent');
+        mouseDownEvent.initCustomEvent('mousedown', false, false, null);
+        tag.domElement().dispatchEvent(mouseDownEvent);
         app = ContentTools.EditorApp.get();
         dialog = app.children()[app.children().length - 1];
         expect(dialog instanceof ContentTools.PropertiesDialog).toBe(true);
@@ -561,7 +563,7 @@
         expect(element.attr('title')).toBe('bar');
         expect(element.hasCSSClass('zee')).toBe(true);
         expect(element.content.html()).toBe('foo');
-        tag.domElement().dispatchEvent(clickEvent);
+        tag.domElement().dispatchEvent(mouseDownEvent);
         dialog = app.children()[app.children().length - 1];
         dialog.trigger('save', {
           title: null
@@ -667,19 +669,159 @@
     beforeEach(function() {
       div = document.createElement('div');
       div.setAttribute('class', 'editable');
+      div.setAttribute('id', 'foo');
+      div.innerHTML = '<p>bar</p><img scr="test.png">';
       document.body.appendChild(div);
       editor = ContentTools.EditorApp.get();
-      return editor.init('.editable');
+      editor.init('.editable');
+      return editor.start();
     });
     afterEach(function() {
+      editor.stop();
       editor.destroy();
       return document.body.removeChild(div);
     });
-    return describe('ContentTools.ToolboxUI()', function() {
+    describe('ContentTools.ToolboxUI()', function() {
       return it('should return an instance of a ToolboxUI', function() {
         var toolbox;
-        toolbox = new ContentTools.ToolboxUI();
+        toolbox = new ContentTools.ToolboxUI([]);
         return expect(toolbox instanceof ContentTools.ToolboxUI).toBe(true);
+      });
+    });
+    describe('ContentTools.ToolboxUI.isDragging()', function() {
+      return it('should return true if the ToolboxUI is currently being dragged', function() {
+        var mouseDownEvent, mouseUpEvent, toolbox;
+        toolbox = editor._toolbox;
+        expect(toolbox.isDragging()).toBe(false);
+        mouseDownEvent = document.createEvent('CustomEvent');
+        mouseDownEvent.initCustomEvent('mousedown', false, false, null);
+        toolbox._domGrip.dispatchEvent(mouseDownEvent);
+        expect(toolbox.isDragging()).toBe(true);
+        mouseUpEvent = document.createEvent('CustomEvent');
+        mouseUpEvent.initCustomEvent('mouseup', false, false, null);
+        document.dispatchEvent(mouseUpEvent);
+        return expect(toolbox.isDragging()).toBe(false);
+      });
+    });
+    describe('ContentTools.ToolboxUI.hide()', function() {
+      return it('should remove all event bindings before the toolbox is hidden', function() {
+        var toolbox;
+        toolbox = editor._toolbox;
+        spyOn(toolbox, '_removeDOMEventListeners');
+        toolbox.hide();
+        return expect(toolbox._removeDOMEventListeners).toHaveBeenCalled();
+      });
+    });
+    describe('ContentTools.ToolboxUI.tools()', function() {
+      it('should return the list of tools that populate the toolbox', function() {
+        var toolbox;
+        toolbox = editor._toolbox;
+        return expect(toolbox.tools()).toEqual(ContentTools.DEFAULT_TOOLS);
+      });
+      return it('should set the list of tools that populate the toolbox', function() {
+        var customTools, toolbox;
+        toolbox = editor._toolbox;
+        customTools = [['bold', 'italic', 'link']];
+        toolbox.tools(customTools);
+        return expect(toolbox.tools()).toEqual(customTools);
+      });
+    });
+    describe('ContentTools.ToolboxUI.mount()', function() {
+      it('should mount the component', function() {
+        var toolbox;
+        toolbox = new ContentTools.ToolboxUI([]);
+        editor.attach(toolbox);
+        toolbox.mount();
+        return expect(toolbox.isMounted()).toBe(true);
+      });
+      it('should restore the position of the component to any previously saved state', function() {
+        var toolbox;
+        window.localStorage.setItem('ct-toolbox-position', '7,7');
+        toolbox = new ContentTools.ToolboxUI([]);
+        editor.attach(toolbox);
+        toolbox.mount();
+        expect(toolbox.domElement().style.left).toBe('7px');
+        return expect(toolbox.domElement().style.top).toBe('7px');
+      });
+      return it('should always be contained within the viewport', function() {
+        var toolbox;
+        window.localStorage.setItem('ct-toolbox-position', '-7,-7');
+        toolbox = new ContentTools.ToolboxUI([]);
+        editor.attach(toolbox);
+        toolbox.mount();
+        expect(toolbox.domElement().style.left).toBe('');
+        return expect(toolbox.domElement().style.top).toBe('');
+      });
+    });
+    describe('ContentTools.ToolboxUI.updateTools()', function() {
+      return it('should refresh all tool UIs in the toolbox', function(done) {
+        var checkUpdated, element, region, toolbox;
+        toolbox = editor._toolbox;
+        region = editor.regions()['foo'];
+        element = region.children[0];
+        expect(toolbox._toolUIs['heading'].disabled()).toBe(true);
+        element.focus();
+        checkUpdated = function() {
+          expect(toolbox._toolUIs['heading'].disabled()).toBe(false);
+          return done();
+        };
+        return setTimeout(checkUpdated, 250);
+      });
+    });
+    return describe('ContentTools.ToolboxUI > Keyboard short-cuts', function() {
+      it('should allow a non-content element to be removed with the delete key short-cut', function() {
+        var element, keyDownEvent, region, toolbox;
+        toolbox = editor._toolbox;
+        region = editor.regions()['foo'];
+        element = region.children[1];
+        element.focus();
+        keyDownEvent = document.createEvent('CustomEvent');
+        keyDownEvent.initCustomEvent('keydown', false, false, null);
+        keyDownEvent.keyCode = 46;
+        window.dispatchEvent(keyDownEvent);
+        return expect(region.children.length).toBe(1);
+      });
+      it('should allow a undo to be triggered with Ctrl-z key short-cut', function(done) {
+        var checkUndo, element, region, toolbox;
+        toolbox = editor._toolbox;
+        region = editor.regions()['foo'];
+        element = region.children[1];
+        region.detach(element);
+        checkUndo = function() {
+          var keyDownEvent;
+          keyDownEvent = document.createEvent('CustomEvent');
+          keyDownEvent.initCustomEvent('keydown', false, false, null);
+          keyDownEvent.keyCode = 90;
+          keyDownEvent.ctrlKey = true;
+          window.dispatchEvent(keyDownEvent);
+          region = editor.regions()['foo'];
+          expect(region.children.length).toBe(2);
+          return done();
+        };
+        return setTimeout(checkUndo, 750);
+      });
+      return it('should allow a redo to be triggered with Ctrl-Shift-z key short-cut', function(done) {
+        var checkRedo, element, region, toolbox;
+        toolbox = editor._toolbox;
+        region = editor.regions()['foo'];
+        element = region.children[1];
+        region.detach(element);
+        checkRedo = function() {
+          var keyDownEvent;
+          ContentTools.Tools.Undo.apply(null, null, function() {});
+          region = editor.regions()['foo'];
+          expect(region.children.length).toBe(2);
+          keyDownEvent = document.createEvent('CustomEvent');
+          keyDownEvent.initCustomEvent('keydown', false, false, null);
+          keyDownEvent.keyCode = 90;
+          keyDownEvent.ctrlKey = true;
+          keyDownEvent.shiftKey = true;
+          window.dispatchEvent(keyDownEvent);
+          region = editor.regions()['foo'];
+          expect(region.children.length).toBe(1);
+          return done();
+        };
+        return setTimeout(checkRedo, 750);
       });
     });
   });
