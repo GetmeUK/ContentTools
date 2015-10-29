@@ -329,7 +329,7 @@ class ContentTools.Tools.Subheading extends ContentTools.Tools.Heading
 
     ContentTools.ToolShelf.stow(@, 'subheading')
 
-    @label = 'Subeading'
+    @label = 'Subheading'
     @icon = 'subheading'
     @tagName = 'h2'
 
@@ -1034,6 +1034,12 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
         # Blur the element before it's removed otherwise it will retain focus
         # even when detached.
         element.blur()
+
+        # Focus on the next element
+        if element.nextContent()
+            element.nextContent().focus()
+        else if element.previousContent()
+            element.previousContent().focus()
 
         # Remove the element
         switch element.constructor.name

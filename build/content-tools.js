@@ -290,13 +290,16 @@
         for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
           tag = _ref2[_l];
           if (openHeads.indexOf(tag.head()) === -1) {
-            head = tag.head();
-            html += head;
             if (!tag.selfClosing()) {
+              head = tag.head();
+              html += head;
               openTags.push(tag);
               openHeads.push(head);
             }
           }
+        }
+        if (c._tags.length > 0 && c._tags[0].selfClosing()) {
+          html += c._tags[0].head();
         }
         html += c.c();
       }
@@ -1325,6 +1328,7 @@
   })();
 
 }).call(this);
+
 (function() {
   var SELF_CLOSING_NODE_NAMES, _containedBy, _getChildNodeAndOffset, _getNodeRange, _getOffsetOfChildNode,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -2187,23 +2191,33 @@
     };
 
     Element.prototype.drag = function(x, y) {
+      var root;
       if (!this.isMounted()) {
         return;
       }
-      return ContentEdit.Root.get().startDragging(this, x, y);
+      root = ContentEdit.Root.get();
+      root.startDragging(this, x, y);
+      return root.trigger('drag', this);
     };
 
     Element.prototype.drop = function(element, placement) {
+      var root;
+      root = ContentEdit.Root.get();
       if (element) {
         element._removeCSSClass('ce-element--drop');
         element._removeCSSClass("ce-element--drop-" + placement[0]);
         element._removeCSSClass("ce-element--drop-" + placement[1]);
         if (this.constructor.droppers[element.constructor.name]) {
-          return this.constructor.droppers[element.constructor.name](this, element, placement);
+          this.constructor.droppers[element.constructor.name](this, element, placement);
+          root.trigger('drop', this, element, placement);
+          return;
         } else if (element.constructor.droppers[this.constructor.name]) {
-          return element.constructor.droppers[this.constructor.name](this, element, placement);
+          element.constructor.droppers[this.constructor.name](this, element, placement);
+          root.trigger('drop', this, element, placement);
+          return;
         }
       }
+      return root.trigger('drop', this, null, null);
     };
 
     Element.prototype.focus = function(supressDOMFocus) {
@@ -3160,12 +3174,17 @@
     };
 
     Text.prototype.blur = function() {
+      var error;
       if (this.content.isWhitespace()) {
         if (this.parent()) {
           this.parent().detach(this);
         }
       } else if (this.isMounted()) {
-        this._domElement.blur();
+        try {
+          this._domElement.blur();
+        } catch (_error) {
+          error = _error;
+        }
         this._domElement.removeAttribute('contenteditable');
       }
       return Text.__super__.blur.call(this);
@@ -3461,7 +3480,7 @@
           target.content = target.content.concat(element.content);
         }
         if (target.isMounted()) {
-          target._domElement.innerHTML = target.content.html();
+          target.updateInnerHTML();
         }
         target.focus();
         new ContentSelect.Range(offset, offset).select(target._domElement);
@@ -3514,6 +3533,27 @@
         this._cached = content.html();
       }
       return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("" + this._cached + "</" + this._tagName + ">");
+    };
+
+    PreText.prototype.updateInnerHTML = function() {
+      var html;
+      html = this.content.html();
+      html += '\n';
+      this._domElement.innerHTML = html;
+      ContentSelect.Range.prepareElement(this._domElement);
+      return this._flagIfEmpty();
+    };
+
+    PreText.prototype._onKeyUp = function(ev) {
+      var html, newSnaphot, snapshot;
+      snapshot = this.content.html();
+      html = this._domElement.innerHTML.replace(/[\n]$/, '');
+      this.content = new HTMLString.String(html, this.content.preserveWhitespace());
+      newSnaphot = this.content.html();
+      if (snapshot !== newSnaphot) {
+        this.taint();
+      }
+      return this._flagIfEmpty();
     };
 
     PreText.prototype._keyReturn = function(ev) {
@@ -4750,6 +4790,7 @@
   })(ContentEdit.Text);
 
 }).call(this);
+
 (function() {
   var AttributeUI, CropMarksUI, StyleUI, _EditorApp,
     __slice = [].slice,
@@ -4981,8 +5022,8 @@
       }
     };
 
-    WidgetUI.prototype.detatch = function() {
-      WidgetUI.__super__.detatch.call(this, component, index);
+    WidgetUI.prototype.detatch = function(component) {
+      WidgetUI.__super__.detatch.call(this, component);
       if (this.isMounted()) {
         return component.unmount();
       }
@@ -5203,6 +5244,7 @@
         tag = _ref[_i];
         tag.unmount();
       }
+      this._tagUIs = [];
       if (!element) {
         return;
       }
@@ -7072,6 +7114,8 @@
       this._state = ContentTools.EditorApp.DORMANT;
       this._regions = null;
       this._orderedRegions = null;
+      this._rootLastModified = null;
+      this._regionsLastModified = {};
       this._ignition = null;
       this._inspector = null;
       this._toolbox = null;
@@ -7111,12 +7155,16 @@
       return this._ignition.busy(busy);
     };
 
-    _EditorApp.prototype.init = function(query, namingProp) {
+    _EditorApp.prototype.init = function(queryOrDOMElements, namingProp) {
       if (namingProp == null) {
         namingProp = 'id';
       }
       this._namingProp = namingProp;
-      this._domRegions = document.querySelectorAll(query);
+      if (queryOrDOMElements.length > 0 && queryOrDOMElements[0].nodeType === Node.ELEMENT_NODE) {
+        this._domRegions = queryOrDOMElements;
+      } else {
+        this._domRegions = document.querySelectorAll(queryOrDOMElements);
+      }
       if (this._domRegions.length === 0) {
         return;
       }
@@ -7313,7 +7361,9 @@
     };
 
     _EditorApp.prototype.revert = function() {
-      if (ContentEdit.Root.get().lastModified() && !window.confirm(ContentEdit._('Your changes have not been saved, do you really want to lose them?'))) {
+      var confirmMessage;
+      confirmMessage = ContentEdit._('Your changes have not been saved, do you really want to lose them?');
+      if (ContentEdit.Root.get().lastModified() > this._rootLastModified && !window.confirm(confirmMessage)) {
         return false;
       }
       this.revertToSnapshot(this.history.goTo(0), false);
@@ -7347,9 +7397,10 @@
     };
 
     _EditorApp.prototype.save = function() {
-      var args, child, html, modifiedRegions, name, passive, region, _ref;
+      var args, child, html, modifiedRegions, name, passive, region, root, _ref;
       passive = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      if (!ContentEdit.Root.get().lastModified() && passive) {
+      root = ContentEdit.Root.get();
+      if (root.lastModified() === this._rootLastModified && passive) {
         return;
       }
       modifiedRegions = {};
@@ -7363,10 +7414,13 @@
             html = '';
           }
         }
-        modifiedRegions[name] = html;
         if (!passive) {
-          region.domElement().innerHTML = modifiedRegions[name];
+          region.domElement().innerHTML = html;
         }
+        if (region.lastModified() === this._regionsLastModified[name]) {
+          continue;
+        }
+        modifiedRegions[name] = html;
       }
       return this.trigger.apply(this, ['save', modifiedRegions].concat(__slice.call(args)));
     };
@@ -7389,12 +7443,13 @@
         }
         this._regions[name] = new ContentEdit.Region(domRegion);
         this._orderedRegions.push(name);
+        this._regionsLastModified[name] = this._regions[name].lastModified();
       }
       this._preventEmptyRegions();
+      this._rootLastModified = ContentEdit.Root.get().lastModified();
       this.history = new ContentTools.History(this._regions);
       this.history.watch();
       this._state = ContentTools.EditorApp.EDITING;
-      ContentEdit.Root.get().commit();
       this._toolbox.show();
       this._inspector.show();
       return this.busy(false);
@@ -7474,7 +7529,8 @@
           continue;
         }
         placeholder = new ContentEdit.Text('p', {}, '');
-        _results.push(region.attach(placeholder));
+        region.attach(placeholder);
+        _results.push(region.commit());
       }
       return _results;
     };
@@ -7633,6 +7689,9 @@
         region = element.closest(function(node) {
           return node.constructor.name === 'Region';
         });
+        if (!region) {
+          return;
+        }
         _ref1 = this._regions;
         for (name in _ref1) {
           other_region = _ref1[name];
@@ -8012,7 +8071,7 @@
 
     ContentTools.ToolShelf.stow(Subheading, 'subheading');
 
-    Subheading.label = 'Subeading';
+    Subheading.label = 'Subheading';
 
     Subheading.icon = 'subheading';
 
@@ -8733,6 +8792,11 @@
       var app, list, row, table;
       app = ContentTools.EditorApp.get();
       element.blur();
+      if (element.nextContent()) {
+        element.nextContent().focus();
+      } else if (element.previousContent()) {
+        element.previousContent().focus();
+      }
       switch (element.constructor.name) {
         case 'ListItemText':
           if (app.ctrlDown()) {

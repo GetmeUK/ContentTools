@@ -22,6 +22,10 @@
     });
   });
 
+  window.getComputedStyle = null;
+
+  navigator.appVersion = 'Linux';
+
   describe('ContentTools.ComponentUI()', function() {
     return it('should return an instance of a ComponentUI', function() {
       var component;
@@ -177,6 +181,108 @@
     });
   });
 
+  describe('ContentTools.WidgetUI()', function() {
+    return it('should return an instance of a WidgetUI', function() {
+      var widget;
+      widget = new ContentTools.WidgetUI();
+      return expect(widget instanceof ContentTools.WidgetUI).toBe(true);
+    });
+  });
+
+  describe('ContentTools.WidgetUI.attach()', function() {
+    return it('should attach a widget as a child of another widget and mount it', function() {
+      var child, parent;
+      parent = new ContentTools.WidgetUI();
+      child = new ContentTools.WidgetUI();
+      spyOn(child, 'mount');
+      parent.attach(child);
+      expect(parent.children()).toEqual([child]);
+      return expect(child.mount).toHaveBeenCalledWith();
+    });
+  });
+
+  describe('ContentTools.WidgetUI.detatch()', function() {
+    return it('should detatch a child widget and unmount it', function() {
+      var child, domElement, parent;
+      parent = new ContentTools.WidgetUI();
+      child = new ContentTools.WidgetUI();
+      spyOn(child, 'unmount');
+      parent.attach(child);
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+      parent._domElement = domElement;
+      parent.detatch(child);
+      expect(parent.children()).toEqual([]);
+      return expect(child.unmount).toHaveBeenCalled();
+    });
+  });
+
+  describe('ContentTools.WidgetUI.show()', function() {
+    return it('should add the `--active` CSS modifier class to a widget', function(done) {
+      var checkShown, domElement, widget;
+      widget = new ContentTools.WidgetUI();
+      domElement = document.createElement('div');
+      document.body.appendChild(domElement);
+      widget._domElement = domElement;
+      widget.show();
+      checkShown = function() {
+        var classes;
+        classes = widget.domElement().getAttribute('class').split(' ');
+        expect(classes.indexOf('ct-widget--active') > -1).toBe(true);
+        return done();
+      };
+      return setTimeout(checkShown, 500);
+    });
+  });
+
+  describe('ContentTools.WidgetUI.hide()', function() {
+    var widget;
+    widget = null;
+    beforeEach(function() {
+      var domElement;
+      widget = new ContentTools.WidgetUI();
+      domElement = document.createElement('div');
+      domElement.setAttribute('class', 'ct-widget');
+      document.body.appendChild(domElement);
+      return widget._domElement = domElement;
+    });
+    it('should remove the `--active` CSS modifier class from a widget', function() {
+      var classes;
+      widget.hide();
+      classes = (widget.domElement().getAttribute('class') || '').split(' ');
+      return expect(classes.indexOf('ct-widget--active') === -1).toBe(true);
+    });
+    return it('should unmount the component after X seconds', function(done) {
+      var checkUnmounted;
+      widget.hide();
+      checkUnmounted = function() {
+        expect(widget.isMounted()).toBe(false);
+        return done();
+      };
+      return setTimeout(checkUnmounted, 500);
+    });
+  });
+
+  describe('ContentTools.AnchoredComponentUI()', function() {
+    return it('should return an instance of a AnchoredComponentUI', function() {
+      var anchored;
+      anchored = new ContentTools.AnchoredComponentUI();
+      return expect(anchored instanceof ContentTools.AnchoredComponentUI).toBe(true);
+    });
+  });
+
+  describe('ContentTools.AnchoredComponentUI.mount()', function() {
+    return it('should mount the component to a DOM element', function() {
+      var anchored, domElement, parentDOMElement;
+      domElement = document.createElement('div');
+      parentDOMElement = document.createElement('div');
+      anchored = new ContentTools.AnchoredComponentUI();
+      anchored._domElement = domElement;
+      anchored.mount(parentDOMElement);
+      return expect(anchored.domElement().parentNode).toEqual(parentDOMElement);
+    });
+  });
+
   describe('ContentTools.FlashUI', function() {
     var div, editor;
     div = null;
@@ -198,19 +304,19 @@
         flash = new ContentTools.FlashUI('ok');
         return expect(flash instanceof ContentTools.FlashUI).toBe(true);
       });
-      it('should automatically mount the component', function() {
+      it('should mount the component', function() {
         var flash;
         flash = new ContentTools.FlashUI('ok');
         return expect(flash.isMounted()).toBe(true);
       });
-      return it('should automatically unmount the component after X seconds', function(done) {
+      return it('should unmount the component after X seconds', function(done) {
         var checkUnmounted, flash;
         flash = new ContentTools.FlashUI('ok');
         checkUnmounted = function() {
           expect(flash.isMounted()).toBe(false);
           return done();
         };
-        return setTimeout(checkUnmounted, 3000);
+        return setTimeout(checkUnmounted, 500);
       });
     });
     return describe('ContentTools.FlashUI.mount()', function() {
@@ -300,11 +406,8 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('start', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domEdit.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalled();
       });
@@ -316,12 +419,8 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('stop', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
-        ignition._domEdit.dispatchEvent(clickEvent);
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domConfirm.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalledWith(true);
       });
@@ -333,14 +432,147 @@
         };
         spyOn(foo, 'handleFoo');
         ignition.bind('stop', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         ignition._domEdit.dispatchEvent(clickEvent);
+        ContentEdit.Root.get().commit();
         ignition._domCancel.dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalledWith(false);
+      });
+    });
+  });
+
+  describe('ContentTools.InspectorUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      div.setAttribute('id', 'foo');
+      document.body.appendChild(div);
+      div.innerHTML = '<p>bar</p>\n<ul>\n    <li>zee</li>\n</ul>';
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.InspectorUI()', function() {
+      return it('should return an instance of a InspectorUI', function() {
+        var inspector;
+        inspector = new ContentTools.InspectorUI();
+        return expect(inspector instanceof ContentTools.InspectorUI).toBe(true);
+      });
+    });
+    describe('ContentTools.InspectorUI.mount()', function() {
+      return it('should mount the component', function() {
+        var inspector;
+        inspector = new ContentTools.InspectorUI();
+        editor.attach(inspector);
+        inspector.mount();
+        return expect(inspector.isMounted()).toBe(true);
+      });
+    });
+    describe('ContentTools.InspectorUI.unmount()', function() {
+      return it('should unmount the component', function() {
+        var inspector;
+        inspector = new ContentTools.InspectorUI();
+        editor.attach(inspector);
+        inspector.mount();
+        inspector.unmount();
+        return expect(inspector.isMounted()).toBe(false);
+      });
+    });
+    return describe('ContentTools.InspectorUI.updateTags()', function() {
+      return it('should update the tags displayed to reflect the path to the current element', function() {
+        var elements, inspector, region;
+        editor.start();
+        inspector = editor._inspector;
+        region = editor.regions()['foo'];
+        elements = region.children;
+        elements[0].focus();
+        expect(inspector._tagUIs.length).toEqual(1);
+        expect(inspector._tagUIs[0].element.tagName()).toEqual('p');
+        elements[1].children[0].children[0].focus();
+        expect(inspector._tagUIs.length).toEqual(2);
+        expect(inspector._tagUIs[0].element.tagName()).toEqual('ul');
+        expect(inspector._tagUIs[1].element.tagName()).toEqual('li');
+        return editor.stop();
+      });
+    });
+  });
+
+  describe('ContentTools.TagUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      div.setAttribute('id', 'foo');
+      document.body.appendChild(div);
+      div.innerHTML = '<p>bar</p>\n<ul>\n    <li>zee</li>\n</ul>';
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.TagUI()', function() {
+      return it('should return an instance of a TagUI', function() {
+        var tag;
+        tag = new ContentTools.TagUI();
+        return expect(tag instanceof ContentTools.TagUI).toBe(true);
+      });
+    });
+    describe('ContentTools.TagUI.mount()', function() {
+      return it('should mount the component', function() {
+        var elements, inspector, region, tag;
+        editor.start();
+        inspector = editor._inspector;
+        region = editor.regions()['foo'];
+        elements = region.children;
+        tag = new ContentTools.TagUI(elements[0]);
+        tag.mount(inspector._domTags);
+        return expect(tag.isMounted()).toBe(true);
+      });
+    });
+    return describe('ContentTools.TagUI > Interaction', function() {
+      return it('should allow the properties dialog to be used', function() {
+        var app, dialog, element, inspector, mouseDownEvent, region, tag;
+        editor.start();
+        inspector = editor._inspector;
+        region = editor.regions()['foo'];
+        element = region.children[0];
+        element.focus();
+        tag = inspector._tagUIs[0];
+        mouseDownEvent = document.createEvent('CustomEvent');
+        mouseDownEvent.initCustomEvent('mousedown', false, false, null);
+        tag.domElement().dispatchEvent(mouseDownEvent);
+        app = ContentTools.EditorApp.get();
+        dialog = app.children()[app.children().length - 1];
+        expect(dialog instanceof ContentTools.PropertiesDialog).toBe(true);
+        dialog.trigger('save', {
+          title: 'bar'
+        }, {
+          'zee': true
+        }, 'foo');
+        expect(element.attr('title')).toBe('bar');
+        expect(element.hasCSSClass('zee')).toBe(true);
+        expect(element.content.html()).toBe('foo');
+        tag.domElement().dispatchEvent(mouseDownEvent);
+        dialog = app.children()[app.children().length - 1];
+        dialog.trigger('save', {
+          title: null
+        }, {
+          'zee': false
+        }, 'bar');
+        expect(element.attr('title')).toBe(void 0);
+        expect(element.hasCSSClass('zee')).toBe(false);
+        return expect(element.content.html()).toBe('bar');
       });
     });
   });
@@ -422,13 +654,174 @@
         };
         spyOn(foo, 'handleFoo');
         modal.bind('click', foo.handleFoo);
-        clickEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
         modal.domElement().dispatchEvent(clickEvent);
         return expect(foo.handleFoo).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('ContentTools.ToolboxUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      div.setAttribute('id', 'foo');
+      div.innerHTML = '<p>bar</p><img scr="test.png">';
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      editor.init('.editable');
+      return editor.start();
+    });
+    afterEach(function() {
+      editor.stop();
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.ToolboxUI()', function() {
+      return it('should return an instance of a ToolboxUI', function() {
+        var toolbox;
+        toolbox = new ContentTools.ToolboxUI([]);
+        return expect(toolbox instanceof ContentTools.ToolboxUI).toBe(true);
+      });
+    });
+    describe('ContentTools.ToolboxUI.isDragging()', function() {
+      return it('should return true if the ToolboxUI is currently being dragged', function() {
+        var mouseDownEvent, mouseUpEvent, toolbox;
+        toolbox = editor._toolbox;
+        expect(toolbox.isDragging()).toBe(false);
+        mouseDownEvent = document.createEvent('CustomEvent');
+        mouseDownEvent.initCustomEvent('mousedown', false, false, null);
+        toolbox._domGrip.dispatchEvent(mouseDownEvent);
+        expect(toolbox.isDragging()).toBe(true);
+        mouseUpEvent = document.createEvent('CustomEvent');
+        mouseUpEvent.initCustomEvent('mouseup', false, false, null);
+        document.dispatchEvent(mouseUpEvent);
+        return expect(toolbox.isDragging()).toBe(false);
+      });
+    });
+    describe('ContentTools.ToolboxUI.hide()', function() {
+      return it('should remove all event bindings before the toolbox is hidden', function() {
+        var toolbox;
+        toolbox = editor._toolbox;
+        spyOn(toolbox, '_removeDOMEventListeners');
+        toolbox.hide();
+        return expect(toolbox._removeDOMEventListeners).toHaveBeenCalled();
+      });
+    });
+    describe('ContentTools.ToolboxUI.tools()', function() {
+      it('should return the list of tools that populate the toolbox', function() {
+        var toolbox;
+        toolbox = editor._toolbox;
+        return expect(toolbox.tools()).toEqual(ContentTools.DEFAULT_TOOLS);
+      });
+      return it('should set the list of tools that populate the toolbox', function() {
+        var customTools, toolbox;
+        toolbox = editor._toolbox;
+        customTools = [['bold', 'italic', 'link']];
+        toolbox.tools(customTools);
+        return expect(toolbox.tools()).toEqual(customTools);
+      });
+    });
+    describe('ContentTools.ToolboxUI.mount()', function() {
+      it('should mount the component', function() {
+        var toolbox;
+        toolbox = new ContentTools.ToolboxUI([]);
+        editor.attach(toolbox);
+        toolbox.mount();
+        return expect(toolbox.isMounted()).toBe(true);
+      });
+      it('should restore the position of the component to any previously saved state', function() {
+        var toolbox;
+        window.localStorage.setItem('ct-toolbox-position', '7,7');
+        toolbox = new ContentTools.ToolboxUI([]);
+        editor.attach(toolbox);
+        toolbox.mount();
+        expect(toolbox.domElement().style.left).toBe('7px');
+        return expect(toolbox.domElement().style.top).toBe('7px');
+      });
+      return it('should always be contained within the viewport', function() {
+        var toolbox;
+        window.localStorage.setItem('ct-toolbox-position', '-7,-7');
+        toolbox = new ContentTools.ToolboxUI([]);
+        editor.attach(toolbox);
+        toolbox.mount();
+        expect(toolbox.domElement().style.left).toBe('');
+        return expect(toolbox.domElement().style.top).toBe('');
+      });
+    });
+    describe('ContentTools.ToolboxUI.updateTools()', function() {
+      return it('should refresh all tool UIs in the toolbox', function(done) {
+        var checkUpdated, element, region, toolbox;
+        toolbox = editor._toolbox;
+        region = editor.regions()['foo'];
+        element = region.children[0];
+        expect(toolbox._toolUIs['heading'].disabled()).toBe(true);
+        element.focus();
+        checkUpdated = function() {
+          expect(toolbox._toolUIs['heading'].disabled()).toBe(false);
+          return done();
+        };
+        return setTimeout(checkUpdated, 250);
+      });
+    });
+    return describe('ContentTools.ToolboxUI > Keyboard short-cuts', function() {
+      it('should allow a non-content element to be removed with the delete key short-cut', function() {
+        var element, keyDownEvent, region, toolbox;
+        toolbox = editor._toolbox;
+        region = editor.regions()['foo'];
+        element = region.children[1];
+        element.focus();
+        keyDownEvent = document.createEvent('CustomEvent');
+        keyDownEvent.initCustomEvent('keydown', false, false, null);
+        keyDownEvent.keyCode = 46;
+        window.dispatchEvent(keyDownEvent);
+        return expect(region.children.length).toBe(1);
+      });
+      it('should allow a undo to be triggered with Ctrl-z key short-cut', function(done) {
+        var checkUndo, element, region, toolbox;
+        toolbox = editor._toolbox;
+        region = editor.regions()['foo'];
+        element = region.children[1];
+        region.detach(element);
+        checkUndo = function() {
+          var keyDownEvent;
+          keyDownEvent = document.createEvent('CustomEvent');
+          keyDownEvent.initCustomEvent('keydown', false, false, null);
+          keyDownEvent.keyCode = 90;
+          keyDownEvent.ctrlKey = true;
+          window.dispatchEvent(keyDownEvent);
+          region = editor.regions()['foo'];
+          expect(region.children.length).toBe(2);
+          return done();
+        };
+        return setTimeout(checkUndo, 750);
+      });
+      return it('should allow a redo to be triggered with Ctrl-Shift-z key short-cut', function(done) {
+        var checkRedo, element, region, toolbox;
+        toolbox = editor._toolbox;
+        region = editor.regions()['foo'];
+        element = region.children[1];
+        region.detach(element);
+        checkRedo = function() {
+          var keyDownEvent;
+          ContentTools.Tools.Undo.apply(null, null, function() {});
+          region = editor.regions()['foo'];
+          expect(region.children.length).toBe(2);
+          keyDownEvent = document.createEvent('CustomEvent');
+          keyDownEvent.initCustomEvent('keydown', false, false, null);
+          keyDownEvent.keyCode = 90;
+          keyDownEvent.ctrlKey = true;
+          keyDownEvent.shiftKey = true;
+          window.dispatchEvent(keyDownEvent);
+          region = editor.regions()['foo'];
+          expect(region.children.length).toBe(1);
+          return done();
+        };
+        return setTimeout(checkRedo, 750);
       });
     });
   });

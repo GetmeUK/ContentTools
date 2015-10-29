@@ -107,11 +107,8 @@ describe 'ContentTools.IgnitionUI', () ->
             ignition.bind('start', foo.handleFoo)
 
             # Create a fake click event against the modal's DOM element
-            clickEvent = new MouseEvent('click', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-                })
+            clickEvent = document.createEvent('CustomEvent')
+            clickEvent.initCustomEvent('click', false, false, null)
             ignition._domEdit.dispatchEvent(clickEvent)
 
             expect(foo.handleFoo).toHaveBeenCalled()
@@ -132,12 +129,8 @@ describe 'ContentTools.IgnitionUI', () ->
             ignition.bind('stop', foo.handleFoo)
 
             # Create a fake click event against the modal's DOM element
-            clickEvent = new MouseEvent('click', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-                })
-            ignition._domEdit.dispatchEvent(clickEvent)
+            clickEvent = document.createEvent('CustomEvent')
+            clickEvent.initCustomEvent('click', false, false, null)
             ignition._domConfirm.dispatchEvent(clickEvent)
 
             expect(foo.handleFoo).toHaveBeenCalledWith(true)
@@ -158,12 +151,11 @@ describe 'ContentTools.IgnitionUI', () ->
             ignition.bind('stop', foo.handleFoo)
 
             # Create a fake click event against the modal's DOM element
-            clickEvent = new MouseEvent('click', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-                })
+            clickEvent = document.createEvent('CustomEvent')
+            clickEvent.initCustomEvent('click', false, false, null)
+
             ignition._domEdit.dispatchEvent(clickEvent)
+            ContentEdit.Root.get().commit()
             ignition._domCancel.dispatchEvent(clickEvent)
 
             expect(foo.handleFoo).toHaveBeenCalledWith(false)

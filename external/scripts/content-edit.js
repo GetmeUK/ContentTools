@@ -290,13 +290,16 @@
         for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
           tag = _ref2[_l];
           if (openHeads.indexOf(tag.head()) === -1) {
-            head = tag.head();
-            html += head;
             if (!tag.selfClosing()) {
+              head = tag.head();
+              html += head;
               openTags.push(tag);
               openHeads.push(head);
             }
           }
+        }
+        if (c._tags.length > 0 && c._tags[0].selfClosing()) {
+          html += c._tags[0].head();
         }
         html += c.c();
       }
@@ -1325,6 +1328,7 @@
   })();
 
 }).call(this);
+
 (function() {
   var SELF_CLOSING_NODE_NAMES, _containedBy, _getChildNodeAndOffset, _getNodeRange, _getOffsetOfChildNode,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -2187,23 +2191,33 @@
     };
 
     Element.prototype.drag = function(x, y) {
+      var root;
       if (!this.isMounted()) {
         return;
       }
-      return ContentEdit.Root.get().startDragging(this, x, y);
+      root = ContentEdit.Root.get();
+      root.startDragging(this, x, y);
+      return root.trigger('drag', this);
     };
 
     Element.prototype.drop = function(element, placement) {
+      var root;
+      root = ContentEdit.Root.get();
       if (element) {
         element._removeCSSClass('ce-element--drop');
         element._removeCSSClass("ce-element--drop-" + placement[0]);
         element._removeCSSClass("ce-element--drop-" + placement[1]);
         if (this.constructor.droppers[element.constructor.name]) {
-          return this.constructor.droppers[element.constructor.name](this, element, placement);
+          this.constructor.droppers[element.constructor.name](this, element, placement);
+          root.trigger('drop', this, element, placement);
+          return;
         } else if (element.constructor.droppers[this.constructor.name]) {
-          return element.constructor.droppers[this.constructor.name](this, element, placement);
+          element.constructor.droppers[this.constructor.name](this, element, placement);
+          root.trigger('drop', this, element, placement);
+          return;
         }
       }
+      return root.trigger('drop', this, null, null);
     };
 
     Element.prototype.focus = function(supressDOMFocus) {
@@ -3160,12 +3174,17 @@
     };
 
     Text.prototype.blur = function() {
+      var error;
       if (this.content.isWhitespace()) {
         if (this.parent()) {
           this.parent().detach(this);
         }
       } else if (this.isMounted()) {
-        this._domElement.blur();
+        try {
+          this._domElement.blur();
+        } catch (_error) {
+          error = _error;
+        }
         this._domElement.removeAttribute('contenteditable');
       }
       return Text.__super__.blur.call(this);
@@ -3461,7 +3480,7 @@
           target.content = target.content.concat(element.content);
         }
         if (target.isMounted()) {
-          target._domElement.innerHTML = target.content.html();
+          target.updateInnerHTML();
         }
         target.focus();
         new ContentSelect.Range(offset, offset).select(target._domElement);
@@ -3514,6 +3533,27 @@
         this._cached = content.html();
       }
       return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("" + this._cached + "</" + this._tagName + ">");
+    };
+
+    PreText.prototype.updateInnerHTML = function() {
+      var html;
+      html = this.content.html();
+      html += '\n';
+      this._domElement.innerHTML = html;
+      ContentSelect.Range.prepareElement(this._domElement);
+      return this._flagIfEmpty();
+    };
+
+    PreText.prototype._onKeyUp = function(ev) {
+      var html, newSnaphot, snapshot;
+      snapshot = this.content.html();
+      html = this._domElement.innerHTML.replace(/[\n]$/, '');
+      this.content = new HTMLString.String(html, this.content.preserveWhitespace());
+      newSnaphot = this.content.html();
+      if (snapshot !== newSnaphot) {
+        this.taint();
+      }
+      return this._flagIfEmpty();
     };
 
     PreText.prototype._keyReturn = function(ev) {

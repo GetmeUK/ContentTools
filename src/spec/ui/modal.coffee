@@ -106,11 +106,8 @@ describe 'ContentTools.ModalUI', () ->
             modal.bind('click', foo.handleFoo)
 
             # Create a fake click event against the modal's DOM element
-            clickEvent = new MouseEvent('click', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-                })
+            clickEvent = document.createEvent('CustomEvent')
+            clickEvent.initCustomEvent('click', false, false, null)
             modal.domElement().dispatchEvent(clickEvent)
 
             expect(foo.handleFoo).toHaveBeenCalled()
