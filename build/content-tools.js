@@ -3175,6 +3175,9 @@
 
     Text.prototype.blur = function() {
       var error;
+      if (this.isMounted()) {
+        this._syncContent();
+      }
       if (this.content.isWhitespace()) {
         if (this.parent()) {
           this.parent().detach(this);
@@ -3308,14 +3311,7 @@
     };
 
     Text.prototype._onKeyUp = function(ev) {
-      var newSnaphot, snapshot;
-      snapshot = this.content.html();
-      this.content = new HTMLString.String(this._domElement.innerHTML, this.content.preserveWhitespace());
-      newSnaphot = this.content.html();
-      if (snapshot !== newSnaphot) {
-        this.taint();
-      }
-      return this._flagIfEmpty();
+      return this._syncContent();
     };
 
     Text.prototype._onMouseDown = function(ev) {
@@ -3465,6 +3461,17 @@
       } else {
         return this._removeCSSClass('ce-element--empty');
       }
+    };
+
+    Text.prototype._syncContent = function(ev) {
+      var newSnaphot, snapshot;
+      snapshot = this.content.html();
+      this.content = new HTMLString.String(this._domElement.innerHTML, this.content.preserveWhitespace());
+      newSnaphot = this.content.html();
+      if (snapshot !== newSnaphot) {
+        this.taint();
+      }
+      return this._flagIfEmpty();
     };
 
     Text.droppers = {
@@ -7174,6 +7181,11 @@
       })(this));
       this._ignition.bind('stop', (function(_this) {
         return function(save) {
+          var focused;
+          focused = ContentEdit.Root.get().focused();
+          if (focused && focused._syncContent !== void 0) {
+            focused._syncContent();
+          }
           if (save) {
             _this.save();
           } else {
