@@ -299,6 +299,7 @@ describe 'ContentTools.ToolboxUI', () ->
 
             expect(element.tagName()).toBe 'h1'
 
+
     describe 'ContentTools.Tool.mount()', () ->
 
         it 'should mount the component', () ->

@@ -387,6 +387,17 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
 
     # Methods
 
+    apply: (element, selection) ->
+        # Apply the tool UIs associated tool
+        unless @tool.canApply(element, selection)
+            return
+
+        callback = (applied) =>
+            if applied
+                @trigger('apply')
+
+        @tool.apply(element, selection, callback)
+
     disabled: (disabledState) ->
         # Get/Set the disabled state of the tool
 
@@ -410,17 +421,6 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         else
             # Enable the tool
             @removeCSSClass('ct-tool--disabled')
-
-    apply: (element, selection) ->
-        # Apply the tool UIs associated tool
-        unless @tool.canApply(element, selection)
-            return
-
-        callback = (applied) =>
-            if applied
-                @trigger('apply')
-
-        @tool.apply(element, selection, callback)
 
     mount: (domParent, before=null) ->
         # Mount the component to the DOM

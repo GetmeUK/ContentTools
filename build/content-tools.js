@@ -5713,6 +5713,21 @@
       this._disabled = false;
     }
 
+    ToolUI.prototype.apply = function(element, selection) {
+      var callback;
+      if (!this.tool.canApply(element, selection)) {
+        return;
+      }
+      callback = (function(_this) {
+        return function(applied) {
+          if (applied) {
+            return _this.trigger('apply');
+          }
+        };
+      })(this);
+      return this.tool.apply(element, selection, callback);
+    };
+
     ToolUI.prototype.disabled = function(disabledState) {
       if (disabledState === void 0) {
         return this._disabled;
@@ -5728,21 +5743,6 @@
       } else {
         return this.removeCSSClass('ct-tool--disabled');
       }
-    };
-
-    ToolUI.prototype.apply = function(element, selection) {
-      var callback;
-      if (!this.tool.canApply(element, selection)) {
-        return;
-      }
-      callback = (function(_this) {
-        return function(applied) {
-          if (applied) {
-            return _this.trigger('apply');
-          }
-        };
-      })(this);
-      return this.tool.apply(element, selection, callback);
     };
 
     ToolUI.prototype.mount = function(domParent, before) {
