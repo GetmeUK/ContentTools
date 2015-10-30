@@ -101,7 +101,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 # toolbox.
                 @_toolUIs[toolName] = new ContentTools.ToolUI(tool)
                 @_toolUIs[toolName].mount(domToolGroup)
-                @_toolUIs[toolName].active(false)
+                @_toolUIs[toolName].disabled(true)
 
                 # Whenever the tool is applied we'll want to force an update
                 @_toolUIs[toolName].bind 'apply', () =>
@@ -382,34 +382,34 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         # (and remains over) the tool.
         @_mouseDown = false
 
-        # Flag indicating if the tools is active
-        @_active = true
+        # Flag indicating if the tools is disabled
+        @_disabled = false
 
     # Methods
 
-    active: (activeState) ->
-        # Get/Set the active state of the tool
+    disabled: (disabledState) ->
+        # Get/Set the disabled state of the tool
 
-        # Return the current state if `activeState` hasn't been provided
-        if activeState == undefined
-            return @_active
+        # Return the current state if `disabledState` hasn't been provided
+        if disabledState == undefined
+            return @_disabled
 
         # Set the state
-        if @_active == activeState
+        if @_disabled == disabledState
             return
 
-        # Set the active state
-        @_active = activeState
+        # Set the disabled state
+        @_disabled = disabledState
 
-        if activeState
-            # Enable the tool
-            @removeCSSClass('ct-tool--disabled')
-
-        else
+        if disabledState
             # Disable the tool
             @_mouseDown = false
             @addCSSClass('ct-tool--disabled')
             @removeCSSClass('ct-tool--applied')
+
+        else
+            # Enable the tool
+            @removeCSSClass('ct-tool--disabled')
 
     apply: (element, selection) ->
         # Apply the tool UIs associated tool
@@ -441,14 +441,14 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
 
         # If there's no element selected then the tool is disabled
         if not (element and element.isMounted())
-            @active(false)
+            @disabled(true)
             return
 
         # Check if the tool can be applied
         if @tool.canApply(element, selection)
-            @active(true)
+            @disabled(false)
         else
-            @active(false)
+            @disabled(true)
             return
 
         # Check of the tool is already being applied
@@ -475,7 +475,7 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         ev.preventDefault()
 
         # If the tool is disabled ignore this event
-        if not @active()
+        if @disabled()
             return
 
         @_mouseDown = true

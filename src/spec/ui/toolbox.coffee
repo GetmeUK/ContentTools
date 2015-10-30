@@ -140,13 +140,13 @@ describe 'ContentTools.ToolboxUI', () ->
             element = region.children[0]
 
             # With no elements select the heading tool should be disabled
-            expect(toolbox._toolUIs['heading'].active()).toBe false
+            expect(toolbox._toolUIs['heading'].disabled()).toBe true
 
             # Test that if we select an element the tools update
             element.focus()
 
             checkUpdated = () ->
-                expect(toolbox._toolUIs['heading'].active()).toBe true
+                expect(toolbox._toolUIs['heading'].disabled()).toBe false
                 done()
 
             setTimeout(checkUpdated, 250)
@@ -269,18 +269,18 @@ describe 'ContentTools.ToolboxUI', () ->
             expect(tool instanceof ContentTools.ToolUI).toBe true
 
 
-    describe 'ContentTools.ToolUI.active()', () ->
+    describe 'ContentTools.ToolUI.disabled()', () ->
 
-        it 'should set/get the active state for the tool', () ->
+        it 'should set/get the disabled state for the tool', () ->
 
             tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'))
 
-            # Check that the default ignition active state to be true
-            expect(tool.active()).toBe true
+            # Check that the default ignition disabled state to be true
+            expect(tool.disabled()).toBe false
 
             # Check we can change it
-            tool.active(false)
-            expect(tool.active()).toBe false
+            tool.disabled(true)
+            expect(tool.disabled()).toBe true
 
 
     describe 'ContentTools.ToolUI.apply()', () ->
@@ -322,12 +322,12 @@ describe 'ContentTools.ToolboxUI', () ->
                 document.querySelectorAll('.editable')[0])
             element = region.children[0]
 
-            # Check the tool is inactive after an update if no element is
+            # Check the tool is disabled after an update if no element is
             # selected (e.g it's not applicable to the current selection).
             tool.update()
-            expect(tool.active()).toBe false
+            expect(tool.disabled()).toBe true
 
-            # Check the tool is active after an update if an element is
+            # Check the tool is enabled after an update if an element is
             # provided.
             tool.update(element)
-            expect(tool.active()).toBe true
+            expect(tool.disabled()).toBe false

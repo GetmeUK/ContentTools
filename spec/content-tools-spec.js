@@ -759,10 +759,10 @@
         toolbox = editor._toolbox;
         region = editor.regions()['foo'];
         element = region.children[0];
-        expect(toolbox._toolUIs['heading'].active()).toBe(false);
+        expect(toolbox._toolUIs['heading'].disabled()).toBe(true);
         element.focus();
         checkUpdated = function() {
-          expect(toolbox._toolUIs['heading'].active()).toBe(true);
+          expect(toolbox._toolUIs['heading'].disabled()).toBe(false);
           return done();
         };
         return setTimeout(checkUpdated, 250);
@@ -850,13 +850,13 @@
         return expect(tool instanceof ContentTools.ToolUI).toBe(true);
       });
     });
-    describe('ContentTools.ToolUI.active()', function() {
-      return it('should set/get the active state for the tool', function() {
+    describe('ContentTools.ToolUI.disabled()', function() {
+      return it('should set/get the disabled state for the tool', function() {
         var tool;
         tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'));
-        expect(tool.active()).toBe(true);
-        tool.active(false);
-        return expect(tool.active()).toBe(false);
+        expect(tool.disabled()).toBe(false);
+        tool.disabled(true);
+        return expect(tool.disabled()).toBe(true);
       });
     });
     describe('ContentTools.ToolUI.apply()', function() {
@@ -885,9 +885,9 @@
         region = new ContentEdit.Region(document.querySelectorAll('.editable')[0]);
         element = region.children[0];
         tool.update();
-        expect(tool.active()).toBe(false);
+        expect(tool.disabled()).toBe(true);
         tool.update(element);
-        return expect(tool.active()).toBe(true);
+        return expect(tool.disabled()).toBe(false);
       });
     });
   });

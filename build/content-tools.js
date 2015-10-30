@@ -5478,7 +5478,7 @@
           tool = ContentTools.ToolShelf.fetch(toolName);
           this._toolUIs[toolName] = new ContentTools.ToolUI(tool);
           this._toolUIs[toolName].mount(domToolGroup);
-          this._toolUIs[toolName].active(false);
+          this._toolUIs[toolName].disabled(true);
           this._toolUIs[toolName].bind('apply', (function(_this) {
             return function() {
               return _this.updateTools();
@@ -5710,23 +5710,23 @@
       ToolUI.__super__.constructor.call(this);
       this.tool = tool;
       this._mouseDown = false;
-      this._active = true;
+      this._disabled = false;
     }
 
-    ToolUI.prototype.active = function(activeState) {
-      if (activeState === void 0) {
-        return this._active;
+    ToolUI.prototype.disabled = function(disabledState) {
+      if (disabledState === void 0) {
+        return this._disabled;
       }
-      if (this._active === activeState) {
+      if (this._disabled === disabledState) {
         return;
       }
-      this._active = activeState;
-      if (activeState) {
-        return this.removeCSSClass('ct-tool--disabled');
-      } else {
+      this._disabled = disabledState;
+      if (disabledState) {
         this._mouseDown = false;
         this.addCSSClass('ct-tool--disabled');
         return this.removeCSSClass('ct-tool--applied');
+      } else {
+        return this.removeCSSClass('ct-tool--disabled');
       }
     };
 
@@ -5756,13 +5756,13 @@
 
     ToolUI.prototype.update = function(element, selection) {
       if (!(element && element.isMounted())) {
-        this.active(false);
+        this.disabled(true);
         return;
       }
       if (this.tool.canApply(element, selection)) {
-        this.active(true);
+        this.disabled(false);
       } else {
-        this.active(false);
+        this.disabled(true);
         return;
       }
       if (this.tool.isApplied(element, selection)) {
@@ -5780,7 +5780,7 @@
 
     ToolUI.prototype._onMouseDown = function(ev) {
       ev.preventDefault();
-      if (!this.active()) {
+      if (this.disabled()) {
         return;
       }
       this._mouseDown = true;
