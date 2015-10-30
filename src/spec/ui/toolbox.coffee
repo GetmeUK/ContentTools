@@ -140,13 +140,13 @@ describe 'ContentTools.ToolboxUI', () ->
             element = region.children[0]
 
             # With no elements select the heading tool should be disabled
-            expect(toolbox._toolUIs['heading'].disabled()).toBe true
+            expect(toolbox._toolUIs['heading'].active()).toBe false
 
             # Test that if we select an element the tools update
             element.focus()
 
             checkUpdated = () ->
-                expect(toolbox._toolUIs['heading'].disabled()).toBe false
+                expect(toolbox._toolUIs['heading'].active()).toBe true
                 done()
 
             setTimeout(checkUpdated, 250)
@@ -198,7 +198,7 @@ describe 'ContentTools.ToolboxUI', () ->
                 done()
 
             # Wait for change to be recorded in the history stack
-            setTimeout(checkUndo, 750)
+            setTimeout(checkUndo, 1000)
 
         it 'should allow a redo to be triggered with Ctrl-Shift-z key
                 short-cut', (done) ->
@@ -231,4 +231,103 @@ describe 'ContentTools.ToolboxUI', () ->
                 done()
 
             # Wait for change to be recorded in the history stack
-            setTimeout(checkRedo, 750)
+            setTimeout(checkRedo, 1000)
+
+
+# ToolsUI
+
+describe 'ContentTools.ToolboxUI', () ->
+
+    div = null
+    editor = null
+
+    beforeEach ->
+        # Create an editable region
+        div = document.createElement('div')
+        div.setAttribute('class', 'editable')
+        div.setAttribute('id', 'foo')
+        div.innerHTML = '<p>bar</p><img scr="test.png">'
+        document.body.appendChild(div)
+
+        # Initialize the editor
+        editor = ContentTools.EditorApp.get()
+        editor.init('.editable')
+
+    afterEach ->
+        # Shutdown the editor
+        editor.destroy()
+
+        # Remove the editable region
+        document.body.removeChild(div)
+
+
+    describe 'ContentTools.ToolUI()', () ->
+
+        it 'should return an instance of a ToolUI', () ->
+
+            tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'))
+            expect(tool instanceof ContentTools.ToolUI).toBe true
+
+
+    describe 'ContentTools.ToolUI.active()', () ->
+
+        it 'should set/get the active state for the tool', () ->
+
+            tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'))
+
+            # Check that the default ignition active state to be true
+            expect(tool.active()).toBe true
+
+            # Check we can change it
+            tool.active(false)
+            expect(tool.active()).toBe false
+
+
+    describe 'ContentTools.ToolUI.apply()', () ->
+
+        it 'should apply the tool associated with the component', () ->
+
+            editor.start()
+            headingTool = editor._toolbox._toolUIs['heading']
+            region = editor.regions()['foo']
+            element = region.children[0]
+            element.focus()
+
+            # Apply the tool to a paragraph and check that it successfully
+            # converts the paragraph to a heading.
+            headingTool.apply()
+
+            expect(element.tagName()).toBe 'h1'
+
+    describe 'ContentTools.Tool.mount()', () ->
+
+        it 'should mount the component', () ->
+
+            # Start the editor so the document is editable
+            tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'))
+            editor.attach(tool)
+            tool.mount(editor.domElement())
+
+            expect(tool.isMounted()).toBe true
+
+
+    describe 'ContentTools.Tool.update()', () ->
+
+        it 'should update the state of the tool based on the currently focused
+                element and content selection', () ->
+
+            tool = new ContentTools.ToolUI(
+                ContentTools.ToolShelf.fetch('heading'))
+            region = new ContentEdit.Region(
+                document.querySelectorAll('.editable')[0])
+            element = region.children[0]
+
+            # Check the tool is inactive after an update if no element is
+            # selected (e.g it's not applicable to the current selection).
+            tool.update()
+            expect(tool.active()).toBe false
+
+            # Check the tool is active after an update if an element is
+            # provided.
+            tool.update(element)
+            expect(tool.active()).toBe true

@@ -101,7 +101,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 # toolbox.
                 @_toolUIs[toolName] = new ContentTools.ToolUI(tool)
                 @_toolUIs[toolName].mount(domToolGroup)
-                @_toolUIs[toolName].disable()
+                @_toolUIs[toolName].active(false)
 
                 # Whenever the tool is applied we'll want to force an update
                 @_toolUIs[toolName].bind 'apply', () =>
@@ -382,16 +382,34 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         # (and remains over) the tool.
         @_mouseDown = false
 
-        # Flag indicating if the tools is disabled
-        @_disabled = false
-
-    # Read-only properties
-
-    disabled: () ->
-        # Return true if the element is current disabled
-        return @_disabled
+        # Flag indicating if the tools is active
+        @_active = true
 
     # Methods
+
+    active: (activeState) ->
+        # Get/Set the active state of the tool
+
+        # Return the current state if `activeState` hasn't been provided
+        if activeState == undefined
+            return @_active
+
+        # Set the state
+        if @_active == activeState
+            return
+
+        # Set the active state
+        @_active = activeState
+
+        if activeState
+            # Enable the tool
+            @removeCSSClass('ct-tool--disabled')
+
+        else
+            # Disable the tool
+            @_mouseDown = false
+            @addCSSClass('ct-tool--disabled')
+            @removeCSSClass('ct-tool--applied')
 
     apply: () ->
         # Apply the tool UIs associated tool
@@ -412,24 +430,6 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
 
         @tool.apply(element, selection, callback)
 
-    disable: () ->
-        # Disable the tool
-        if @_disabled
-            return
-
-        @_disabled = true
-        @_mouseDown = false
-        @addCSSClass('ct-tool--disabled')
-        @removeCSSClass('ct-tool--applied')
-
-    enable: () ->
-        # Enable the tool
-        if not @_disabled
-            return
-
-        @_disabled = false
-        @removeCSSClass('ct-tool--disabled')
-
     mount: (domParent, before=null) ->
         # Mount the component to the DOM
 
@@ -449,14 +449,14 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
 
         # If there's no element selected then the tool is disabled
         if not (element and element.isMounted())
-            @disable()
+            @active(false)
             return
 
         # Check if the tool can be applied
         if @tool.canApply(element, selection)
-            @enable()
+            @active(true)
         else
-            @disable()
+            @active(false)
             return
 
         # Check of the tool is already being applied
@@ -483,7 +483,7 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         ev.preventDefault()
 
         # If the tool is disabled ignore this event
-        if @disabled()
+        if not @active()
             return
 
         @_mouseDown = true

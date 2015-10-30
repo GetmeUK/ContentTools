@@ -5478,7 +5478,7 @@
           tool = ContentTools.ToolShelf.fetch(toolName);
           this._toolUIs[toolName] = new ContentTools.ToolUI(tool);
           this._toolUIs[toolName].mount(domToolGroup);
-          this._toolUIs[toolName].disable();
+          this._toolUIs[toolName].active(false);
           this._toolUIs[toolName].bind('apply', (function(_this) {
             return function() {
               return _this.updateTools();
@@ -5710,11 +5710,24 @@
       ToolUI.__super__.constructor.call(this);
       this.tool = tool;
       this._mouseDown = false;
-      this._disabled = false;
+      this._active = true;
     }
 
-    ToolUI.prototype.disabled = function() {
-      return this._disabled;
+    ToolUI.prototype.active = function(activeState) {
+      if (activeState === void 0) {
+        return this._active;
+      }
+      if (this._active === activeState) {
+        return;
+      }
+      this._active = activeState;
+      if (activeState) {
+        return this.removeCSSClass('ct-tool--disabled');
+      } else {
+        this._mouseDown = false;
+        this.addCSSClass('ct-tool--disabled');
+        return this.removeCSSClass('ct-tool--applied');
+      }
     };
 
     ToolUI.prototype.apply = function() {
@@ -5740,24 +5753,6 @@
       return this.tool.apply(element, selection, callback);
     };
 
-    ToolUI.prototype.disable = function() {
-      if (this._disabled) {
-        return;
-      }
-      this._disabled = true;
-      this._mouseDown = false;
-      this.addCSSClass('ct-tool--disabled');
-      return this.removeCSSClass('ct-tool--applied');
-    };
-
-    ToolUI.prototype.enable = function() {
-      if (!this._disabled) {
-        return;
-      }
-      this._disabled = false;
-      return this.removeCSSClass('ct-tool--disabled');
-    };
-
     ToolUI.prototype.mount = function(domParent, before) {
       if (before == null) {
         before = null;
@@ -5769,13 +5764,13 @@
 
     ToolUI.prototype.update = function(element, selection) {
       if (!(element && element.isMounted())) {
-        this.disable();
+        this.active(false);
         return;
       }
       if (this.tool.canApply(element, selection)) {
-        this.enable();
+        this.active(true);
       } else {
-        this.disable();
+        this.active(false);
         return;
       }
       if (this.tool.isApplied(element, selection)) {
@@ -5793,7 +5788,7 @@
 
     ToolUI.prototype._onMouseDown = function(ev) {
       ev.preventDefault();
-      if (this.disabled()) {
+      if (!this.active()) {
         return;
       }
       this._mouseDown = true;
