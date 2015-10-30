@@ -287,15 +287,15 @@ describe 'ContentTools.ToolboxUI', () ->
 
         it 'should apply the tool associated with the component', () ->
 
-            editor.start()
-            headingTool = editor._toolbox._toolUIs['heading']
-            region = editor.regions()['foo']
+            tool = new ContentTools.ToolUI(
+                ContentTools.ToolShelf.fetch('heading'))
+            region = new ContentEdit.Region(
+                document.querySelectorAll('.editable')[0])
             element = region.children[0]
-            element.focus()
 
             # Apply the tool to a paragraph and check that it successfully
             # converts the paragraph to a heading.
-            headingTool.apply()
+            tool.apply(element)
 
             expect(element.tagName()).toBe 'h1'
 

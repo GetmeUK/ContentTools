@@ -411,16 +411,8 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
             @addCSSClass('ct-tool--disabled')
             @removeCSSClass('ct-tool--applied')
 
-    apply: () ->
+    apply: (element, selection) ->
         # Apply the tool UIs associated tool
-        element = ContentEdit.Root.get().focused()
-        unless element and element.isMounted()
-            return
-
-        selection = null
-        if element.selection
-            selection = element.selection()
-
         unless @tool.canApply(element, selection)
             return
 
@@ -498,7 +490,15 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
     _onMouseUp: () =>
         # If a click event has occured exectute the tool
         if @_mouseDown
-            @apply()
+            element = ContentEdit.Root.get().focused()
+            unless element and element.isMounted()
+                return
+
+            selection = null
+            if element.selection
+                selection = element.selection()
+
+            @apply(element, selection)
 
         # Reset the mouse down flag
         @_mouseDown = false

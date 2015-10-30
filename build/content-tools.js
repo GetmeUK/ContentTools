@@ -5730,16 +5730,8 @@
       }
     };
 
-    ToolUI.prototype.apply = function() {
-      var callback, element, selection;
-      element = ContentEdit.Root.get().focused();
-      if (!(element && element.isMounted())) {
-        return;
-      }
-      selection = null;
-      if (element.selection) {
-        selection = element.selection();
-      }
+    ToolUI.prototype.apply = function(element, selection) {
+      var callback;
       if (!this.tool.canApply(element, selection)) {
         return;
       }
@@ -5801,8 +5793,17 @@
     };
 
     ToolUI.prototype._onMouseUp = function() {
+      var element, selection;
       if (this._mouseDown) {
-        this.apply();
+        element = ContentEdit.Root.get().focused();
+        if (!(element && element.isMounted())) {
+          return;
+        }
+        selection = null;
+        if (element.selection) {
+          selection = element.selection();
+        }
+        this.apply(element, selection);
       }
       this._mouseDown = false;
       return this.removeCSSClass('ct-tool--down');

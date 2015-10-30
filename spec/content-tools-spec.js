@@ -861,13 +861,11 @@
     });
     describe('ContentTools.ToolUI.apply()', function() {
       return it('should apply the tool associated with the component', function() {
-        var element, headingTool, region;
-        editor.start();
-        headingTool = editor._toolbox._toolUIs['heading'];
-        region = editor.regions()['foo'];
+        var element, region, tool;
+        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('heading'));
+        region = new ContentEdit.Region(document.querySelectorAll('.editable')[0]);
         element = region.children[0];
-        element.focus();
-        headingTool.apply();
+        tool.apply(element);
         return expect(element.tagName()).toBe('h1');
       });
     });
