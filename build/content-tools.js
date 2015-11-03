@@ -5842,7 +5842,7 @@
       this._position = newPosition.slice();
       if (this.isMounted()) {
         this._domElement.style.top = "" + this._position[1] + "px";
-        return this._domElement.style.left = "" + this._position[10] + "px";
+        return this._domElement.style.left = "" + this._position[0] + "px";
       }
     };
 

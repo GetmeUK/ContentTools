@@ -892,6 +892,53 @@
     });
   });
 
+  describe('ContentTools.AnchoredDialogUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.AnchoredDialogUI()', function() {
+      return it('should return an instance of a AnchoredDialogUI', function() {
+        var dialog;
+        dialog = new ContentTools.AnchoredDialogUI();
+        return expect(dialog instanceof ContentTools.AnchoredDialogUI).toBe(true);
+      });
+    });
+    describe('ContentTools.AnchoredDialogUI.mount()', function() {
+      return it('should mount the dialog', function() {
+        var dialog;
+        dialog = new ContentTools.AnchoredDialogUI();
+        editor.attach(dialog);
+        dialog.mount();
+        return expect(dialog.isMounted()).toBe(true);
+      });
+    });
+    return describe('ContentTools.AnchoredDialogUI.position()', function() {
+      return it('should set/get the dialogs position', function() {
+        var dialog, style;
+        dialog = new ContentTools.AnchoredDialogUI();
+        editor.attach(dialog);
+        dialog.mount();
+        expect(dialog.position()).toEqual([0, 0]);
+        dialog.position([7, 7]);
+        style = dialog.domElement().style;
+        expect(dialog.position()).toEqual([7, 7]);
+        expect(style.top).toBe('7px');
+        return expect(style.left).toBe('7px');
+      });
+    });
+  });
+
   describe('ContentTools.ToolShelf.stow()', function() {
     return it('should store a `ContentTools.Tool` instance against a name', function() {
       var tool;
