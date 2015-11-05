@@ -3353,6 +3353,7 @@
       }
       ev.preventDefault();
       previous = this.previousContent();
+      this._syncContent();
       if (previous) {
         return previous.merge(this);
       }
