@@ -88,6 +88,18 @@ class _EditorApp extends ContentTools.ComponentUI
             @start()
 
         @_ignition.bind 'stop', (save) =>
+            # HACK: We can't currently capture certain changes to text
+            # elements (for example deletion of a section of text from the
+            # context menu option). Long-term mutation observers or
+            # consistent support for the `input` event against
+            # `contenteditable` elements would resolve this.
+            #
+            # For now though we manually perform a content sync if an
+            # element supporting that method has focus.
+            focused = ContentEdit.Root.get().focused()
+            if focused and focused._syncContent != undefined
+                focused._syncContent()
+
             if save
                 @save()
             else

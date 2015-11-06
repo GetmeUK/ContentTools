@@ -765,7 +765,7 @@
           expect(toolbox._toolUIs['heading'].disabled()).toBe(false);
           return done();
         };
-        return setTimeout(checkUpdated, 250);
+        return setTimeout(checkUpdated, 500);
       });
     });
     return describe('ContentTools.ToolboxUI > Keyboard short-cuts', function() {
@@ -781,47 +781,221 @@
         window.dispatchEvent(keyDownEvent);
         return expect(region.children.length).toBe(1);
       });
-      it('should allow a undo to be triggered with Ctrl-z key short-cut', function(done) {
-        var checkUndo, element, region, toolbox;
+      it('should allow a undo to be triggered with Ctrl-z key short-cut', function() {
+        var element, keyDownEvent, region, toolbox;
         toolbox = editor._toolbox;
         region = editor.regions()['foo'];
         element = region.children[1];
         region.detach(element);
-        checkUndo = function() {
-          var keyDownEvent;
-          keyDownEvent = document.createEvent('CustomEvent');
-          keyDownEvent.initCustomEvent('keydown', false, false, null);
-          keyDownEvent.keyCode = 90;
-          keyDownEvent.ctrlKey = true;
-          window.dispatchEvent(keyDownEvent);
-          region = editor.regions()['foo'];
-          expect(region.children.length).toBe(2);
-          return done();
-        };
-        return setTimeout(checkUndo, 750);
+        spyOn(ContentTools.Tools.Undo, 'canApply');
+        keyDownEvent = document.createEvent('CustomEvent');
+        keyDownEvent.initCustomEvent('keydown', false, false, null);
+        keyDownEvent.keyCode = 90;
+        keyDownEvent.ctrlKey = true;
+        window.dispatchEvent(keyDownEvent);
+        return expect(ContentTools.Tools.Undo.canApply).toHaveBeenCalled();
       });
-      return it('should allow a redo to be triggered with Ctrl-Shift-z key short-cut', function(done) {
-        var checkRedo, element, region, toolbox;
+      return it('should allow a redo to be triggered with Ctrl-Shift-z key short-cut', function() {
+        var element, keyDownEvent, region, toolbox;
         toolbox = editor._toolbox;
         region = editor.regions()['foo'];
         element = region.children[1];
         region.detach(element);
-        checkRedo = function() {
-          var keyDownEvent;
-          ContentTools.Tools.Undo.apply(null, null, function() {});
-          region = editor.regions()['foo'];
-          expect(region.children.length).toBe(2);
-          keyDownEvent = document.createEvent('CustomEvent');
-          keyDownEvent.initCustomEvent('keydown', false, false, null);
-          keyDownEvent.keyCode = 90;
-          keyDownEvent.ctrlKey = true;
-          keyDownEvent.shiftKey = true;
-          window.dispatchEvent(keyDownEvent);
-          region = editor.regions()['foo'];
-          expect(region.children.length).toBe(1);
-          return done();
-        };
-        return setTimeout(checkRedo, 750);
+        ContentTools.Tools.Undo.apply(null, null, function() {});
+        region = editor.regions()['foo'];
+        expect(region.children.length).toBe(2);
+        spyOn(ContentTools.Tools.Redo, 'canApply');
+        keyDownEvent = document.createEvent('CustomEvent');
+        keyDownEvent.initCustomEvent('keydown', false, false, null);
+        keyDownEvent.keyCode = 90;
+        keyDownEvent.ctrlKey = true;
+        keyDownEvent.shiftKey = true;
+        window.dispatchEvent(keyDownEvent);
+        return expect(ContentTools.Tools.Redo.canApply).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('ContentTools.ToolboxUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      div.setAttribute('id', 'foo');
+      div.innerHTML = '<p>bar</p><img scr="test.png">';
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.ToolUI()', function() {
+      return it('should return an instance of a ToolUI', function() {
+        var tool;
+        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'));
+        return expect(tool instanceof ContentTools.ToolUI).toBe(true);
+      });
+    });
+    describe('ContentTools.ToolUI.disabled()', function() {
+      return it('should set/get the disabled state for the tool', function() {
+        var tool;
+        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'));
+        expect(tool.disabled()).toBe(false);
+        tool.disabled(true);
+        return expect(tool.disabled()).toBe(true);
+      });
+    });
+    describe('ContentTools.ToolUI.apply()', function() {
+      return it('should apply the tool associated with the component', function() {
+        var element, region, tool;
+        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('heading'));
+        region = new ContentEdit.Region(document.querySelectorAll('.editable')[0]);
+        element = region.children[0];
+        tool.apply(element);
+        return expect(element.tagName()).toBe('h1');
+      });
+    });
+    describe('ContentTools.Tool.mount()', function() {
+      return it('should mount the component', function() {
+        var tool;
+        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'));
+        editor.attach(tool);
+        tool.mount(editor.domElement());
+        return expect(tool.isMounted()).toBe(true);
+      });
+    });
+    return describe('ContentTools.Tool.update()', function() {
+      return it('should update the state of the tool based on the currently focused element and content selection', function() {
+        var element, region, tool;
+        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('heading'));
+        region = new ContentEdit.Region(document.querySelectorAll('.editable')[0]);
+        element = region.children[0];
+        tool.update();
+        expect(tool.disabled()).toBe(true);
+        tool.update(element);
+        return expect(tool.disabled()).toBe(false);
+      });
+    });
+  });
+
+  describe('ContentTools.AnchoredDialogUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.AnchoredDialogUI()', function() {
+      return it('should return an instance of a AnchoredDialogUI', function() {
+        var dialog;
+        dialog = new ContentTools.AnchoredDialogUI();
+        return expect(dialog instanceof ContentTools.AnchoredDialogUI).toBe(true);
+      });
+    });
+    describe('ContentTools.AnchoredDialogUI.mount()', function() {
+      return it('should mount the dialog', function() {
+        var dialog;
+        dialog = new ContentTools.AnchoredDialogUI();
+        editor.attach(dialog);
+        dialog.mount();
+        return expect(dialog.isMounted()).toBe(true);
+      });
+    });
+    return describe('ContentTools.AnchoredDialogUI.position()', function() {
+      return it('should set/get the dialog\'s position', function() {
+        var dialog, style;
+        dialog = new ContentTools.AnchoredDialogUI();
+        editor.attach(dialog);
+        dialog.mount();
+        expect(dialog.position()).toEqual([0, 0]);
+        dialog.position([7, 7]);
+        style = dialog.domElement().style;
+        expect(dialog.position()).toEqual([7, 7]);
+        expect(style.top).toBe('7px');
+        return expect(style.left).toBe('7px');
+      });
+    });
+  });
+
+  describe('ContentTools.DialogUI', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.DialogUI()', function() {
+      return it('should return an instance of a DialogUI', function() {
+        var dialog;
+        dialog = new ContentTools.DialogUI('foo');
+        return expect(dialog instanceof ContentTools.DialogUI).toBe(true);
+      });
+    });
+    describe('ContentTools.DialogUI.busy()', function() {
+      return it('should set/get the busy state for the dialog', function() {
+        var classes, dialog;
+        dialog = new ContentTools.DialogUI('foo');
+        editor.attach(dialog);
+        dialog.mount();
+        expect(dialog.busy()).toBe(false);
+        classes = dialog.domElement().getAttribute('class');
+        expect(classes.indexOf('ct-dialog--busy')).toBe(-1);
+        dialog.busy(true);
+        expect(dialog.busy()).toBe(true);
+        classes = dialog.domElement().getAttribute('class');
+        return expect(classes.indexOf('ct-dialog--busy') > 0).toBe(true);
+      });
+    });
+    describe('ContentTools.DialogUI.position()', function() {
+      return it('should set/get the dialog\'s caption', function() {
+        var dialog;
+        dialog = new ContentTools.DialogUI('foo');
+        editor.attach(dialog);
+        dialog.mount();
+        expect(dialog.caption()).toEqual('foo');
+        expect(dialog._domCaption.textContent).toEqual('foo');
+        dialog.caption('bar');
+        expect(dialog.caption()).toEqual('bar');
+        return expect(dialog._domCaption.textContent).toEqual('bar');
+      });
+    });
+    describe('ContentTools.DialogUI.mount()', function() {
+      return it('should mount the dialog', function() {
+        var dialog;
+        dialog = new ContentTools.DialogUI();
+        editor.attach(dialog);
+        dialog.mount();
+        return expect(dialog.isMounted()).toBe(true);
+      });
+    });
+    return describe('ContentTools.DialogUI.unmount()', function() {
+      return it('should unmount the component', function() {
+        var dialog;
+        dialog = new ContentTools.DialogUI();
+        editor.attach(dialog);
+        dialog.mount();
+        dialog.unmount();
+        return expect(dialog.isMounted()).toBe(false);
       });
     });
   });

@@ -40,7 +40,7 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
 
         if @isMounted()
             @_domElement.style.top = "#{ @_position[1] }px"
-            @_domElement.style.left = "#{ @_position[10] }px"
+            @_domElement.style.left = "#{ @_position[0] }px"
 
 
 class ContentTools.DialogUI extends ContentTools.WidgetUI

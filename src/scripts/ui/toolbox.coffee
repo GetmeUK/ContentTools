@@ -101,7 +101,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 # toolbox.
                 @_toolUIs[toolName] = new ContentTools.ToolUI(tool)
                 @_toolUIs[toolName].mount(domToolGroup)
-                @_toolUIs[toolName].disable()
+                @_toolUIs[toolName].disabled(true)
 
                 # Whenever the tool is applied we'll want to force an update
                 @_toolUIs[toolName].bind 'apply', () =>
@@ -385,24 +385,10 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         # Flag indicating if the tools is disabled
         @_disabled = false
 
-    # Read-only properties
-
-    disabled: () ->
-        # Return true if the element is current disabled
-        return @_disabled
-
     # Methods
 
-    apply: () ->
+    apply: (element, selection) ->
         # Apply the tool UIs associated tool
-        element = ContentEdit.Root.get().focused()
-        unless element and element.isMounted()
-            return
-
-        selection = null
-        if element.selection
-            selection = element.selection()
-
         unless @tool.canApply(element, selection)
             return
 
@@ -412,23 +398,29 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
 
         @tool.apply(element, selection, callback)
 
-    disable: () ->
-        # Disable the tool
-        if @_disabled
+    disabled: (disabledState) ->
+        # Get/Set the disabled state of the tool
+
+        # Return the current state if `disabledState` hasn't been provided
+        if disabledState == undefined
+            return @_disabled
+
+        # Set the state
+        if @_disabled == disabledState
             return
 
-        @_disabled = true
-        @_mouseDown = false
-        @addCSSClass('ct-tool--disabled')
-        @removeCSSClass('ct-tool--applied')
+        # Set the disabled state
+        @_disabled = disabledState
 
-    enable: () ->
-        # Enable the tool
-        if not @_disabled
-            return
+        if disabledState
+            # Disable the tool
+            @_mouseDown = false
+            @addCSSClass('ct-tool--disabled')
+            @removeCSSClass('ct-tool--applied')
 
-        @_disabled = false
-        @removeCSSClass('ct-tool--disabled')
+        else
+            # Enable the tool
+            @removeCSSClass('ct-tool--disabled')
 
     mount: (domParent, before=null) ->
         # Mount the component to the DOM
@@ -449,14 +441,14 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
 
         # If there's no element selected then the tool is disabled
         if not (element and element.isMounted())
-            @disable()
+            @disabled(true)
             return
 
         # Check if the tool can be applied
         if @tool.canApply(element, selection)
-            @enable()
+            @disabled(false)
         else
-            @disable()
+            @disabled(true)
             return
 
         # Check of the tool is already being applied
@@ -498,7 +490,15 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
     _onMouseUp: () =>
         # If a click event has occured exectute the tool
         if @_mouseDown
-            @apply()
+            element = ContentEdit.Root.get().focused()
+            unless element and element.isMounted()
+                return
+
+            selection = null
+            if element.selection
+                selection = element.selection()
+
+            @apply(element, selection)
 
         # Reset the mouse down flag
         @_mouseDown = false
