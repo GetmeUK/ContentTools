@@ -312,7 +312,7 @@
     };
 
     String.prototype.indexOf = function(substring, from) {
-      var c, found, i, skip, _i, _j, _len, _len1, _ref;
+      var c, found, i, _i, _len, _ref;
       if (from == null) {
         from = 0;
       }
@@ -320,34 +320,12 @@
         from = 0;
       }
       if (typeof substring === 'string') {
-        if (!this.contains(substring)) {
-          return -1;
-        }
-        substring = substring.split('');
-        while (from <= (this.length() - substring.length)) {
-          found = true;
-          skip = 0;
-          for (i = _i = 0, _len = substring.length; _i < _len; i = ++_i) {
-            c = substring[i];
-            if (this.characters[i + from].isTag()) {
-              skip += 1;
-            }
-            if (c !== this.characters[skip + i + from].c()) {
-              found = false;
-              break;
-            }
-          }
-          if (found) {
-            return from;
-          }
-          from++;
-        }
-        return -1;
+        return this.text().indexOf(substring, from);
       }
       while (from <= (this.length() - substring.length())) {
         found = true;
         _ref = substring.characters;
-        for (i = _j = 0, _len1 = _ref.length; _j < _len1; i = ++_j) {
+        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
           c = _ref[i];
           if (!c.eq(this.characters[i + from])) {
             found = false;
@@ -1032,7 +1010,7 @@
         tag = this.tags.pop();
         if (this.string.length()) {
           character = this.string.characters[this.string.length() - 1];
-          if (!character.isTag() && character.isWhitespace()) {
+          if (!character.isTag() && !character.isEntity() && character.isWhitespace()) {
             character.removeTags(tag);
           }
         }
