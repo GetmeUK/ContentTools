@@ -183,7 +183,7 @@ $highlight-color: #f39c12;
                 center / auto 32px
                 repeat;
             bottom: 0;
-            content: '';
+            content: '' !important;
             left: 0;
             opacity: 0.8;
             position: absolute;
@@ -192,7 +192,8 @@ $highlight-color: #f39c12;
             z-index: 9;
         }
     }
-    &--drop-below:before { @include rotate(180deg); }
+    &--drop-below:before {
+        @include rotate(180deg); }
     &--drop-left:before {
         background-image: url($image-path-prefix + 'drop-horz.svg');
         @include rotate(0deg);
