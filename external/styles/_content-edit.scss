@@ -329,7 +329,6 @@ $highlight-color: #f39c12;
  * expected that these styles will be extended if not overridden by the site
  * CSS.
  */
-img,
 iframe,
 video,
 .ce-element--type-image,
@@ -345,6 +344,22 @@ video,
 
     &.align-right {
         clear: initial;
+        float: right;
+    }
+}
+img {
+	&.align-left, &.align-right {
+	    display: block;
+	    margin-left: auto;
+	    margin-right: auto;
+        clear: initial;
+	}
+	
+    &.align-left {
+        float: left;
+    }
+
+    &.align-right {
         float: right;
     }
 }
