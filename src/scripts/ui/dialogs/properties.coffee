@@ -16,8 +16,8 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
 
         # Check the element to determine if the dialog should provide a code
         # editor.
-        @_supportsCoding = element.content
-        if element.constructor.name in ['ListItem', 'TableCell']
+        @_supportsCoding = @element.content
+        if @element.constructor.name in ['ListItem', 'TableCell']
             @_supportsCoding = true
 
     # Methods
