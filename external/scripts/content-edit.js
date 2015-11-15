@@ -3630,13 +3630,16 @@
     };
 
     Image.prototype.mount = function() {
-      var style;
+      var classes, style;
       this._domElement = document.createElement('div');
+      classes = '';
       if (this.a && this.a['class']) {
-        this._domElement.setAttribute('class', this.a['class']);
-      } else if (this._attributes['class']) {
-        this._domElement.setAttribute('class', this._attributes['class']);
+        classes += ' ' + this.a['class'];
       }
+      if (this._attributes['class']) {
+        classes += ' ' + this._attributes['class'];
+      }
+      this._domElement.setAttribute('class', classes);
       style = this._attributes['style'] ? this._attributes['style'] : '';
       style += "background-image:url(" + this._attributes['src'] + ");";
       if (this._attributes['width']) {
