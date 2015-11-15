@@ -332,6 +332,7 @@ $highlight-color: #f39c12;
 img,
 iframe,
 video,
+[data-ce-tag=img],
 .ce-element--type-image,
 .ce-element--type-video {
     display: block;

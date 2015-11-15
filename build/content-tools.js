@@ -6360,8 +6360,8 @@
       this._attributeUIs = [];
       this._focusedAttributeUI = null;
       this._styleUIs = [];
-      this._supportsCoding = element.content;
-      if ((_ref = element.constructor.name) === 'ListItem' || _ref === 'TableCell') {
+      this._supportsCoding = this.element.content;
+      if ((_ref = this.element.constructor.name) === 'ListItem' || _ref === 'TableCell') {
         this._supportsCoding = true;
       }
     }
