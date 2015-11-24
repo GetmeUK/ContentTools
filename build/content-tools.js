@@ -2376,9 +2376,19 @@
           }
         };
       })(this));
-      return this._domElement.addEventListener('paste', (function(_this) {
+      this._domElement.addEventListener('paste', (function(_this) {
         return function(ev) {
           return _this._onPaste(ev);
+        };
+      })(this));
+      this._domElement.addEventListener('dragover', (function(_this) {
+        return function(ev) {
+          return ev.preventDefault();
+        };
+      })(this));
+      return this._domElement.addEventListener('drop', (function(_this) {
+        return function(ev) {
+          return _this._onNativeDrop(ev);
         };
       })(this));
     };
@@ -2393,7 +2403,9 @@
       }
     };
 
-    Element.prototype._onMouseMove = function(ev) {};
+    Element.prototype._onMouseMove = function(ev) {
+      return this._onMouseOver();
+    };
 
     Element.prototype._onMouseOver = function(ev) {
       var dragging, root;
@@ -2432,6 +2444,12 @@
     };
 
     Element.prototype._onMouseUp = function(ev) {};
+
+    Element.prototype._onNativeDrop = function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      return ContentEdit.Root.get().trigger('native-drop', this, ev);
+    };
 
     Element.prototype._onPaste = function(ev) {
       ev.preventDefault();
