@@ -3098,6 +3098,9 @@
       if (indent == null) {
         indent = '';
       }
+      if (HTMLString.Tag.SELF_CLOSING[this._tagName]) {
+        return "" + indent + "<" + this._tagName + (this._attributesToString()) + ">";
+      }
       return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("" + this._content) + ("" + indent + "</" + this._tagName + ">");
     };
 
