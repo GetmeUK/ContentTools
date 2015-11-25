@@ -2404,27 +2404,11 @@
     };
 
     Element.prototype._onMouseMove = function(ev) {
-      return this._onMouseOver();
+      return this._onOver(ev);
     };
 
     Element.prototype._onMouseOver = function(ev) {
-      var dragging, root;
-      this._addCSSClass('ce-element--over');
-      root = ContentEdit.Root.get();
-      dragging = root.dragging();
-      if (!dragging) {
-        return;
-      }
-      if (dragging === this) {
-        return;
-      }
-      if (root._dropTarget) {
-        return;
-      }
-      if (this.constructor.droppers[dragging.constructor.name] || dragging.constructor.droppers[this.constructor.name]) {
-        this._addCSSClass('ce-element--drop');
-        return root._dropTarget = this;
-      }
+      return this._onOver(ev);
     };
 
     Element.prototype._onMouseOut = function(ev) {
@@ -2455,6 +2439,26 @@
       ev.preventDefault();
       ev.stopPropagation();
       return ContentEdit.Root.get().trigger('paste', this, ev);
+    };
+
+    Element.prototype._onOver = function(ev) {
+      var dragging, root;
+      this._addCSSClass('ce-element--over');
+      root = ContentEdit.Root.get();
+      dragging = root.dragging();
+      if (!dragging) {
+        return;
+      }
+      if (dragging === this) {
+        return;
+      }
+      if (root._dropTarget) {
+        return;
+      }
+      if (this.constructor.droppers[dragging.constructor.name] || dragging.constructor.droppers[this.constructor.name]) {
+        this._addCSSClass('ce-element--drop');
+        return root._dropTarget = this;
+      }
     };
 
     Element.prototype._removeDOMEventListeners = function() {};
