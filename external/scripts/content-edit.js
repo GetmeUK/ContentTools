@@ -4737,7 +4737,13 @@
       if (this._isInLastRow()) {
         row = cell.parent();
         lastCell = row.children[row.children.length - 1].tableCellText();
-        return lastCell.nextContent().focus();
+        if (lastCell.nextContent()) {
+          return lastCell.nextContent().focus();
+        } else {
+          return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
+            return node.constructor.name === 'Region';
+          }));
+        }
       } else {
         nextRow = cell.parent().nextWithTest(function(node) {
           return node.constructor.name === 'TableRow';
@@ -4786,7 +4792,14 @@
       cell = this.parent();
       if (this._isInFirstRow()) {
         row = cell.parent();
-        return row.children[0].previousContent().focus();
+        firstCell = row.children[0]
+        if (firstCell.previousContent()) {
+          return firstCell.previousContent().focus();
+        } else {
+          return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
+            return node.constructor.name === 'Region';
+          }));
+        }
       } else {
         previousRow = cell.parent().previousWithTest(function(node) {
           return node.constructor.name === 'TableRow';
