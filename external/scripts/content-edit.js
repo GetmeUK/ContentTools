@@ -4731,14 +4731,15 @@
     };
 
     TableCellText.prototype._keyDown = function(ev) {
-      var cell, cellIndex, lastCell, nextRow, row;
+      var cell, cellIndex, lastCell, next, nextRow, row;
       ev.preventDefault();
       cell = this.parent();
       if (this._isInLastRow()) {
         row = cell.parent();
         lastCell = row.children[row.children.length - 1].tableCellText();
-        if (lastCell.nextContent()) {
-          return lastCell.nextContent().focus();
+        next = lastCell.nextContent();
+        if (next) {
+          return next.focus();
         } else {
           return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
             return node.constructor.name === 'Region';
@@ -4787,14 +4788,14 @@
     };
 
     TableCellText.prototype._keyUp = function(ev) {
-      var cell, cellIndex, previousRow, row;
+      var cell, cellIndex, previous, previousRow, row;
       ev.preventDefault();
       cell = this.parent();
       if (this._isInFirstRow()) {
         row = cell.parent();
-        firstCell = row.children[0]
-        if (firstCell.previousContent()) {
-          return firstCell.previousContent().focus();
+        previous = row.children[0].previousContent();
+        if (previous) {
+          return previous.focus();
         } else {
           return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
             return node.constructor.name === 'Region';

@@ -179,7 +179,7 @@ $highlight-color: #f39c12;
         &:before {
             background:
                 $highlight-color
-                url($image-path-prefix + 'drop-vert.svg')
+                url($image-path-prefix + 'drop-vert-above.svg')
                 center / auto 32px
                 repeat;
             bottom: 0;
@@ -201,6 +201,29 @@ $highlight-color: #f39c12;
     &--drop-right:before {
         background-image: url($image-path-prefix + 'drop-horz.svg');
         @include rotate(180deg);
+    }
+
+    /*
+    Table rows cannot be handled in the same way as other elements for drop
+    styling and instead they must only use a background image.
+    */
+    &--drop.ce-element--type-table-row {
+        background:
+            $highlight-color
+            url($image-path-prefix + 'drop-vert-above.svg')
+            center / auto 32px
+            repeat;
+
+        &:before { display: none; }
+
+        &.ce-element--drop-below {
+            background:
+                $highlight-color
+                url($image-path-prefix + 'drop-vert-below.svg')
+                center / auto 32px
+                repeat;
+        }
+
     }
 
     /**
