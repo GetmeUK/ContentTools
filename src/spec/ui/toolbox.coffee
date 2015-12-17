@@ -149,7 +149,7 @@ describe 'ContentTools.ToolboxUI', () ->
                 expect(toolbox._toolUIs['heading'].disabled()).toBe false
                 done()
 
-            setTimeout(checkUpdated, 250)
+            setTimeout(checkUpdated, 500)
 
 
     # Interactions
@@ -174,7 +174,7 @@ describe 'ContentTools.ToolboxUI', () ->
             expect(region.children.length).toBe 1
 
         it 'should allow a undo to be triggered with Ctrl-z key
-                short-cut', (done) ->
+                short-cut', () ->
 
             # Select an element and delete it with the short-cut
             toolbox = editor._toolbox
@@ -184,24 +184,21 @@ describe 'ContentTools.ToolboxUI', () ->
             # Make a change
             region.detach(element)
 
-            checkUndo = () ->
-                # Trigger the undo short-cut event
-                keyDownEvent = document.createEvent('CustomEvent')
-                keyDownEvent.initCustomEvent('keydown', false, false, null)
-                keyDownEvent.keyCode = 90
-                keyDownEvent.ctrlKey = true
-                window.dispatchEvent(keyDownEvent)
+            # Spy on the `canApply` class method called if the short-cut is used
+            spyOn(ContentTools.Tools.Undo, 'canApply')
 
-                # Check the region has been restored
-                region = editor.regions()['foo']
-                expect(region.children.length).toBe 2
-                done()
+            # Trigger the undo short-cut event
+            keyDownEvent = document.createEvent('CustomEvent')
+            keyDownEvent.initCustomEvent('keydown', false, false, null)
+            keyDownEvent.keyCode = 90
+            keyDownEvent.ctrlKey = true
+            window.dispatchEvent(keyDownEvent)
 
-            # Wait for change to be recorded in the history stack
-            setTimeout(checkUndo, 1000)
+            # Check the undo short-cut was called
+            expect(ContentTools.Tools.Undo.canApply).toHaveBeenCalled()
 
         it 'should allow a redo to be triggered with Ctrl-Shift-z key
-                short-cut', (done) ->
+                short-cut', () ->
 
             # Select an element and delete it with the short-cut
             toolbox = editor._toolbox
@@ -211,27 +208,24 @@ describe 'ContentTools.ToolboxUI', () ->
             # Make a change
             region.detach(element)
 
-            checkRedo = () ->
-                # Undo the change
-                ContentTools.Tools.Undo.apply(null, null, () ->)
-                region = editor.regions()['foo']
-                expect(region.children.length).toBe 2
+            # Undo the change
+            ContentTools.Tools.Undo.apply(null, null, () ->)
+            region = editor.regions()['foo']
+            expect(region.children.length).toBe 2
 
-                # Trigger the redo short-cut event
-                keyDownEvent = document.createEvent('CustomEvent')
-                keyDownEvent.initCustomEvent('keydown', false, false, null)
-                keyDownEvent.keyCode = 90
-                keyDownEvent.ctrlKey = true
-                keyDownEvent.shiftKey = true
-                window.dispatchEvent(keyDownEvent)
+            # Spy on the `canApply` class method called if the short-cut is used
+            spyOn(ContentTools.Tools.Redo, 'canApply')
 
-                # Check the region has been restored
-                region = editor.regions()['foo']
-                expect(region.children.length).toBe 1
-                done()
+            # Trigger the redo short-cut event
+            keyDownEvent = document.createEvent('CustomEvent')
+            keyDownEvent.initCustomEvent('keydown', false, false, null)
+            keyDownEvent.keyCode = 90
+            keyDownEvent.ctrlKey = true
+            keyDownEvent.shiftKey = true
+            window.dispatchEvent(keyDownEvent)
 
-            # Wait for change to be recorded in the history stack
-            setTimeout(checkRedo, 1000)
+            # Check the undo short-cut was called
+            expect(ContentTools.Tools.Redo.canApply).toHaveBeenCalled()
 
 
 # ToolsUI

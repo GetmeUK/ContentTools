@@ -312,7 +312,7 @@
     };
 
     String.prototype.indexOf = function(substring, from) {
-      var c, found, i, skip, _i, _j, _len, _len1, _ref;
+      var c, found, i, _i, _len, _ref;
       if (from == null) {
         from = 0;
       }
@@ -320,34 +320,12 @@
         from = 0;
       }
       if (typeof substring === 'string') {
-        if (!this.contains(substring)) {
-          return -1;
-        }
-        substring = substring.split('');
-        while (from <= (this.length() - substring.length)) {
-          found = true;
-          skip = 0;
-          for (i = _i = 0, _len = substring.length; _i < _len; i = ++_i) {
-            c = substring[i];
-            if (this.characters[i + from].isTag()) {
-              skip += 1;
-            }
-            if (c !== this.characters[skip + i + from].c()) {
-              found = false;
-              break;
-            }
-          }
-          if (found) {
-            return from;
-          }
-          from++;
-        }
-        return -1;
+        return this.text().indexOf(substring, from);
       }
       while (from <= (this.length() - substring.length())) {
         found = true;
         _ref = substring.characters;
-        for (i = _j = 0, _len1 = _ref.length; _j < _len1; i = ++_j) {
+        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
           c = _ref[i];
           if (!c.eq(this.characters[i + from])) {
             found = false;
@@ -1032,7 +1010,7 @@
         tag = this.tags.pop();
         if (this.string.length()) {
           character = this.string.characters[this.string.length() - 1];
-          if (!character.isTag() && character.isWhitespace()) {
+          if (!character.isTag() && !character.isEntity() && character.isWhitespace()) {
             character.removeTags(tag);
           }
         }
@@ -1361,13 +1339,15 @@
     };
 
     Range.prototype.select = function(element) {
-      var docRange, endNode, endOffset, startNode, startOffset, _ref, _ref1;
+      var docRange, endNode, endNodeLen, endOffset, startNode, startNodeLen, startOffset, _ref, _ref1;
       ContentSelect.Range.unselectAll();
       docRange = document.createRange();
       _ref = _getChildNodeAndOffset(element, this._from), startNode = _ref[0], startOffset = _ref[1];
       _ref1 = _getChildNodeAndOffset(element, this._to), endNode = _ref1[0], endOffset = _ref1[1];
-      docRange.setStart(startNode, startOffset);
-      docRange.setEnd(endNode, endOffset);
+      startNodeLen = startNode.length || 0;
+      endNodeLen = endNode.length || 0;
+      docRange.setStart(startNode, Math.min(startOffset, startNodeLen));
+      docRange.setEnd(endNode, Math.min(endOffset, endNodeLen));
       return window.getSelection().addRange(docRange);
     };
 
@@ -1727,8 +1707,6 @@
             return domElement.removeAttribute('class');
           }
         }
-      } else {
-        return domElement.setAttribute('class', className);
       }
     }
   };
@@ -2396,9 +2374,19 @@
           }
         };
       })(this));
-      return this._domElement.addEventListener('paste', (function(_this) {
+      this._domElement.addEventListener('paste', (function(_this) {
         return function(ev) {
           return _this._onPaste(ev);
+        };
+      })(this));
+      this._domElement.addEventListener('dragover', (function(_this) {
+        return function(ev) {
+          return ev.preventDefault();
+        };
+      })(this));
+      return this._domElement.addEventListener('drop', (function(_this) {
+        return function(ev) {
+          return _this._onNativeDrop(ev);
         };
       })(this));
     };
@@ -2413,26 +2401,12 @@
       }
     };
 
-    Element.prototype._onMouseMove = function(ev) {};
+    Element.prototype._onMouseMove = function(ev) {
+      return this._onOver(ev);
+    };
 
     Element.prototype._onMouseOver = function(ev) {
-      var dragging, root;
-      this._addCSSClass('ce-element--over');
-      root = ContentEdit.Root.get();
-      dragging = root.dragging();
-      if (!dragging) {
-        return;
-      }
-      if (dragging === this) {
-        return;
-      }
-      if (root._dropTarget) {
-        return;
-      }
-      if (this.constructor.droppers[dragging.constructor.name] || dragging.constructor.droppers[this.constructor.name]) {
-        this._addCSSClass('ce-element--drop');
-        return root._dropTarget = this;
-      }
+      return this._onOver(ev);
     };
 
     Element.prototype._onMouseOut = function(ev) {
@@ -2453,10 +2427,36 @@
 
     Element.prototype._onMouseUp = function(ev) {};
 
+    Element.prototype._onNativeDrop = function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      return ContentEdit.Root.get().trigger('native-drop', this, ev);
+    };
+
     Element.prototype._onPaste = function(ev) {
       ev.preventDefault();
       ev.stopPropagation();
       return ContentEdit.Root.get().trigger('paste', this, ev);
+    };
+
+    Element.prototype._onOver = function(ev) {
+      var dragging, root;
+      this._addCSSClass('ce-element--over');
+      root = ContentEdit.Root.get();
+      dragging = root.dragging();
+      if (!dragging) {
+        return;
+      }
+      if (dragging === this) {
+        return;
+      }
+      if (root._dropTarget) {
+        return;
+      }
+      if (this.constructor.droppers[dragging.constructor.name] || dragging.constructor.droppers[this.constructor.name]) {
+        this._addCSSClass('ce-element--drop');
+        return root._dropTarget = this;
+      }
     };
 
     Element.prototype._removeDOMEventListeners = function() {};
@@ -3096,6 +3096,9 @@
       if (indent == null) {
         indent = '';
       }
+      if (HTMLString.Tag.SELF_CLOSING[this._tagName]) {
+        return "" + indent + "<" + this._tagName + (this._attributesToString()) + ">";
+      }
       return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("" + this._content) + ("" + indent + "</" + this._tagName + ">");
     };
 
@@ -3353,6 +3356,7 @@
       }
       ev.preventDefault();
       previous = this.previousContent();
+      this._syncContent();
       if (previous) {
         return previous.merge(this);
       }
@@ -3649,13 +3653,16 @@
     };
 
     Image.prototype.mount = function() {
-      var style;
+      var classes, style;
       this._domElement = document.createElement('div');
+      classes = '';
       if (this.a && this.a['class']) {
-        this._domElement.setAttribute('class', this.a['class']);
-      } else if (this._attributes['class']) {
-        this._domElement.setAttribute('class', this._attributes['class']);
+        classes += ' ' + this.a['class'];
       }
+      if (this._attributes['class']) {
+        classes += ' ' + this._attributes['class'];
+      }
+      this._domElement.setAttribute('class', classes);
       style = this._attributes['style'] ? this._attributes['style'] : '';
       style += "background-image:url(" + this._attributes['src'] + ");";
       if (this._attributes['width']) {
@@ -4722,13 +4729,20 @@
     };
 
     TableCellText.prototype._keyDown = function(ev) {
-      var cell, cellIndex, lastCell, nextRow, row;
+      var cell, cellIndex, lastCell, next, nextRow, row;
       ev.preventDefault();
       cell = this.parent();
       if (this._isInLastRow()) {
         row = cell.parent();
         lastCell = row.children[row.children.length - 1].tableCellText();
-        return lastCell.nextContent().focus();
+        next = lastCell.nextContent();
+        if (next) {
+          return next.focus();
+        } else {
+          return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
+            return node.constructor.name === 'Region';
+          }));
+        }
       } else {
         nextRow = cell.parent().nextWithTest(function(node) {
           return node.constructor.name === 'TableRow';
@@ -4772,12 +4786,19 @@
     };
 
     TableCellText.prototype._keyUp = function(ev) {
-      var cell, cellIndex, previousRow, row;
+      var cell, cellIndex, previous, previousRow, row;
       ev.preventDefault();
       cell = this.parent();
       if (this._isInFirstRow()) {
         row = cell.parent();
-        return row.children[0].previousContent().focus();
+        previous = row.children[0].previousContent();
+        if (previous) {
+          return previous.focus();
+        } else {
+          return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
+            return node.constructor.name === 'Region';
+          }));
+        }
       } else {
         previousRow = cell.parent().previousWithTest(function(node) {
           return node.constructor.name === 'TableRow';

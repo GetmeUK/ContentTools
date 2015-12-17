@@ -248,10 +248,36 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             if element.constructor.name == 'Image'
 
                 # Images
+                #
+                # Note: When we add/remove links any alignment class needs to be
+                # moved to either the link (on adding a link) or the image (on
+                # removing a link). Alignment classes are mutually exclusive.
+                alignmentClassNames = [
+                    'align-center',
+                    'align-left',
+                    'align-right'
+                    ]
+
                 if href
                     element.a = {href: href}
+                    for className in alignmentClassNames
+                        if element.hasCSSClass(className)
+                            element.removeCSSClass(className)
+                            element.a['class'] = className
+                            break
+
                 else
+                    linkClasses = []
+                    if element.a['class']
+                        linkClasses = element.a['class'].split(' ')
+                    for className in alignmentClassNames
+                        if linkClasses.indexOf(className) > -1
+                            element.addCSSClass(className)
+                            break
                     element.a = null
+
+                element.unmount()
+                element.mount()
 
             else
                 # Text elements

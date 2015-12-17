@@ -5,6 +5,22 @@ $image-path-prefix: 'images/';
 
 
 /**
+ * Colours common to the UI,
+ */
+$highlight-color: #f39c12;
+
+
+/**
+ * A mixin for performing a rotate transform across multiple browsers.
+ */
+ @mixin rotate($deg) {
+    -ms-transform: rotate($deg); /* IE 9 */
+    -webkit-transform: rotate($deg); /* Chrome, Safari, Opera */
+    transform: rotate($deg);
+}
+
+
+/**
  * The modifier classes here are applied by the root node and indicate the
  * the state of the root node managing interactions (e.g dragging and resizing).
  */
@@ -98,9 +114,8 @@ $image-path-prefix: 'images/';
     &--type-video {
         background:
             #333
-            url($image-path-prefix + 'video.png')
-            center
-            center
+            url($image-path-prefix + 'video.svg')
+            center / auto 48px
             no-repeat;
 
         &:after {
@@ -159,22 +174,57 @@ $image-path-prefix: 'images/';
      * dropped.
      */
     &--drop {
-        background: rgba(#f39c12, 0.5) none 0 0 repeat !important;
+        position: relative !important;
 
-        /**
-         * We remove any background from child elements contained within
-         * elements such as lists, tables and table rows to prevent layering
-         * where the child elements appearance clashes with the parents.
-         */
-        .ce-element--type-list-item-text,
-        .ce-element--type-table-cell-text {
-            background: transparent !important;
+        &:before {
+            background:
+                $highlight-color
+                url($image-path-prefix + 'drop-vert-above.svg')
+                center / auto 32px
+                repeat;
+            bottom: 0;
+            content: '' !important;
+            left: 0;
+            opacity: 0.8;
+            position: absolute;
+            right: 0;
+            top: 0;
+            z-index: 9;
         }
     }
-    &--drop-above { background-image: url($image-path-prefix + 'ce-drop-above.png') !important; }
-    &--drop-below { background-image: url($image-path-prefix + 'ce-drop-below.png') !important; }
-    &--drop-left  { background-image: url($image-path-prefix + 'ce-drop-left.png')  !important; }
-    &--drop-right { background-image: url($image-path-prefix + 'ce-drop-right.png') !important; }
+    &--drop-below:before {
+        @include rotate(180deg); }
+    &--drop-left:before {
+        background-image: url($image-path-prefix + 'drop-horz.svg');
+        @include rotate(0deg);
+    }
+    &--drop-right:before {
+        background-image: url($image-path-prefix + 'drop-horz.svg');
+        @include rotate(180deg);
+    }
+
+    /*
+    Table rows cannot be handled in the same way as other elements for drop
+    styling and instead they must only use a background image.
+    */
+    &--drop.ce-element--type-table-row {
+        background:
+            $highlight-color
+            url($image-path-prefix + 'drop-vert-above.svg')
+            center / auto 32px
+            repeat;
+
+        &:before { display: none; }
+
+        &.ce-element--drop-below {
+            background:
+                $highlight-color
+                url($image-path-prefix + 'drop-vert-below.svg')
+                center / auto 32px
+                repeat;
+        }
+
+    }
 
     /**
      * Element has focus `--focused` (only one element can have focus) or the
@@ -182,7 +232,7 @@ $image-path-prefix: 'images/';
      */
     &--focused,
     &--over {
-        background-color: rgba(#f39c12, 0.1);
+        background-color: rgba($highlight-color, 0.1);
         outline: none;
 
         /**
@@ -192,7 +242,7 @@ $image-path-prefix: 'images/';
         &.ce-element--type-image,
         &.ce-element--type-video {
             background-color: #333;
-            outline: 4px solid rgba(#f39c12, 0.35);
+            outline: 4px solid rgba($highlight-color, 0.35);
         }
     }
 
@@ -305,6 +355,7 @@ $image-path-prefix: 'images/';
 img,
 iframe,
 video,
+[data-ce-tag=img],
 .ce-element--type-image,
 .ce-element--type-video {
     display: block;
