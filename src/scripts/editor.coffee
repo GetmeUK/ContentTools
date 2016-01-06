@@ -383,8 +383,8 @@ class _EditorApp extends ContentTools.ComponentUI
                 if child.content and not child.content.html()
                     html = ''
 
-            # Apply the changes made to the DOM (affectively reseting the DOM to
-            # a non-editable state).
+            # Apply the changes made to the DOM (affectively resetting the DOM
+            # to a non-editable state).
             unless passive
                 region.domElement().innerHTML = html
 
