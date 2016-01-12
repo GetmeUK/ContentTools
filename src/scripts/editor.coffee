@@ -394,6 +394,9 @@ class _EditorApp extends ContentTools.ComponentUI
                 continue
 
             modifiedRegions[name] = html
+            
+            # Set the region back to not modified
+            @_regionsLastModified[name] = region.lastModified()
 
         # Trigger the save event with a region HTML map for the changed
         # content.
