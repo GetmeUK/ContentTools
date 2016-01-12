@@ -289,6 +289,23 @@ class _EditorApp extends ContentTools.ComponentUI
             cursor = selection.get()[0] + content.length()
             tip = element.content.substring(0, selection.get()[0])
             tail = element.content.substring(selection.get()[1])
+
+            # Format the string using tags for the first character it is
+            # replacing (if any).
+            replaced = element.content.substring(
+                selection.get()[0],
+                selection.get()[1]
+                )
+            if replaced.length()
+                character = replaced.characters[0]
+                tags = character.tags()
+
+                if character.isTag()
+                    tags.shift()
+
+                if tags.length >= 1
+                    content = content.format(0, content.length(), tags...)
+
             element.content = tip.concat(content)
             element.content = element.content.concat(tail, false)
             element.updateInnerHTML()
@@ -394,7 +411,7 @@ class _EditorApp extends ContentTools.ComponentUI
                 continue
 
             modifiedRegions[name] = html
-            
+
             # Set the region back to not modified
             @_regionsLastModified[name] = region.lastModified()
 

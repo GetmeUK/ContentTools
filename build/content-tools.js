@@ -7320,7 +7320,7 @@
     };
 
     _EditorApp.prototype.paste = function(element, clipboardData) {
-      var className, content, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, selection, tail, tip, _i, _len;
+      var character, className, content, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, replaced, selection, tags, tail, tip, _i, _len;
       content = clipboardData.getData('text/plain');
       lines = content.split('\n');
       lines = lines.filter(function(line) {
@@ -7370,6 +7370,17 @@
         cursor = selection.get()[0] + content.length();
         tip = element.content.substring(0, selection.get()[0]);
         tail = element.content.substring(selection.get()[1]);
+        replaced = element.content.substring(selection.get()[0], selection.get()[1]);
+        if (replaced.length()) {
+          character = replaced.characters[0];
+          tags = character.tags();
+          if (character.isTag()) {
+            tags.shift();
+          }
+          if (tags.length >= 1) {
+            content = content.format.apply(content, [0, content.length()].concat(__slice.call(tags)));
+          }
+        }
         element.content = tip.concat(content);
         element.content = element.content.concat(tail, false);
         element.updateInnerHTML();
