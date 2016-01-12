@@ -7452,6 +7452,7 @@
           continue;
         }
         modifiedRegions[name] = html;
+        this._regionsLastModified[name] = region.lastModified();
       }
       return this.trigger.apply(this, ['save', modifiedRegions].concat(__slice.call(args)));
     };
