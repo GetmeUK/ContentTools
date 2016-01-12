@@ -117,6 +117,7 @@ class ContentTools.Tools.Bold extends ContentTools.Tool
                 new HTMLString.Tag(@tagName)
                 )
 
+        element.content.optimize()
         element.updateInnerHTML()
         element.taint()
 
@@ -289,6 +290,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                 if href
                     a = new HTMLString.Tag('a', {href: href})
                     element.content = element.content.format(from, to, a)
+                    element.content.optimize()
 
                 element.updateInnerHTML()
                 element.taint()

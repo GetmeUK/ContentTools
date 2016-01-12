@@ -7898,6 +7898,7 @@
       } else {
         element.content = element.content.format(from, to, new HTMLString.Tag(this.tagName));
       }
+      element.content.optimize();
       element.updateInnerHTML();
       element.taint();
       element.restoreState();
@@ -8057,6 +8058,7 @@
               href: href
             });
             element.content = element.content.format(from, to, a);
+            element.content.optimize();
           }
           element.updateInnerHTML();
           element.taint();
