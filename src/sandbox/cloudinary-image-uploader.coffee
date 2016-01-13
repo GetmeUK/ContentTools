@@ -290,7 +290,7 @@ _resizeTimeout = null
 ContentEdit.Root.get().bind 'taint', (element) ->
 
     # We're only interested in images
-    unless element.constructor.name == 'Image'
+    unless element.type() is 'Image'
         return
 
     # Give the user time to finish resizing before updating the URL

@@ -57,9 +57,9 @@ class ContentTools.Tool
         # specified element.
 
         insertNode = element
-        if insertNode.parent().constructor.name != 'Region'
+        if insertNode.parent().type() != 'Region'
             insertNode = element.closest (node) ->
-                return node.parent().constructor.name is 'Region'
+                return node.parent().type() is 'Region'
 
         insertIndex = insertNode.parent().children.indexOf(insertNode) + 1
 
@@ -151,7 +151,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         # Get the existing href for the element and selection
 
         # Images
-        if element.constructor.name == 'Image'
+        if element.type() is 'Image'
             if element.a
                 return element.a.href
 
@@ -174,7 +174,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        if element.constructor.name == 'Image'
+        if element.type() is 'Image'
             return true
         else
             return super(element, selection)
@@ -182,7 +182,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
     @isApplied: (element, selection) ->
         # Return true if the tool is currently applied to the current
         # element/selection.
-        if element.constructor.name == 'Image'
+        if element.type() is 'Image'
             return element.a
         else
             return super(element, selection)
@@ -191,7 +191,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         applied = false
 
         # Prepare text elements for adding a link
-        if element.constructor.name == 'Image'
+        if element.type() is 'Image'
             # Images
             rect = element.domElement().getBoundingClientRect()
 
@@ -246,7 +246,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             applied = true
 
             # Add the link
-            if element.constructor.name == 'Image'
+            if element.type() is 'Image'
 
                 # Images
                 #
@@ -319,7 +319,7 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
         # element/selection.
 
         return element.content != undefined and
-                element.parent().constructor.name == 'Region'
+                element.parent().type() is 'Region'
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
@@ -327,7 +327,7 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
 
         # If the tag is a PreText tag then we need to handle the convert the
         # element not just the tag name.
-        if element.constructor.name == 'PreText'
+        if element.type() is 'PreText'
             # Convert the element to a Text element first
             content = element.content.html().replace(/&nbsp;/g, ' ')
             textElement = new ContentEdit.Text(@tagName, {}, content)
@@ -390,9 +390,9 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
         else
             # If the element isn't a text element find the nearest top level
             # node and insert a new paragraph element after it.
-            if element.parent().constructor.name != 'Region'
+            if element.parent().type() != 'Region'
                 element = element.closest (node) ->
-                    return node.parent().constructor.name == 'Region'
+                    return node.parent().type() is 'Region'
 
             region = element.parent()
             paragraph = new ContentEdit.Text('p')
@@ -463,7 +463,7 @@ class ContentTools.Tools.AlignLeft extends ContentTools.Tool
 
         # List items and table cells use child nodes to manage their content
         # which don't support classes, so we need to check the parent.
-        if element.constructor.name in ['ListItemText', 'TableCellText']
+        if element.type() in ['ListItemText', 'TableCellText']
             element = element.parent()
 
         return element.hasCSSClass(@className)
@@ -473,7 +473,7 @@ class ContentTools.Tools.AlignLeft extends ContentTools.Tool
 
         # List items and table cells use child nodes to manage their content
         # which don't support classes, so we need to use the parent.
-        if element.constructor.name in ['ListItemText', 'TableCellText']
+        if element.type() in ['ListItemText', 'TableCellText']
             element = element.parent()
 
         # Remove any existing text alignment classes applied
@@ -528,16 +528,16 @@ class ContentTools.Tools.UnorderedList extends ContentTools.Tool
         # Return true if the tool can be applied to the current
         # element/selection.
         return element.content != undefined and
-                element.parent().constructor.name in ['Region', 'ListItem']
+                element.parent().type() in ['Region', 'ListItem']
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
-        if element.parent().constructor.name == 'ListItem'
+        if element.parent().type() is 'ListItem'
 
             # Find the parent list and change it to an unordered list
             element.storeState()
             list = element.closest (node) ->
-                return node.constructor.name == 'List'
+                return node.type() is 'List'
             list.tagName(@listTag)
             element.restoreState()
 
@@ -606,7 +606,7 @@ class ContentTools.Tools.Table extends ContentTools.Tool
 
         # If the element is part of a table find the parent table
         table = element.closest (node) ->
-            return node and node.constructor.name is 'Table'
+            return node and node.type() is 'Table'
 
         # Dialog
         dialog = new ContentTools.TableDialog(table)
@@ -639,7 +639,7 @@ class ContentTools.Tools.Table extends ContentTools.Tool
                 # Check if the current element is still part of the table after
                 # being updated.
                 keepFocus = element.closest (node) ->
-                    return node and node.constructor.name is 'Table'
+                    return node and node.type() is 'Table'
 
             else
                 # Create a new table
@@ -767,7 +767,7 @@ class ContentTools.Tools.Indent extends ContentTools.Tool
         # Return true if the tool can be applied to the current
         # element/selection.
 
-        return element.parent().constructor.name == 'ListItem' and
+        return element.parent().type() is 'ListItem' and
                 element.parent().parent().children.indexOf(element.parent()) > 0
 
     @apply: (element, selection, callback) ->
@@ -791,7 +791,7 @@ class ContentTools.Tools.Unindent extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        return element.parent().constructor.name == 'ListItem'
+        return element.parent().type() is 'ListItem'
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
@@ -1070,12 +1070,12 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
             element.previousContent().focus()
 
         # Remove the element
-        switch element.constructor.name
+        switch element.type()
             when 'ListItemText'
                 # Delete the associated list or list item
                 if app.ctrlDown()
                     list = element.closest (node) ->
-                        return node.parent().constructor.name == 'Region'
+                        return node.parent().type() is 'Region'
                     list.parent().detach(list)
                 else
                     element.parent().parent().detach(element.parent())
@@ -1084,7 +1084,7 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
                 # Delete the associated table or table row
                 if app.ctrlDown()
                     table = element.closest (node) ->
-                        return node.constructor.name == 'Table'
+                        return node.type() is 'Table'
                     table.parent().detach(table)
                 else
                     row = element.parent().parent()

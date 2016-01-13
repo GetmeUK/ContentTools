@@ -232,11 +232,11 @@ class _EditorApp extends ContentTools.ComponentUI
         # doesn't support text create new elements for each line of content.
         encodeHTML = HTMLString.String.encode
 
-        className = element.constructor.name
-        if (lines.length > 1 or not element.content) and className != 'PreText'
+        type = element.type()
+        if (lines.length > 1 or not element.content) and type != 'PreText'
 
             # Find the insertion point in the document
-            if className == 'ListItemText'
+            if type == 'ListItemText'
                 # If the element is a ListItem then we want to insert the lines
                 # as siblings.
                 insertNode = element.parent()
@@ -247,9 +247,9 @@ class _EditorApp extends ContentTools.ComponentUI
                 # For any other element type we want to insert the lines as
                 # paragraphs.
                 insertNode = element
-                if insertNode.parent().constructor.name != 'Region'
+                if insertNode.parent().type() != 'Region'
                     insertNode = element.closest (node) ->
-                        return node.parent().constructor.name is 'Region'
+                        return node.parent().type() is 'Region'
 
                 insertIn = insertNode.parent()
                 insertAt = insertIn.children.indexOf(insertNode) + 1
@@ -257,7 +257,7 @@ class _EditorApp extends ContentTools.ComponentUI
             # Insert each line as a paragraph
             for line, i in lines
                 line = encodeHTML(line)
-                if className == 'ListItemText'
+                if type == 'ListItemText'
                     item = new ContentEdit.ListItem()
                     itemText = new ContentEdit.ListItemText(line)
                     item.attach(itemText)
@@ -282,7 +282,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Convert the content to a HTMLString
             content = encodeHTML(content)
-            content = new HTMLString.String(content, className == 'PreText')
+            content = new HTMLString.String(content, type is 'PreText')
 
             # Insert the content into the element's existing content
             selection = element.selection()
