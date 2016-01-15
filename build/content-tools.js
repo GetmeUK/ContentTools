@@ -8098,7 +8098,8 @@
           alignmentClassNames = ['align-center', 'align-left', 'align-right'];
           if (href) {
             element.a = {
-              href: href
+              href: href,
+              "class": element.a ? element.a['class'] : ''
             };
             for (_i = 0, _len = alignmentClassNames.length; _i < _len; _i++) {
               className = alignmentClassNames[_i];
