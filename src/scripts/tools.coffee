@@ -296,7 +296,9 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                     element.content.optimize()
 
                 element.updateInnerHTML()
-                element.taint()
+
+            # Make sure the element is marked as tainted
+            element.taint()
 
             # Close the modal and dialog
             modal.trigger('click')

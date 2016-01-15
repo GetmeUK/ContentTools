@@ -8135,8 +8135,8 @@
             element.content.optimize();
           }
           element.updateInnerHTML();
-          element.taint();
         }
+        element.taint();
         return modal.trigger('click');
       });
       app.attach(modal);
