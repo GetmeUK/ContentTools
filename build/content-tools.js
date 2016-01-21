@@ -3419,7 +3419,7 @@
     };
 
     Text.prototype._keyReturn = function(ev) {
-      var element, insertAt, selection, tail, tip;
+      var element, insertAt, lineBreakStr, selection, tail, tip;
       ev.preventDefault();
       if (this.content.isWhitespace()) {
         return;
@@ -3430,7 +3430,13 @@
       tail = this.content.substring(selection.get()[1]);
       if (ev.shiftKey) {
         insertAt = selection.get()[0];
-        this.content = this.content.insert(insertAt, new HTMLString.String('<br>', true), insertAt !== this.content.length());
+        lineBreakStr = '<br>';
+        if (this.content.length() === insertAt) {
+          if (!this.content.characters[insertAt - 1].isTag('br')) {
+            lineBreakStr = '<br><br>';
+          }
+        }
+        this.content = this.content.insert(insertAt, new HTMLString.String(lineBreakStr, true), true);
         this.updateInnerHTML();
         insertAt += 1;
         selection = new ContentSelect.Range(insertAt, insertAt);
