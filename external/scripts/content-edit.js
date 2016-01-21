@@ -3419,7 +3419,7 @@
     };
 
     Text.prototype._keyReturn = function(ev) {
-      var element, selection, tail, tip;
+      var element, insertAt, selection, tail, tip;
       ev.preventDefault();
       if (this.content.isWhitespace()) {
         return;
@@ -3428,6 +3428,15 @@
       selection = ContentSelect.Range.query(this._domElement);
       tip = this.content.substring(0, selection.get()[0]);
       tail = this.content.substring(selection.get()[1]);
+      if (ev.shiftKey) {
+        insertAt = selection.get()[0];
+        this.content = this.content.insert(insertAt, new HTMLString.String('<br>', true), insertAt !== this.content.length());
+        this.updateInnerHTML();
+        insertAt += 1;
+        selection = new ContentSelect.Range(insertAt, insertAt);
+        selection.select(this.domElement());
+        return;
+      }
       this.content = tip.trim();
       this.updateInnerHTML();
       element = new this.constructor('p', {}, tail.trim());
