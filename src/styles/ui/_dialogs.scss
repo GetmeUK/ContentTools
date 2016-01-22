@@ -632,6 +632,39 @@
             }
         }
 
+        &__new-window-toggle {
+            $text-color: #a4a4a4;
+
+            background: white;
+            cursor: pointer;
+            display: inline-block;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+            @include type-icons;
+            width: 32px;
+
+            &:before {
+                color: $text-color;
+                content: '>';
+            }
+
+            &:hover:before {
+                color: lighten($text-color, 5%);
+            }
+
+            &--active {
+                &:before {
+                    color: $bkg-color;
+                }
+
+                &:hover:before {
+                    color: lighten($bkg-color, 5%);
+                }
+            }
+        }
+
+
     }
 
 }

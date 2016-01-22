@@ -147,13 +147,13 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
     @icon = 'link'
     @tagName = 'a'
 
-    @getHref: (element, selection) ->
-        # Get the existing href for the element and selection
+    @getAttr: (attrName, element, selection) ->
+        # Get an attribute for the element and selection
 
         # Images
         if element.type() is 'Image'
             if element.a
-                return element.a.href
+                return element.a[attrName]
 
         # Text
         else
@@ -167,10 +167,34 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
 
                 for tag in c.tags()
                     if tag.name() == 'a'
-                        return tag.attr('href')
+                        return tag.attr(attrName)
 
         return ''
 
+    # @getHref: (element, selection) ->
+    #     # Get the existing href for the element and selection
+    #
+    #     # Images
+    #     if element.type() is 'Image'
+    #         if element.a
+    #             return element.a.href
+    #
+    #     # Text
+    #     else
+    #         # Find the first character in the selected text that has an `a` tag
+    #         # and return its `href` value.
+    #         [from, to] = selection.get()
+    #         selectedContent = element.content.slice(from, to)
+    #         for c in selectedContent.characters
+    #             if not c.hasTags('a')
+    #                 continue
+    #
+    #             for tag in c.tags()
+    #                 if tag.name() == 'a'
+    #                     return tag.attr('href')
+    #
+    #     return ''
+    
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
@@ -234,13 +258,13 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             callback(applied)
 
         # Dialog
-        dialog = new ContentTools.LinkDialog(@getHref(element, selection))
+        dialog = new ContentTools.LinkDialog(@getAttr('href', element, selection), @getAttr('target', element, selection))
         dialog.position([
             rect.left + (rect.width / 2) + window.scrollX,
             rect.top + (rect.height / 2) + window.scrollY
             ])
 
-        dialog.bind 'save', (href) ->
+        dialog.bind 'save', (linkAttr) ->
             dialog.unbind('save')
 
             applied = true
@@ -259,9 +283,10 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                     'align-right'
                     ]
 
-                if href
+                if linkAttr.href
                     element.a = {
-                        href: href,
+                        href: linkAttr.href,
+                        target: if linkAttr.target then linkAttr.target else ''
                         class: if element.a then element.a['class'] else ''
                     }
                     for className in alignmentClassNames
@@ -290,8 +315,8 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                 element.content = element.content.unformat(from, to, 'a')
 
                 # If specified add the new link
-                if href
-                    a = new HTMLString.Tag('a', {href: href})
+                if linkAttr.href
+                    a = new HTMLString.Tag('a', linkAttr)
                     element.content = element.content.format(from, to, a)
                     element.content.optimize()
 

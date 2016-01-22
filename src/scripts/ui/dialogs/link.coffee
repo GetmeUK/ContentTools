@@ -2,11 +2,13 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
 
     # An anchored dialog to support inserting/modifying a link
 
-    constructor: (initialValue='')->
+    constructor: (href='', target='') ->
         super()
 
-        # The initial value to set the link as (e.g if we're editing a link)
-        @_initialValue = initialValue
+        # The initial value to set the href and target attribute
+        # of the link as (e.g if we're editing a link)
+        @_href = href
+        @_target = target
 
     mount: () ->
         # Mount the widget
@@ -21,8 +23,12 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
             ContentEdit._('Enter a link') + '...'
             )
         @_domInput.setAttribute('type', 'text')
-        @_domInput.setAttribute('value', @_initialValue)
+        @_domInput.setAttribute('value', @_href)
         @_domElement.appendChild(@_domInput)
+
+        # Create the open in new widow button
+        @_domOpenInNewWindow = @constructor.createDiv(['ct-anchored-dialog__new-window-toggle'])
+        @_domElement.appendChild(@_domOpenInNewWindow)
 
         # Create the confirm button
         @_domButton = @constructor.createDiv(['ct-anchored-dialog__button'])
@@ -39,7 +45,11 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         if not @isMounted
             return @trigger('save', '')
 
-        @trigger('save', @_domInput.value.trim())
+        linkAttr = {}
+        linkAttr.href = @_domInput.value.trim()
+        linkAttr.target = @_target if @_target
+
+        @trigger('save', linkAttr)
 
     show: () ->
         # Show the widget
@@ -50,7 +60,7 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
 
         # If a there's an intially value then select it so it can be easily
         # replaced.
-        if @_initialValue
+        if @_href
             @_domInput.select()
 
     unmount: () ->
@@ -67,6 +77,18 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
 
     # Private methods
 
+    _targetToggleDOMClass: () ->
+        if @_target == '_blank'
+            ContentEdit.addCSSClass(
+                @_domOpenInNewWindow,
+                'ct-anchored-dialog__new-window-toggle--active'
+            )
+        else
+            ContentEdit.removeCSSClass(
+                @_domOpenInNewWindow,
+                'ct-anchored-dialog__new-window-toggle--active'
+            )
+
     _addDOMEventListeners: () ->
         # Add event listeners for the widget
 
@@ -77,6 +99,12 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         @_domInput.addEventListener 'keypress', (ev) =>
             if ev.keyCode is 13
                 @save()
+
+        # Open in new window
+        @_domOpenInNewWindow.addEventListener 'click', (ev) =>
+            ev.preventDefault()
+            @_target = if @_target == '_blank' then '' else '_blank'
+            @_targetToggleDOMClass()
 
         # Button
         @_domButton.addEventListener 'click', (ev) =>
