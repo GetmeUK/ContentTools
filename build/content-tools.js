@@ -6427,6 +6427,7 @@
       this._domInput.setAttribute('value', this._href);
       this._domElement.appendChild(this._domInput);
       this._domOpenInNewWindow = this.constructor.createDiv(['ct-anchored-dialog__new-window-toggle']);
+      this._openInNewWindowBtnSetClass();
       this._domElement.appendChild(this._domOpenInNewWindow);
       this._domButton = this.constructor.createDiv(['ct-anchored-dialog__button']);
       this._domElement.appendChild(this._domButton);
@@ -6463,7 +6464,7 @@
       return this._domInput = null;
     };
 
-    LinkDialog.prototype._targetToggleDOMClass = function() {
+    LinkDialog.prototype._openInNewWindowBtnSetClass = function() {
       if (this._target === '_blank') {
         return ContentEdit.addCSSClass(this._domOpenInNewWindow, 'ct-anchored-dialog__new-window-toggle--active');
       } else {
@@ -6483,7 +6484,7 @@
         return function(ev) {
           ev.preventDefault();
           _this._target = _this._target === '_blank' ? '' : '_blank';
-          return _this._targetToggleDOMClass();
+          return _this._openInNewWindowBtnSetClass();
         };
       })(this));
       return this._domButton.addEventListener('click', (function(_this) {

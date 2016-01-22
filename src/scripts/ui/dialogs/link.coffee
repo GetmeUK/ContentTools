@@ -26,8 +26,9 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         @_domInput.setAttribute('value', @_href)
         @_domElement.appendChild(@_domInput)
 
-        # Create the open in new widow button
+        # Create the open in new widow toggle button
         @_domOpenInNewWindow = @constructor.createDiv(['ct-anchored-dialog__new-window-toggle'])
+        @_openInNewWindowBtnSetClass()
         @_domElement.appendChild(@_domOpenInNewWindow)
 
         # Create the confirm button
@@ -77,7 +78,7 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
 
     # Private methods
 
-    _targetToggleDOMClass: () ->
+    _openInNewWindowBtnSetClass: () ->
         if @_target == '_blank'
             ContentEdit.addCSSClass(
                 @_domOpenInNewWindow,
@@ -104,7 +105,7 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         @_domOpenInNewWindow.addEventListener 'click', (ev) =>
             ev.preventDefault()
             @_target = if @_target == '_blank' then '' else '_blank'
-            @_targetToggleDOMClass()
+            @_openInNewWindowBtnSetClass()
 
         # Button
         @_domButton.addEventListener 'click', (ev) =>
