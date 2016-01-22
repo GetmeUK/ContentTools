@@ -607,7 +607,7 @@
             height: 32px;
             outline: none;
             @include type-text($line-height: 32px);
-            padding: 0 16px;
+            padding: 0 8px 0 16px;
             vertical-align: top;
             width: 256px;
         }
@@ -646,7 +646,7 @@
 
             &:before {
                 color: $text-color;
-                content: '>';
+                content: '\ea7d';
             }
 
             &:hover:before {
