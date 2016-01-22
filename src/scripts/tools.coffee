@@ -171,30 +171,6 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
 
         return ''
 
-    # @getHref: (element, selection) ->
-    #     # Get the existing href for the element and selection
-    #
-    #     # Images
-    #     if element.type() is 'Image'
-    #         if element.a
-    #             return element.a.href
-    #
-    #     # Text
-    #     else
-    #         # Find the first character in the selected text that has an `a` tag
-    #         # and return its `href` value.
-    #         [from, to] = selection.get()
-    #         selectedContent = element.content.slice(from, to)
-    #         for c in selectedContent.characters
-    #             if not c.hasTags('a')
-    #                 continue
-    #
-    #             for tag in c.tags()
-    #                 if tag.name() == 'a'
-    #                     return tag.attr('href')
-    #
-    #     return ''
-    
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
