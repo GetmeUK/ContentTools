@@ -6405,12 +6405,16 @@
   ContentTools.LinkDialog = (function(_super) {
     __extends(LinkDialog, _super);
 
-    function LinkDialog(initialValue) {
-      if (initialValue == null) {
-        initialValue = '';
+    function LinkDialog(href, target) {
+      if (href == null) {
+        href = '';
+      }
+      if (target == null) {
+        target = '';
       }
       LinkDialog.__super__.constructor.call(this);
-      this._initialValue = initialValue;
+      this._href = href;
+      this._target = target;
     }
 
     LinkDialog.prototype.mount = function() {
@@ -6420,24 +6424,33 @@
       this._domInput.setAttribute('name', 'href');
       this._domInput.setAttribute('placeholder', ContentEdit._('Enter a link') + '...');
       this._domInput.setAttribute('type', 'text');
-      this._domInput.setAttribute('value', this._initialValue);
+      this._domInput.setAttribute('value', this._href);
       this._domElement.appendChild(this._domInput);
+      this._domOpenInNewWindow = this.constructor.createDiv(['ct-anchored-dialog__new-window-toggle']);
+      this._openInNewWindowBtnSetClass();
+      this._domElement.appendChild(this._domOpenInNewWindow);
       this._domButton = this.constructor.createDiv(['ct-anchored-dialog__button']);
       this._domElement.appendChild(this._domButton);
       return this._addDOMEventListeners();
     };
 
     LinkDialog.prototype.save = function() {
+      var linkAttr;
       if (!this.isMounted) {
         return this.trigger('save', '');
       }
-      return this.trigger('save', this._domInput.value.trim());
+      linkAttr = {};
+      linkAttr.href = this._domInput.value.trim();
+      if (this._target) {
+        linkAttr.target = this._target;
+      }
+      return this.trigger('save', linkAttr);
     };
 
     LinkDialog.prototype.show = function() {
       LinkDialog.__super__.show.call(this);
       this._domInput.focus();
-      if (this._initialValue) {
+      if (this._href) {
         return this._domInput.select();
       }
     };
@@ -6451,12 +6464,27 @@
       return this._domInput = null;
     };
 
+    LinkDialog.prototype._openInNewWindowBtnSetClass = function() {
+      if (this._target === '_blank') {
+        return ContentEdit.addCSSClass(this._domOpenInNewWindow, 'ct-anchored-dialog__new-window-toggle--active');
+      } else {
+        return ContentEdit.removeCSSClass(this._domOpenInNewWindow, 'ct-anchored-dialog__new-window-toggle--active');
+      }
+    };
+
     LinkDialog.prototype._addDOMEventListeners = function() {
       this._domInput.addEventListener('keypress', (function(_this) {
         return function(ev) {
           if (ev.keyCode === 13) {
             return _this.save();
           }
+        };
+      })(this));
+      this._domOpenInNewWindow.addEventListener('click', (function(_this) {
+        return function(ev) {
+          ev.preventDefault();
+          _this._target = _this._target === '_blank' ? '' : '_blank';
+          return _this._openInNewWindowBtnSetClass();
         };
       })(this));
       return this._domButton.addEventListener('click', (function(_this) {
@@ -8031,11 +8059,11 @@
 
     Link.tagName = 'a';
 
-    Link.getHref = function(element, selection) {
+    Link.getAttr = function(attrName, element, selection) {
       var c, from, selectedContent, tag, to, _i, _j, _len, _len1, _ref, _ref1, _ref2;
       if (element.type() === 'Image') {
         if (element.a) {
-          return element.a.href;
+          return element.a[attrName];
         }
       } else {
         _ref = selection.get(), from = _ref[0], to = _ref[1];
@@ -8050,7 +8078,7 @@
           for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
             tag = _ref2[_j];
             if (tag.name() === 'a') {
-              return tag.attr('href');
+              return tag.attr(attrName);
             }
           }
         }
@@ -8103,17 +8131,18 @@
         }
         return callback(applied);
       });
-      dialog = new ContentTools.LinkDialog(this.getHref(element, selection));
+      dialog = new ContentTools.LinkDialog(this.getAttr('href', element, selection), this.getAttr('target', element, selection));
       dialog.position([rect.left + (rect.width / 2) + window.scrollX, rect.top + (rect.height / 2) + window.scrollY]);
-      dialog.bind('save', function(href) {
+      dialog.bind('save', function(linkAttr) {
         var a, alignmentClassNames, className, linkClasses, _i, _j, _len, _len1;
         dialog.unbind('save');
         applied = true;
         if (element.type() === 'Image') {
           alignmentClassNames = ['align-center', 'align-left', 'align-right'];
-          if (href) {
+          if (linkAttr.href) {
             element.a = {
-              href: href,
+              href: linkAttr.href,
+              target: linkAttr.target ? linkAttr.target : '',
               "class": element.a ? element.a['class'] : ''
             };
             for (_i = 0, _len = alignmentClassNames.length; _i < _len; _i++) {
@@ -8142,10 +8171,8 @@
           element.mount();
         } else {
           element.content = element.content.unformat(from, to, 'a');
-          if (href) {
-            a = new HTMLString.Tag('a', {
-              href: href
-            });
+          if (linkAttr.href) {
+            a = new HTMLString.Tag('a', linkAttr);
             element.content = element.content.format(from, to, a);
             element.content.optimize();
           }

@@ -204,9 +204,9 @@ describe 'ContentTools.Tools.Link.canApply()', () ->
         expect(tool.canApply(element, selection)).toBe true
 
 
-describe 'ContentTools.Tools.Link.getHref()', () ->
+describe 'ContentTools.Tools.Link.getAttr()', () ->
 
-    it 'should return the href for the first anchor tag found in a selection or
+    it 'should return an attribute by name for the first anchor tag found in a selection or
             if the element is an image then for the anchor tag associated with
             image', () ->
 
@@ -218,15 +218,15 @@ describe 'ContentTools.Tools.Link.getHref()', () ->
         tool = ContentTools.Tools.Link
 
         selection = new ContentSelect.Range(0, 2)
-        expect(tool.getHref(element, selection)).toBe '#test'
+        expect(tool.getAttr('href', element, selection)).toBe '#test'
 
         selection = new ContentSelect.Range(2, 4)
-        expect(tool.getHref(element, selection)).toBe '#test2'
+        expect(tool.getAttr('href', element, selection)).toBe '#test2'
 
         # Check that if multiple links are spanned the href attribute of the
         # first one is returned.
         selection = new ContentSelect.Range(1, 4)
-        expect(tool.getHref(element, selection)).toBe '#test'
+        expect(tool.getAttr('href', element, selection)).toBe '#test'
 
 
 describe 'ContentTools.Tools.Link.isApplied()', () ->
