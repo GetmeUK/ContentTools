@@ -158,7 +158,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         # Text
         else
             # Find the first character in the selected text that has an `a` tag
-            # and return its `href` value.
+            # and return the named attributes value.
             [from, to] = selection.get()
             selectedContent = element.content.slice(from, to)
             for c in selectedContent.characters
@@ -234,7 +234,10 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             callback(applied)
 
         # Dialog
-        dialog = new ContentTools.LinkDialog(@getAttr('href', element, selection), @getAttr('target', element, selection))
+        dialog = new ContentTools.LinkDialog(
+            @getAttr('href', element, selection),
+            @getAttr('target', element, selection)
+            )
         dialog.position([
             rect.left + (rect.width / 2) + window.scrollX,
             rect.top + (rect.height / 2) + window.scrollY

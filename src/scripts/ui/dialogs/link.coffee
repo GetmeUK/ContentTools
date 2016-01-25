@@ -2,11 +2,15 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
 
     # An anchored dialog to support inserting/modifying a link
 
+    # The target that will be set by the link tool if the open in new window
+    # option is selected.
+    NEW_WINDOW_TARGET = '_blank'
+
     constructor: (href='', target='') ->
         super()
 
         # The initial value to set the href and target attribute
-        # of the link as (e.g if we're editing a link)
+        # of the link as (e.g if we're editing a link).
         @_href = href
         @_target = target
 
@@ -26,10 +30,18 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         @_domInput.setAttribute('value', @_href)
         @_domElement.appendChild(@_domInput)
 
-        # Create the open in new widow toggle button
-        @_domOpenInNewWindow = @constructor.createDiv(['ct-anchored-dialog__new-window-toggle'])
-        @_openInNewWindowBtnSetClass()
-        @_domElement.appendChild(@_domOpenInNewWindow)
+        # Create a toggle button to allow users to toogle between no target and
+        # TARGET (open in a new window).
+        @_domTargetButton = @constructor.createDiv([
+            'ct-anchored-dialog__target-button'])
+        @_domElement.appendChild(@_domTargetButton)
+
+        # Check if the new window target has already been set for the link
+        if @_target == NEW_WINDOW_TARGET
+            ContentEdit.addCSSClass(
+                @_domTargetButton,
+                'ct-anchored-dialog__target-button--active'
+            )
 
         # Create the confirm button
         @_domButton = @constructor.createDiv(['ct-anchored-dialog__button'])
@@ -78,18 +90,6 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
 
     # Private methods
 
-    _openInNewWindowBtnSetClass: () ->
-        if @_target == '_blank'
-            ContentEdit.addCSSClass(
-                @_domOpenInNewWindow,
-                'ct-anchored-dialog__new-window-toggle--active'
-            )
-        else
-            ContentEdit.removeCSSClass(
-                @_domOpenInNewWindow,
-                'ct-anchored-dialog__new-window-toggle--active'
-            )
-
     _addDOMEventListeners: () ->
         # Add event listeners for the widget
 
@@ -101,11 +101,25 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
             if ev.keyCode is 13
                 @save()
 
-        # Open in new window
-        @_domOpenInNewWindow.addEventListener 'click', (ev) =>
+        # Toggle the target attribute for the link ('' or TARGET)
+        @_domTargetButton.addEventListener 'click', (ev) =>
             ev.preventDefault()
-            @_target = if @_target == '_blank' then '' else '_blank'
-            @_openInNewWindowBtnSetClass()
+
+            # No target
+            if @_target == NEW_WINDOW_TARGET
+                @_target = ''
+                ContentEdit.removeCSSClass(
+                    @_domTargetButton,
+                    'ct-anchored-dialog__target-button--active'
+                )
+
+            # Target TARGET
+            else
+                @_target = NEW_WINDOW_TARGET
+                ContentEdit.addCSSClass(
+                    @_domTargetButton,
+                    'ct-anchored-dialog__target-button--active'
+                )
 
         # Button
         @_domButton.addEventListener 'click', (ev) =>

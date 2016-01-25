@@ -1194,14 +1194,18 @@
   });
 
   describe('ContentTools.Tools.Link.getAttr()', function() {
-    return it('should return an attribute by name for the first anchor tag found in a selection or if the element is an image then for the anchor tag associated with image', function() {
+    return fit('should return an attribute by name for the first anchor tag found in a selection or if the element is an image then for the anchor tag associated with image', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, '<a href="#test">te</a><a href="#test2">st</a>');
+      element = new ContentEdit.Text('p', {}, '<a href="#test" target="_blank">te</a><a href="#test2">st</a>');
       tool = ContentTools.Tools.Link;
       selection = new ContentSelect.Range(0, 2);
       expect(tool.getAttr('href', element, selection)).toBe('#test');
       selection = new ContentSelect.Range(2, 4);
       expect(tool.getAttr('href', element, selection)).toBe('#test2');
+      selection = new ContentSelect.Range(0, 2);
+      expect(tool.getAttr('target', element, selection)).toBe('_blank');
+      selection = new ContentSelect.Range(2, 4);
+      expect(tool.getAttr('target', element, selection)).toBe(void 0);
       selection = new ContentSelect.Range(1, 4);
       return expect(tool.getAttr('href', element, selection)).toBe('#test');
     });

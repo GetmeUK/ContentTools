@@ -6403,7 +6403,11 @@
   })(ContentTools.AnchoredComponentUI);
 
   ContentTools.LinkDialog = (function(_super) {
+    var NEW_WINDOW_TARGET;
+
     __extends(LinkDialog, _super);
+
+    NEW_WINDOW_TARGET = '_blank';
 
     function LinkDialog(href, target) {
       if (href == null) {
@@ -6426,9 +6430,11 @@
       this._domInput.setAttribute('type', 'text');
       this._domInput.setAttribute('value', this._href);
       this._domElement.appendChild(this._domInput);
-      this._domOpenInNewWindow = this.constructor.createDiv(['ct-anchored-dialog__new-window-toggle']);
-      this._openInNewWindowBtnSetClass();
-      this._domElement.appendChild(this._domOpenInNewWindow);
+      this._domTargetButton = this.constructor.createDiv(['ct-anchored-dialog__target-button']);
+      this._domElement.appendChild(this._domTargetButton);
+      if (this._target === NEW_WINDOW_TARGET) {
+        ContentEdit.addCSSClass(this._domTargetButton, 'ct-anchored-dialog__target-button--active');
+      }
       this._domButton = this.constructor.createDiv(['ct-anchored-dialog__button']);
       this._domElement.appendChild(this._domButton);
       return this._addDOMEventListeners();
@@ -6464,14 +6470,6 @@
       return this._domInput = null;
     };
 
-    LinkDialog.prototype._openInNewWindowBtnSetClass = function() {
-      if (this._target === '_blank') {
-        return ContentEdit.addCSSClass(this._domOpenInNewWindow, 'ct-anchored-dialog__new-window-toggle--active');
-      } else {
-        return ContentEdit.removeCSSClass(this._domOpenInNewWindow, 'ct-anchored-dialog__new-window-toggle--active');
-      }
-    };
-
     LinkDialog.prototype._addDOMEventListeners = function() {
       this._domInput.addEventListener('keypress', (function(_this) {
         return function(ev) {
@@ -6480,11 +6478,16 @@
           }
         };
       })(this));
-      this._domOpenInNewWindow.addEventListener('click', (function(_this) {
+      this._domTargetButton.addEventListener('click', (function(_this) {
         return function(ev) {
           ev.preventDefault();
-          _this._target = _this._target === '_blank' ? '' : '_blank';
-          return _this._openInNewWindowBtnSetClass();
+          if (_this._target === NEW_WINDOW_TARGET) {
+            _this._target = '';
+            return ContentEdit.removeCSSClass(_this._domTargetButton, 'ct-anchored-dialog__target-button--active');
+          } else {
+            _this._target = NEW_WINDOW_TARGET;
+            return ContentEdit.addCSSClass(_this._domTargetButton, 'ct-anchored-dialog__target-button--active');
+          }
         };
       })(this));
       return this._domButton.addEventListener('click', (function(_this) {
