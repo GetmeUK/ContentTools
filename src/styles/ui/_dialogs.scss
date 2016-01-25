@@ -599,21 +599,19 @@
     }
 
     .ct-anchored-dialog {
-        $bkg-color: #27ae60;
-
         &__input {
             border: none;
             color: $text-color;
             height: 32px;
             outline: none;
             @include type-text($line-height: 32px);
-            padding: 0 16px;
+            padding: 0 8px 0 16px;
             vertical-align: top;
             width: 256px;
         }
 
         &__button {
-            background: $bkg-color;
+            background: $confirm-action-color;
             cursor: pointer;
             display: inline-block;
             height: 32px;
@@ -628,7 +626,45 @@
             }
 
             &:hover {
-                background: lighten($bkg-color, 5%);
+                background: lighten($confirm-action-color, 5%);
+            }
+        }
+
+        &__target-button {
+            // On the link dialog dialog this icon appears to allow users to
+            // toggle the link opening in a new window.
+
+            // FIXME: Potentially this should be moved under a class specific to
+            // a link dialog and not the anchored-dialog.
+            //
+            // Anthony Blackshaw <ant@getme.co.uk>, 2016-01-16
+
+            background: white;
+            cursor: pointer;
+            display: inline-block;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+            @include type-icons;
+            width: 32px;
+
+            &:before {
+                color: lighten($text-color, 25%);;
+                content: '\ea7d';
+            }
+
+            &:hover:before {
+                color: lighten($text-color, 30%);
+            }
+
+            &--active {
+                &:before {
+                    color: $confirm-action-color;
+                }
+
+                &:hover:before {
+                    color: lighten($confirm-action-color, 5%);
+                }
             }
         }
 

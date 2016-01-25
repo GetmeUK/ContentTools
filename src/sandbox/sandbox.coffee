@@ -22,6 +22,7 @@ window.onload = () ->
 
     editor.bind 'save', (regions, autoSave) ->
         # Handle the page being saved
+        console.log regions
 
         # Mark the ignition as busy while we save the page
         editor.busy(true)

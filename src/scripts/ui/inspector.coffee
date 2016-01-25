@@ -77,7 +77,7 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
             # Certain tags are ignored as attributes cannot be safely set
             # against them.
             if ContentTools.INSPECTOR_IGNORED_ELEMENTS.indexOf(
-                    element.constructor.name) != -1
+                    element.type()) != -1
                 continue
 
             # Convert each element to a UI tag

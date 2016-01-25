@@ -63,7 +63,6 @@ describe 'ContentTools.AnchoredDialogUI', () ->
 
 # DialogUI
 
-
 describe 'ContentTools.DialogUI', () ->
 
     div = null

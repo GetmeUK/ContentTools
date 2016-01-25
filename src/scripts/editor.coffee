@@ -232,11 +232,11 @@ class _EditorApp extends ContentTools.ComponentUI
         # doesn't support text create new elements for each line of content.
         encodeHTML = HTMLString.String.encode
 
-        className = element.constructor.name
-        if (lines.length > 1 or not element.content) and className != 'PreText'
+        type = element.type()
+        if (lines.length > 1 or not element.content) and type != 'PreText'
 
             # Find the insertion point in the document
-            if className == 'ListItemText'
+            if type == 'ListItemText'
                 # If the element is a ListItem then we want to insert the lines
                 # as siblings.
                 insertNode = element.parent()
@@ -247,9 +247,9 @@ class _EditorApp extends ContentTools.ComponentUI
                 # For any other element type we want to insert the lines as
                 # paragraphs.
                 insertNode = element
-                if insertNode.parent().constructor.name != 'Region'
+                if insertNode.parent().type() != 'Region'
                     insertNode = element.closest (node) ->
-                        return node.parent().constructor.name is 'Region'
+                        return node.parent().type() is 'Region'
 
                 insertIn = insertNode.parent()
                 insertAt = insertIn.children.indexOf(insertNode) + 1
@@ -257,7 +257,7 @@ class _EditorApp extends ContentTools.ComponentUI
             # Insert each line as a paragraph
             for line, i in lines
                 line = encodeHTML(line)
-                if className == 'ListItemText'
+                if type == 'ListItemText'
                     item = new ContentEdit.ListItem()
                     itemText = new ContentEdit.ListItemText(line)
                     item.attach(itemText)
@@ -282,13 +282,30 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Convert the content to a HTMLString
             content = encodeHTML(content)
-            content = new HTMLString.String(content, className == 'PreText')
+            content = new HTMLString.String(content, type is 'PreText')
 
             # Insert the content into the element's existing content
             selection = element.selection()
             cursor = selection.get()[0] + content.length()
             tip = element.content.substring(0, selection.get()[0])
             tail = element.content.substring(selection.get()[1])
+
+            # Format the string using tags for the first character it is
+            # replacing (if any).
+            replaced = element.content.substring(
+                selection.get()[0],
+                selection.get()[1]
+                )
+            if replaced.length()
+                character = replaced.characters[0]
+                tags = character.tags()
+
+                if character.isTag()
+                    tags.shift()
+
+                if tags.length >= 1
+                    content = content.format(0, content.length(), tags...)
+
             element.content = tip.concat(content)
             element.content = element.content.concat(tail, false)
             element.updateInnerHTML()
@@ -383,8 +400,8 @@ class _EditorApp extends ContentTools.ComponentUI
                 if child.content and not child.content.html()
                     html = ''
 
-            # Apply the changes made to the DOM (affectively reseting the DOM to
-            # a non-editable state).
+            # Apply the changes made to the DOM (affectively resetting the DOM
+            # to a non-editable state).
             unless passive
                 region.domElement().innerHTML = html
 
@@ -394,6 +411,9 @@ class _EditorApp extends ContentTools.ComponentUI
                 continue
 
             modifiedRegions[name] = html
+
+            # Set the region back to not modified
+            @_regionsLastModified[name] = region.lastModified()
 
         # Trigger the save event with a region HTML map for the changed
         # content.

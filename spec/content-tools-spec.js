@@ -1000,6 +1000,46 @@
     });
   });
 
+  describe('ContentTools.ImageDialog', function() {
+    var div, editor;
+    div = null;
+    editor = null;
+    beforeEach(function() {
+      div = document.createElement('div');
+      div.setAttribute('class', 'editable');
+      document.body.appendChild(div);
+      editor = ContentTools.EditorApp.get();
+      return editor.init('.editable');
+    });
+    afterEach(function() {
+      editor.destroy();
+      return document.body.removeChild(div);
+    });
+    describe('ContentTools.ImageDialog()', function() {
+      return it('should return an instance of a ImageDialog', function() {
+        var dialog;
+        dialog = new ContentTools.ImageDialog();
+        return expect(dialog instanceof ContentTools.ImageDialog).toBe(true);
+      });
+    });
+    return describe('ContentTools.ImageDialog.cropRegion()', function() {
+      return it('should return the crop region set by the user', function() {
+        var dialog;
+        dialog = new ContentTools.ImageDialog();
+        editor.attach(dialog);
+        dialog.mount();
+        expect(dialog.cropRegion()).toEqual([0, 0, 1, 1]);
+        dialog._domView.style.width = '400px';
+        dialog._domView.style.height = '400px';
+        dialog.populate('test.png', [400, 400]);
+        dialog.addCropMarks();
+        dialog._cropMarks._domHandles[1].style.left = '200px';
+        dialog._cropMarks._domHandles[1].style.top = '200px';
+        return expect(dialog.cropRegion()).toEqual([0, 0, 0.5, 0.5]);
+      });
+    });
+  });
+
   describe('ContentTools.ToolShelf.stow()', function() {
     return it('should store a `ContentTools.Tool` instance against a name', function() {
       var tool;
@@ -1153,17 +1193,21 @@
     });
   });
 
-  describe('ContentTools.Tools.Link.getHref()', function() {
-    return it('should return the href for the first anchor tag found in a selection or if the element is an image then for the anchor tag associated with image', function() {
+  describe('ContentTools.Tools.Link.getAttr()', function() {
+    return fit('should return an attribute by name for the first anchor tag found in a selection or if the element is an image then for the anchor tag associated with image', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, '<a href="#test">te</a><a href="#test2">st</a>');
+      element = new ContentEdit.Text('p', {}, '<a href="#test" target="_blank">te</a><a href="#test2">st</a>');
       tool = ContentTools.Tools.Link;
       selection = new ContentSelect.Range(0, 2);
-      expect(tool.getHref(element, selection)).toBe('#test');
+      expect(tool.getAttr('href', element, selection)).toBe('#test');
       selection = new ContentSelect.Range(2, 4);
-      expect(tool.getHref(element, selection)).toBe('#test2');
+      expect(tool.getAttr('href', element, selection)).toBe('#test2');
+      selection = new ContentSelect.Range(0, 2);
+      expect(tool.getAttr('target', element, selection)).toBe('_blank');
+      selection = new ContentSelect.Range(2, 4);
+      expect(tool.getAttr('target', element, selection)).toBe(void 0);
       selection = new ContentSelect.Range(1, 4);
-      return expect(tool.getHref(element, selection)).toBe('#test');
+      return expect(tool.getAttr('href', element, selection)).toBe('#test');
     });
   });
 

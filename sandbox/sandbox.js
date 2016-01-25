@@ -144,6 +144,7 @@
     editor.init('.editable', 'data-name');
     editor.bind('save', function(regions, autoSave) {
       var saved;
+      console.log(regions);
       editor.busy(true);
       saved = (function(_this) {
         return function() {
