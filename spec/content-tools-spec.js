@@ -1194,7 +1194,7 @@
   });
 
   describe('ContentTools.Tools.Link.getAttr()', function() {
-    return fit('should return an attribute by name for the first anchor tag found in a selection or if the element is an image then for the anchor tag associated with image', function() {
+    return it('should return an attribute by name for the first anchor tag found in a selection or if the element is an image then for the anchor tag associated with image', function() {
       var element, selection, tool;
       element = new ContentEdit.Text('p', {}, '<a href="#test" target="_blank">te</a><a href="#test2">st</a>');
       tool = ContentTools.Tools.Link;

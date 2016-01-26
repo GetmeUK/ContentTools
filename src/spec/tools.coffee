@@ -206,9 +206,9 @@ describe 'ContentTools.Tools.Link.canApply()', () ->
 
 describe 'ContentTools.Tools.Link.getAttr()', () ->
 
-    fit 'should return an attribute by name for the first anchor tag found in a selection or
-            if the element is an image then for the anchor tag associated with
-            image', () ->
+    it 'should return an attribute by name for the first anchor tag found in a
+            selection or if the element is an image then for the anchor tag
+            associated with image', () ->
 
         element = new ContentEdit.Text(
             'p',

@@ -14,10 +14,7 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         # Mount the widget to the DOM
 
         # Inspector
-        @_domElement = @constructor.createDiv([
-            'ct-widget',
-            'ct-inspector'
-            ])
+        @_domElement = @constructor.createDiv(['ct-widget', 'ct-inspector'])
         @parent().domElement().appendChild(@_domElement)
 
         # Tags
@@ -34,13 +31,13 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         @_handleFocusChange = () =>
             @updateTags()
 
-        ContentEdit.Root.get().bind 'blur', @_handleFocusChange
-        ContentEdit.Root.get().bind 'focus', @_handleFocusChange
+        ContentEdit.Root.get().bind('blur', @_handleFocusChange)
+        ContentEdit.Root.get().bind('focus', @_handleFocusChange)
 
         # We use mount here to catch instances where the tag name is changed, in
         # which case the focus wont be affected but the element will be
         # remounted in the DOM.
-        ContentEdit.Root.get().bind 'mount', @_handleFocusChange
+        ContentEdit.Root.get().bind('mount', @_handleFocusChange)
 
     unmount: () ->
         # Unmount the widget from the DOM
@@ -49,9 +46,9 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         @_domTags = null
 
         # Remove listeners for the inspector
-        ContentEdit.Root.get().unbind 'blur', @_handleFocusChange
-        ContentEdit.Root.get().unbind 'focus', @_handleFocusChange
-        ContentEdit.Root.get().unbind 'mount', @_handleFocusChange
+        ContentEdit.Root.get().unbind('blur', @_handleFocusChange)
+        ContentEdit.Root.get().unbind('focus', @_handleFocusChange)
+        ContentEdit.Root.get().unbind('mount', @_handleFocusChange)
 
     updateTags: () ->
         # Update the tags based on the current selection

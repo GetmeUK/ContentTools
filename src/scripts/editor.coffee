@@ -365,6 +365,9 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Check to see if we need to restore the regions to an editable state
         if restoreEditable
+            # Unset any focused element against root
+            if ContentEdit.Root.get().focused()
+                ContentEdit.Root.get().focused().blur()
 
             # Reset the regions map
             @_regions = {}
@@ -381,6 +384,9 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Restore the selection for the snapshot
             @history.restoreSelection(snapshot)
+
+            # Update the inspector tags
+            @_inspector.updateTags()
 
     save: (passive, args...) ->
         # Save changes to the current page

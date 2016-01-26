@@ -7533,6 +7533,9 @@
         region.domElement().innerHTML = snapshot.regions[name];
       }
       if (restoreEditable) {
+        if (ContentEdit.Root.get().focused()) {
+          ContentEdit.Root.get().focused().blur();
+        }
         this._regions = {};
         _ref1 = this._domRegions;
         for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
@@ -7544,7 +7547,8 @@
           this._regions[name] = new ContentEdit.Region(domRegion);
         }
         this.history.replaceRegions(this._regions);
-        return this.history.restoreSelection(snapshot);
+        this.history.restoreSelection(snapshot);
+        return this._inspector.updateTags();
       }
     };
 
