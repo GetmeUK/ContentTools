@@ -1674,6 +1674,8 @@
         if (value === '') {
           attributeStrings.push(name);
         } else {
+          value = HTMLString.String.encode(value);
+          value = value.replace(/"/g, '&quot;');
           attributeStrings.push("" + name + "=\"" + value + "\"");
         }
       }
