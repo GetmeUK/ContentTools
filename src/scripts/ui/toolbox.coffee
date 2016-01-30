@@ -481,13 +481,13 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         @_mouseDown = true
         @addCSSClass('ct-tool--down')
 
-    _onMouseLeave: () =>
+    _onMouseLeave: (ev) =>
         # Cursor has left the tool so remove flag indicating the mouse is down
         # over the tool.
         @_mouseDown = false
         @removeCSSClass('ct-tool--down')
 
-    _onMouseUp: () =>
+    _onMouseUp: (ev) =>
         # If a click event has occured exectute the tool
         if @_mouseDown
             element = ContentEdit.Root.get().focused()
