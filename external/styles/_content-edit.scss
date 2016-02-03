@@ -352,10 +352,6 @@ $highlight-color: #f39c12;
  * expected that these styles will be extended if not overridden by the site
  * CSS.
  */
-img,
-iframe,
-video,
-[data-ce-tag=img],
 .ce-element--type-image,
 .ce-element--type-video {
     display: block;
