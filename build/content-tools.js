@@ -4928,7 +4928,7 @@
       'iframe': ['height', 'width']
     },
     getEmbedVideoURL: function(url) {
-      var domains, id, kv, m, netloc, params, paramsStr, parser, path, _i, _len, _ref;
+      var domains, id, k, kv, m, netloc, paramStr, params, paramsStr, parser, path, v, _i, _len, _ref;
       domains = {
         'www.youtube.com': 'youtube',
         'youtu.be': 'youtube',
@@ -4948,7 +4948,9 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         kv = _ref[_i];
         kv = kv.split("=");
-        params[kv[0]] = kv[1];
+        if (kv[0]) {
+          params[kv[0]] = kv[1];
+        }
       }
       switch (domains[netloc]) {
         case 'youtube':
@@ -4957,6 +4959,7 @@
               return null;
             }
             id = params['v'];
+            delete params['v'];
           } else {
             m = path.match(/\/([A-Za-z0-9_-]+)$/i);
             if (!m) {
@@ -4964,13 +4967,39 @@
             }
             id = m[1];
           }
-          return "https://www.youtube.com/embed/" + id;
+          url = "https://www.youtube.com/embed/" + id;
+          paramStr = ((function() {
+            var _results;
+            _results = [];
+            for (k in params) {
+              v = params[k];
+              _results.push("" + k + "=" + v);
+            }
+            return _results;
+          })()).join('&');
+          if (paramStr) {
+            url += "?" + paramStr;
+          }
+          return url;
         case 'vimeo':
           m = path.match(/\/(\w+\/\w+\/){0,1}(\d+)/i);
           if (!m) {
             return null;
           }
-          return "https://player.vimeo.com/video/" + m[2];
+          url = "https://player.vimeo.com/video/" + m[2];
+          paramStr = ((function() {
+            var _results;
+            _results = [];
+            for (k in params) {
+              v = params[k];
+              _results.push("" + k + "=" + v);
+            }
+            return _results;
+          })()).join('&');
+          if (paramStr) {
+            url += "?" + paramStr;
+          }
+          return url;
       }
       return null;
     }
