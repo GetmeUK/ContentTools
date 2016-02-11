@@ -1674,6 +1674,8 @@
         if (value === '') {
           attributeStrings.push(name);
         } else {
+          value = HTMLString.String.encode(value);
+          value = value.replace(/"/g, '&quot;');
           attributeStrings.push("" + name + "=\"" + value + "\"");
         }
       }
@@ -2741,7 +2743,7 @@
 
     ResizableElement.prototype._onMouseDown = function(ev) {
       var corner;
-      ResizableElement.__super__._onMouseDown.call(this);
+      ResizableElement.__super__._onMouseDown.call(this, ev);
       corner = this._getResizeCorner(ev.clientX, ev.clientY);
       if (corner) {
         return this.resize(corner, ev.clientX, ev.clientY);
@@ -3135,7 +3137,7 @@
     Static.prototype.focus = void 0;
 
     Static.prototype._onMouseDown = function(ev) {
-      Static.__super__._onMouseDown.call(this);
+      Static.__super__._onMouseDown.call(this, ev);
       if (this.attr('data-ce-moveable') !== void 0) {
         clearTimeout(this._dragTimeout);
         return this._dragTimeout = setTimeout((function(_this) {
@@ -3152,7 +3154,7 @@
     };
 
     Static.prototype._onMouseUp = function(ev) {
-      Static.__super__._onMouseUp.call(this);
+      Static.__super__._onMouseUp.call(this, ev);
       if (this._dragTimeout) {
         return clearTimeout(this._dragTimeout);
       }
@@ -3284,6 +3286,9 @@
       }
       this._domElement.setAttribute('contenteditable', '');
       this._addCSSClass('ce-element--focused');
+      if (document.activeElement !== this.domElement()) {
+        this.domElement().focus();
+      }
       this._savedSelection.select(this._domElement);
       return this._savedSelection = void 0;
     };
@@ -3334,38 +3339,42 @@
     };
 
     Text.prototype._onKeyUp = function(ev) {
+      Text.__super__._onKeyUp.call(this, ev);
       return this._syncContent();
     };
 
     Text.prototype._onMouseDown = function(ev) {
-      Text.__super__._onMouseDown.call(this);
+      Text.__super__._onMouseDown.call(this, ev);
       clearTimeout(this._dragTimeout);
-      return this._dragTimeout = setTimeout((function(_this) {
+      this._dragTimeout = setTimeout((function(_this) {
         return function() {
           return _this.drag(ev.pageX, ev.pageY);
         };
       })(this), ContentEdit.DRAG_HOLD_DURATION);
+      if (this.content.length() === 0 && ContentEdit.Root.get().focused() === this) {
+        return ev.preventDefault();
+      }
     };
 
     Text.prototype._onMouseMove = function(ev) {
       if (this._dragTimeout) {
         clearTimeout(this._dragTimeout);
       }
-      return Text.__super__._onMouseMove.call(this);
+      return Text.__super__._onMouseMove.call(this, ev);
     };
 
     Text.prototype._onMouseOut = function(ev) {
       if (this._dragTimeout) {
         clearTimeout(this._dragTimeout);
       }
-      return Text.__super__._onMouseOut.call(this);
+      return Text.__super__._onMouseOut.call(this, ev);
     };
 
     Text.prototype._onMouseUp = function(ev) {
       if (this._dragTimeout) {
         clearTimeout(this._dragTimeout);
       }
-      return Text.__super__._onMouseUp.call(this);
+      return Text.__super__._onMouseUp.call(this, ev);
     };
 
     Text.prototype._keyBack = function(ev) {

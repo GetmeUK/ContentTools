@@ -108,7 +108,8 @@ window.ContentTools =
 
         for kv in paramsStr.split('&')
             kv = kv.split("=")
-            params[kv[0]] = kv[1]
+            if kv[0]
+                params[kv[0]] = kv[1]
 
         # Convert the URL to a valid embed URL
         switch domains[netloc]
@@ -117,6 +118,7 @@ window.ContentTools =
                     if not params['v']
                         return null
                     id = params['v']
+                    delete params['v']
 
                 else
                     m = path.match(/\/([A-Za-z0-9_-]+)$/i)
@@ -124,13 +126,27 @@ window.ContentTools =
                         return null
                     id = m[1]
 
-                return "https://www.youtube.com/embed/#{ id }"
+                url = "https://www.youtube.com/embed/#{ id }"
+
+                # Add back any parameters for the URL
+                paramStr = ("#{ k }=#{ v }" for k, v of params).join('&')
+                if paramStr
+                    url += "?#{ paramStr }"
+
+                return url
 
             when 'vimeo'
                 m = path.match(/\/(\w+\/\w+\/){0,1}(\d+)/i)
                 if not m
                     return null
 
-                return "https://player.vimeo.com/video/#{ m[2] }"
+                url = "https://player.vimeo.com/video/#{ m[2] }"
+
+                # Add back any parameters for the URL
+                paramStr = ("#{ k }=#{ v }" for k, v of params).join('&')
+                if paramStr
+                    url += "?#{ paramStr }"
+
+                return url
 
         return null

@@ -1674,6 +1674,8 @@
         if (value === '') {
           attributeStrings.push(name);
         } else {
+          value = HTMLString.String.encode(value);
+          value = value.replace(/"/g, '&quot;');
           attributeStrings.push("" + name + "=\"" + value + "\"");
         }
       }
@@ -2741,7 +2743,7 @@
 
     ResizableElement.prototype._onMouseDown = function(ev) {
       var corner;
-      ResizableElement.__super__._onMouseDown.call(this);
+      ResizableElement.__super__._onMouseDown.call(this, ev);
       corner = this._getResizeCorner(ev.clientX, ev.clientY);
       if (corner) {
         return this.resize(corner, ev.clientX, ev.clientY);
@@ -3135,7 +3137,7 @@
     Static.prototype.focus = void 0;
 
     Static.prototype._onMouseDown = function(ev) {
-      Static.__super__._onMouseDown.call(this);
+      Static.__super__._onMouseDown.call(this, ev);
       if (this.attr('data-ce-moveable') !== void 0) {
         clearTimeout(this._dragTimeout);
         return this._dragTimeout = setTimeout((function(_this) {
@@ -3152,7 +3154,7 @@
     };
 
     Static.prototype._onMouseUp = function(ev) {
-      Static.__super__._onMouseUp.call(this);
+      Static.__super__._onMouseUp.call(this, ev);
       if (this._dragTimeout) {
         return clearTimeout(this._dragTimeout);
       }
@@ -3284,6 +3286,9 @@
       }
       this._domElement.setAttribute('contenteditable', '');
       this._addCSSClass('ce-element--focused');
+      if (document.activeElement !== this.domElement()) {
+        this.domElement().focus();
+      }
       this._savedSelection.select(this._domElement);
       return this._savedSelection = void 0;
     };
@@ -3334,38 +3339,42 @@
     };
 
     Text.prototype._onKeyUp = function(ev) {
+      Text.__super__._onKeyUp.call(this, ev);
       return this._syncContent();
     };
 
     Text.prototype._onMouseDown = function(ev) {
-      Text.__super__._onMouseDown.call(this);
+      Text.__super__._onMouseDown.call(this, ev);
       clearTimeout(this._dragTimeout);
-      return this._dragTimeout = setTimeout((function(_this) {
+      this._dragTimeout = setTimeout((function(_this) {
         return function() {
           return _this.drag(ev.pageX, ev.pageY);
         };
       })(this), ContentEdit.DRAG_HOLD_DURATION);
+      if (this.content.length() === 0 && ContentEdit.Root.get().focused() === this) {
+        return ev.preventDefault();
+      }
     };
 
     Text.prototype._onMouseMove = function(ev) {
       if (this._dragTimeout) {
         clearTimeout(this._dragTimeout);
       }
-      return Text.__super__._onMouseMove.call(this);
+      return Text.__super__._onMouseMove.call(this, ev);
     };
 
     Text.prototype._onMouseOut = function(ev) {
       if (this._dragTimeout) {
         clearTimeout(this._dragTimeout);
       }
-      return Text.__super__._onMouseOut.call(this);
+      return Text.__super__._onMouseOut.call(this, ev);
     };
 
     Text.prototype._onMouseUp = function(ev) {
       if (this._dragTimeout) {
         clearTimeout(this._dragTimeout);
       }
-      return Text.__super__._onMouseUp.call(this);
+      return Text.__super__._onMouseUp.call(this, ev);
     };
 
     Text.prototype._keyBack = function(ev) {
@@ -4919,7 +4928,7 @@
       'iframe': ['height', 'width']
     },
     getEmbedVideoURL: function(url) {
-      var domains, id, kv, m, netloc, params, paramsStr, parser, path, _i, _len, _ref;
+      var domains, id, k, kv, m, netloc, paramStr, params, paramsStr, parser, path, v, _i, _len, _ref;
       domains = {
         'www.youtube.com': 'youtube',
         'youtu.be': 'youtube',
@@ -4939,7 +4948,9 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         kv = _ref[_i];
         kv = kv.split("=");
-        params[kv[0]] = kv[1];
+        if (kv[0]) {
+          params[kv[0]] = kv[1];
+        }
       }
       switch (domains[netloc]) {
         case 'youtube':
@@ -4948,6 +4959,7 @@
               return null;
             }
             id = params['v'];
+            delete params['v'];
           } else {
             m = path.match(/\/([A-Za-z0-9_-]+)$/i);
             if (!m) {
@@ -4955,13 +4967,39 @@
             }
             id = m[1];
           }
-          return "https://www.youtube.com/embed/" + id;
+          url = "https://www.youtube.com/embed/" + id;
+          paramStr = ((function() {
+            var _results;
+            _results = [];
+            for (k in params) {
+              v = params[k];
+              _results.push("" + k + "=" + v);
+            }
+            return _results;
+          })()).join('&');
+          if (paramStr) {
+            url += "?" + paramStr;
+          }
+          return url;
         case 'vimeo':
           m = path.match(/\/(\w+\/\w+\/){0,1}(\d+)/i);
           if (!m) {
             return null;
           }
-          return "https://player.vimeo.com/video/" + m[2];
+          url = "https://player.vimeo.com/video/" + m[2];
+          paramStr = ((function() {
+            var _results;
+            _results = [];
+            for (k in params) {
+              v = params[k];
+              _results.push("" + k + "=" + v);
+            }
+            return _results;
+          })()).join('&');
+          if (paramStr) {
+            url += "?" + paramStr;
+          }
+          return url;
       }
       return null;
     }
@@ -5894,12 +5932,12 @@
       return this.addCSSClass('ct-tool--down');
     };
 
-    ToolUI.prototype._onMouseLeave = function() {
+    ToolUI.prototype._onMouseLeave = function(ev) {
       this._mouseDown = false;
       return this.removeCSSClass('ct-tool--down');
     };
 
-    ToolUI.prototype._onMouseUp = function() {
+    ToolUI.prototype._onMouseUp = function(ev) {
       var element, selection;
       if (this._mouseDown) {
         element = ContentEdit.Root.get().focused();
@@ -7531,6 +7569,9 @@
         region.domElement().innerHTML = snapshot.regions[name];
       }
       if (restoreEditable) {
+        if (ContentEdit.Root.get().focused()) {
+          ContentEdit.Root.get().focused().blur();
+        }
         this._regions = {};
         _ref1 = this._domRegions;
         for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
@@ -7542,7 +7583,8 @@
           this._regions[name] = new ContentEdit.Region(domRegion);
         }
         this.history.replaceRegions(this._regions);
-        return this.history.restoreSelection(snapshot);
+        this.history.restoreSelection(snapshot);
+        return this._inspector.updateTags();
       }
     };
 
