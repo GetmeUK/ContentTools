@@ -2054,7 +2054,6 @@
 
     NodeCollection.prototype.detach = function(node) {
       var nodeIndex;
-      node._parent = null;
       nodeIndex = this.children.indexOf(node);
       if (nodeIndex === -1) {
         return;
@@ -2063,6 +2062,7 @@
         node.unmount();
       }
       this.children.splice(nodeIndex, 1);
+      node._parent = null;
       this.taint();
       return ContentEdit.Root.get().trigger('detach', this, node);
     };
@@ -2323,11 +2323,6 @@
     };
 
     Element.prototype._addDOMEventListeners = function() {
-      this._domElement.addEventListener('blur', (function(_this) {
-        return function(ev) {
-          return _this._onBlur();
-        };
-      })(this));
       this._domElement.addEventListener('focus', (function(_this) {
         return function(ev) {
           return ev.preventDefault();
@@ -2393,8 +2388,6 @@
         };
       })(this));
     };
-
-    Element.prototype._onBlur = function(ev) {};
 
     Element.prototype._onKeyDown = function(ev) {};
 
@@ -3205,7 +3198,7 @@
       return 'Text';
     };
 
-    Text.prototype.blur = function(a) {
+    Text.prototype.blur = function() {
       var error;
       if (this.isMounted()) {
         this._syncContent();
@@ -3287,7 +3280,7 @@
       if (!this._savedSelection) {
         return;
       }
-      if (!this.isMounted()) {
+      if (!(this.isMounted() && this.isFocused())) {
         this._savedSelection = void 0;
         return;
       }
@@ -3322,11 +3315,6 @@
       this._domElement.innerHTML = this.content.html();
       ContentSelect.Range.prepareElement(this._domElement);
       return this._flagIfEmpty();
-    };
-
-    Text.prototype._onBlur = function(ev) {
-      Text.__super__._onBlur.call(this, ev);
-      return this.blur(true);
     };
 
     Text.prototype._onKeyDown = function(ev) {
