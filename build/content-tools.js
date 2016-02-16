@@ -3317,25 +3317,6 @@
       return this._flagIfEmpty();
     };
 
-    Text.prototype._addDOMEventListeners = function() {
-      Text.__super__._addDOMEventListeners.call(this);
-      return this._domElement.addEventListener('blur', (function(_this) {
-        return function(ev) {
-          var _blur;
-          _blur = function() {
-            if (!_this.isMounted()) {
-              return;
-            }
-            if (_this._domElement === document.activeElement) {
-              return;
-            }
-            return _this.blur();
-          };
-          return setTimeout(_blur, 25);
-        };
-      })(this));
-    };
-
     Text.prototype._onKeyDown = function(ev) {
       switch (ev.keyCode) {
         case 40:
@@ -3371,7 +3352,11 @@
         };
       })(this), ContentEdit.DRAG_HOLD_DURATION);
       if (this.content.length() === 0 && ContentEdit.Root.get().focused() === this) {
-        return ev.preventDefault();
+        ev.preventDefault();
+        if (document.activeElement !== this._domElement) {
+          this._domElement.focus();
+        }
+        return new ContentSelect.Range(0, 0).select(this._domElement);
       }
     };
 
