@@ -34,6 +34,12 @@ class ContentTools.Tool
     @label = 'Tool'
     @icon = 'tool'
 
+    # Most tools require an element that they can be applied to, but there are
+    # exceptions (such as undo/redo). In these cases you can set the
+    # `requiresElement` flag to false so that the toolbox will not automatically
+    # disable the tool because there is not element focused.
+    @requiresElement = true
+
     # Class methods
 
     @canApply: (element, selection) ->
@@ -1008,6 +1014,7 @@ class ContentTools.Tools.Undo extends ContentTools.Tool
 
     @label = 'Undo'
     @icon = 'undo'
+    @requiresElement = false
 
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
@@ -1033,6 +1040,7 @@ class ContentTools.Tools.Redo extends ContentTools.Tool
 
     @label = 'Redo'
     @icon = 'redo'
+    @requiresElement = false
 
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current

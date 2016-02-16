@@ -5700,7 +5700,7 @@
           if (element === _this._lastUpdateElement) {
             if (element && element.selection) {
               selection = element.selection();
-              if (_this._lastUpdateSelection && selection.eq(_this._lastUpdateSelection)) {
+              if (_this._lastUpdateSelection && !selection.eq(_this._lastUpdateSelection)) {
                 update = true;
               }
             }
@@ -5712,16 +5712,22 @@
               update = true;
             }
             _this._lastUpdateHistoryLength = app.history.length();
+            if (_this._lastUpdateHistoryIndex !== app.history.index()) {
+              update = true;
+            }
+            _this._lastUpdateHistoryIndex = app.history.index();
           }
           _this._lastUpdateElement = element;
           _this._lastUpdateSelection = selection;
-          _ref = _this._toolUIs;
-          _results = [];
-          for (name in _ref) {
-            toolUI = _ref[name];
-            _results.push(toolUI.update(element, selection));
+          if (update) {
+            _ref = _this._toolUIs;
+            _results = [];
+            for (name in _ref) {
+              toolUI = _ref[name];
+              _results.push(toolUI.update(element, selection));
+            }
+            return _results;
           }
-          return _results;
         };
       })(this);
       this._updateToolsTimeout = setInterval(this._updateTools, 100);
@@ -5904,9 +5910,11 @@
     };
 
     ToolUI.prototype.update = function(element, selection) {
-      if (!(element && element.isMounted())) {
-        this.disabled(true);
-        return;
+      if (this.tool.requiresElement) {
+        if (!(element && element.isMounted())) {
+          this.disabled(true);
+          return;
+        }
       }
       if (this.tool.canApply(element, selection)) {
         this.disabled(false);
@@ -5945,11 +5953,13 @@
       var element, selection;
       if (this._mouseDown) {
         element = ContentEdit.Root.get().focused();
-        if (!(element && element.isMounted())) {
-          return;
+        if (this.tool.requiresElement) {
+          if (!(element && element.isMounted())) {
+            return;
+          }
         }
         selection = null;
-        if (element.selection) {
+        if (element && element.selection) {
           selection = element.selection();
         }
         this.apply(element, selection);
@@ -7786,6 +7796,10 @@
       return this._snapshotIndex > 0;
     };
 
+    History.prototype.index = function() {
+      return this._snapshotIndex;
+    };
+
     History.prototype.length = function() {
       return this._snapshots.length;
     };
@@ -7991,6 +8005,8 @@
     Tool.label = 'Tool';
 
     Tool.icon = 'tool';
+
+    Tool.requiresElement = true;
 
     Tool.canApply = function(element, selection) {
       return false;
@@ -8941,6 +8957,8 @@
 
     Undo.icon = 'undo';
 
+    Undo.requiresElement = false;
+
     Undo.canApply = function(element, selection) {
       var app;
       app = ContentTools.EditorApp.get();
@@ -8972,6 +8990,8 @@
     Redo.label = 'Redo';
 
     Redo.icon = 'redo';
+
+    Redo.requiresElement = false;
 
     Redo.canApply = function(element, selection) {
       var app;

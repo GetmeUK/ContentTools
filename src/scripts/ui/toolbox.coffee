@@ -175,8 +175,9 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
             if element == @_lastUpdateElement
                 if element and element.selection
                     selection = element.selection()
+
                     if @_lastUpdateSelection and
-                            selection.eq(@_lastUpdateSelection)
+                            not selection.eq(@_lastUpdateSelection)
                         # Not the same selection
                         update = true
 
@@ -192,12 +193,21 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 # Remember the history length for next update
                 @_lastUpdateHistoryLength = app.history.length()
 
+                if @_lastUpdateHistoryIndex != app.history.index()
+                    update = true
+
+                # Remember the history index for next update
+                @_lastUpdateHistoryIndex = app.history.index()
+
             # Remember the element/section for next update
             @_lastUpdateElement = element
             @_lastUpdateSelection = selection
 
-            for name, toolUI of @_toolUIs
-                toolUI.update(element, selection)
+            # Only update the tools if we can detect something has changed
+
+            if update
+                for name, toolUI of @_toolUIs
+                    toolUI.update(element, selection)
 
         @_updateToolsTimeout = setInterval(@_updateTools, 100)
 
@@ -439,10 +449,14 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         # Update the state of the tool based on the current element and
         # selection.
 
-        # If there's no element selected then the tool is disabled
-        if not (element and element.isMounted())
-            @disabled(true)
-            return
+        # Most elements are automatically disabled if there is no element
+        # however some tools such as redo/undo don't require an element to be
+        # applied.
+        if @tool.requiresElement
+            # If there's no element selected then the tool is disabled
+            if not (element and element.isMounted())
+                @disabled(true)
+                return
 
         # Check if the tool can be applied
         if @tool.canApply(element, selection)
@@ -491,11 +505,16 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         # If a click event has occured exectute the tool
         if @_mouseDown
             element = ContentEdit.Root.get().focused()
-            unless element and element.isMounted()
-                return
+
+            # Most elements are automatically disabled if there is no element
+            # however some tools such as redo/undo don't require an element to
+            # be applied.
+            if @tool.requiresElement
+                unless element and element.isMounted()
+                    return
 
             selection = null
-            if element.selection
+            if element and element.selection
                 selection = element.selection()
 
             @apply(element, selection)

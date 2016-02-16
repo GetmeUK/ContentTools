@@ -32,6 +32,10 @@ class ContentTools.History
         # Return true if an undo can be performed
         return @_snapshotIndex > 0
 
+    index: () ->
+        # Return the snapshot index for the history stack
+        return @_snapshotIndex
+
     length: () ->
         # The number of snapshots stored
         return @_snapshots.length
