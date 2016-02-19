@@ -6580,6 +6580,10 @@
       return this._domCaption.textContent = ContentEdit._(caption) + (": " + (this.element.tagName()));
     };
 
+    PropertiesDialog.prototype.restrictedAttributesForTag = function(tag_name) {
+      return ContentTools.RESTRICTED_ATTRIBUTES[this.element.tagName()].concat(ContentTools.RESTRICTED_ATTRIBUTES['*']);
+    };
+
     PropertiesDialog.prototype.changedAttributes = function() {
       var attributeUI, attributes, changedAttributes, name, restricted, value, _i, _len, _ref, _ref1;
       attributes = {};
@@ -6597,7 +6601,7 @@
           changedAttributes[name] = value;
         }
       }
-      restricted = ContentTools.RESTRICTED_ATTRIBUTES[this.element.tagName()];
+      restricted = this.restrictedAttributesForTag(this.element.tagName());
       _ref1 = this.element.attributes();
       for (name in _ref1) {
         value = _ref1[name];
@@ -6652,7 +6656,7 @@
       }
       this._domAttributes = this.constructor.createDiv(['ct-properties-dialog__attributes']);
       this._domView.appendChild(this._domAttributes);
-      restricted = ContentTools.RESTRICTED_ATTRIBUTES[this.element.tagName()];
+      restricted = this.restrictedAttributesForTag(this.element.tagName());
       attributes = this.element.attributes();
       attributeNames = [];
       for (name in attributes) {
@@ -6751,7 +6755,7 @@
         var element, otherAttributeUI, restricted, valid, _i, _len, _ref;
         element = dialog.element;
         name = this.name().toLowerCase();
-        restricted = ContentTools.RESTRICTED_ATTRIBUTES[element.tagName()];
+        restricted = dialog.restrictedAttributesForTag(element.tagName());
         valid = true;
         if (restricted && restricted.indexOf(name) !== -1) {
           valid = false;

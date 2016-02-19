@@ -31,7 +31,10 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
         this._caption = caption
         @_domCaption.textContent = ContentEdit._(caption) +
             ": #{ @element.tagName() }"
-
+    restrictedAttributesForTag: (tag_name) ->
+        # Returns a list of attributes that should not be used
+        # Combines ContentTools.RESTRICTED_ATTRIBUTES(tag_name) with ContentTools.RESTRICTED_ATTRIBUTES['*']
+        return ContentTools.RESTRICTED_ATTRIBUTES[@element.tagName()].concat(ContentTools.RESTRICTED_ATTRIBUTES['*'])
     changedAttributes: () ->
         # Return a map of attributes set in the dialog (only attributes that
         # have changed - e.g been added, modified or removed). Attributes that
@@ -54,7 +57,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
                 changedAttributes[name] = value
 
         # Find removed attributes
-        restricted = ContentTools.RESTRICTED_ATTRIBUTES[@element.tagName()]
+        restricted = @restrictedAttributesForTag(@element.tagName());
         for name, value of @element.attributes()
             if restricted and restricted.indexOf(name.toLowerCase()) != -1
                 continue
@@ -126,7 +129,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
         @_domView.appendChild(@_domAttributes)
 
         # Add the elements attributes
-        restricted = ContentTools.RESTRICTED_ATTRIBUTES[@element.tagName()]
+        restricted = @restrictedAttributesForTag(@element.tagName())
         attributes = @element.attributes()
 
         # Build a list of attribute names that we can sort alphabetically. We
@@ -318,7 +321,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
         attributeUI.bind 'namechange', () ->
             element = dialog.element
             name = @name().toLowerCase()
-            restricted = ContentTools.RESTRICTED_ATTRIBUTES[element.tagName()]
+            restricted = dialog.restrictedAttributesForTag(element.tagName())
 
             # Validate the name
             valid = true

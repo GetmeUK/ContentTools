@@ -1,0 +1,150 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/nodejs',
+1 verbose cli   '/usr/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'coffee-script',
+1 verbose cli   '-g' ]
+2 info using npm@1.3.10
+3 info using node@v0.10.25
+4 verbose cache add [ 'coffee-script', null ]
+5 verbose cache add name=undefined spec="coffee-script" args=["coffee-script",null]
+6 verbose parsed url { protocol: null,
+6 verbose parsed url   slashes: null,
+6 verbose parsed url   auth: null,
+6 verbose parsed url   host: null,
+6 verbose parsed url   port: null,
+6 verbose parsed url   hostname: null,
+6 verbose parsed url   hash: null,
+6 verbose parsed url   search: null,
+6 verbose parsed url   query: null,
+6 verbose parsed url   pathname: 'coffee-script',
+6 verbose parsed url   path: 'coffee-script',
+6 verbose parsed url   href: 'coffee-script' }
+7 silly lockFile ab358269-coffee-script coffee-script
+8 verbose lock coffee-script /home/qqwy/.npm/ab358269-coffee-script.lock
+9 silly lockFile ab358269-coffee-script coffee-script
+10 silly lockFile ab358269-coffee-script coffee-script
+11 verbose addNamed [ 'coffee-script', '' ]
+12 verbose addNamed [ null, '*' ]
+13 silly lockFile 53951495-coffee-script coffee-script@
+14 verbose lock coffee-script@ /home/qqwy/.npm/53951495-coffee-script.lock
+15 silly addNameRange { name: 'coffee-script', range: '*', hasData: false }
+16 verbose url raw coffee-script
+17 verbose url resolving [ 'https://registry.npmjs.org/', './coffee-script' ]
+18 verbose url resolved https://registry.npmjs.org/coffee-script
+19 info trying registry request attempt 1 at 09:09:30
+20 verbose etag "E5G1ZKWDZRQ5KYAOZQD4E7J2I"
+21 http GET https://registry.npmjs.org/coffee-script
+22 http 304 https://registry.npmjs.org/coffee-script
+23 silly registry.get cb [ 304,
+23 silly registry.get   { date: 'Fri, 19 Feb 2016 08:09:30 GMT',
+23 silly registry.get     via: '1.1 varnish',
+23 silly registry.get     'cache-control': 'max-age=300',
+23 silly registry.get     etag: '"E5G1ZKWDZRQ5KYAOZQD4E7J2I"',
+23 silly registry.get     age: '54',
+23 silly registry.get     connection: 'keep-alive',
+23 silly registry.get     'x-served-by': 'cache-ams4136-AMS',
+23 silly registry.get     'x-cache': 'HIT',
+23 silly registry.get     'x-cache-hits': '1',
+23 silly registry.get     'x-timer': 'S1455869370.214235,VS0,VE0',
+23 silly registry.get     vary: 'Accept' } ]
+24 verbose etag coffee-script from cache
+25 silly addNameRange number 2 { name: 'coffee-script', range: '*', hasData: true }
+26 silly addNameRange versions [ 'coffee-script',
+26 silly addNameRange   [ '0.7.0',
+26 silly addNameRange     '0.7.1',
+26 silly addNameRange     '0.7.2',
+26 silly addNameRange     '0.9.0',
+26 silly addNameRange     '0.9.1',
+26 silly addNameRange     '0.9.2',
+26 silly addNameRange     '0.9.3',
+26 silly addNameRange     '0.9.4',
+26 silly addNameRange     '0.9.5',
+26 silly addNameRange     '0.9.6',
+26 silly addNameRange     '1.0.0',
+26 silly addNameRange     '1.0.1',
+26 silly addNameRange     '1.1.0',
+26 silly addNameRange     '1.1.1',
+26 silly addNameRange     '1.1.2',
+26 silly addNameRange     '1.1.3',
+26 silly addNameRange     '1.2.0',
+26 silly addNameRange     '1.3.0',
+26 silly addNameRange     '1.3.1',
+26 silly addNameRange     '1.3.2',
+26 silly addNameRange     '1.3.3',
+26 silly addNameRange     '1.4.0',
+26 silly addNameRange     '1.5.0',
+26 silly addNameRange     '1.6.0',
+26 silly addNameRange     '1.6.1',
+26 silly addNameRange     '1.6.2',
+26 silly addNameRange     '1.6.3',
+26 silly addNameRange     '1.7.0',
+26 silly addNameRange     '1.7.1',
+26 silly addNameRange     '1.8.0',
+26 silly addNameRange     '1.9.0',
+26 silly addNameRange     '1.9.1',
+26 silly addNameRange     '1.9.2',
+26 silly addNameRange     '1.9.3',
+26 silly addNameRange     '1.10.0' ] ]
+27 verbose addNamed [ 'coffee-script', '1.10.0' ]
+28 verbose addNamed [ '1.10.0', '1.10.0' ]
+29 silly lockFile 202ccfd7-coffee-script-1-10-0 coffee-script@1.10.0
+30 verbose lock coffee-script@1.10.0 /home/qqwy/.npm/202ccfd7-coffee-script-1-10-0.lock
+31 silly lockFile 202ccfd7-coffee-script-1-10-0 coffee-script@1.10.0
+32 silly lockFile 202ccfd7-coffee-script-1-10-0 coffee-script@1.10.0
+33 silly lockFile 53951495-coffee-script coffee-script@
+34 silly lockFile 53951495-coffee-script coffee-script@
+35 silly resolved [ { name: 'coffee-script',
+35 silly resolved     description: 'Unfancy JavaScript',
+35 silly resolved     keywords: [ 'javascript', 'language', 'coffeescript', 'compiler' ],
+35 silly resolved     author: { name: 'Jeremy Ashkenas' },
+35 silly resolved     version: '1.10.0',
+35 silly resolved     license: 'MIT',
+35 silly resolved     engines: { node: '>=0.8.0' },
+35 silly resolved     directories: { lib: './lib/coffee-script' },
+35 silly resolved     main: './lib/coffee-script/coffee-script',
+35 silly resolved     bin: { coffee: './bin/coffee', cake: './bin/cake' },
+35 silly resolved     preferGlobal: true,
+35 silly resolved     scripts:
+35 silly resolved      { test: 'node ./bin/cake test',
+35 silly resolved        'test-harmony': 'node --harmony ./bin/cake test' },
+35 silly resolved     homepage: 'http://coffeescript.org',
+35 silly resolved     bugs: { url: 'https://github.com/jashkenas/coffeescript/issues' },
+35 silly resolved     repository:
+35 silly resolved      { type: 'git',
+35 silly resolved        url: 'git://github.com/jashkenas/coffeescript.git' },
+35 silly resolved     devDependencies:
+35 silly resolved      { 'uglify-js': '~2.2',
+35 silly resolved        jison: '>=0.2.0',
+35 silly resolved        'highlight.js': '~8.0.0',
+35 silly resolved        underscore: '~1.5.2',
+35 silly resolved        docco: '~0.7.0' },
+35 silly resolved     readme: '            {\n         }   }   {\n        {   {  }  }\n         }   }{  {\n        {  }{  }  }                    _____       __  __\n       { }{ }{  { }                   / ____|     / _|/ _|\n     .- { { }  { }} -.               | |     ___ | |_| |_ ___  ___\n    (  { } { } { } }  )              | |    / _ \\|  _|  _/ _ \\/ _ \\\n    |`-..________ ..-\'|              | |___| (_) | | | ||  __/  __/\n    |                 |               \\_____\\___/|_| |_| \\___|\\___|\n    |                 ;--.\n    |                (__  \\            _____           _       _\n    |                 | )  )          / ____|         (_)     | |\n    |                 |/  /          | (___   ___ _ __ _ _ __ | |_\n    |                 (  /            \\___ \\ / __| \'__| | \'_ \\| __|\n    |                 |/              ____) | (__| |  | | |_) | |_\n    |                 |              |_____/ \\___|_|  |_| .__/ \\__|\n     `-.._________..-\'                                  | |\n                                                        |_|\n\nCoffeeScript is a little language that compiles into JavaScript.\n\n## Installation\n\nIf you have the node package manager, npm, installed:\n\n```shell\nnpm install -g coffee-script\n```\n\nLeave off the `-g` if you don\'t wish to install globally. If you don\'t wish to use npm:\n\n```shell\ngit clone https://github.com/jashkenas/coffeescript.git\nsudo coffeescript/bin/cake install\n```\n\n## Getting Started\n\nExecute a script:\n\n```shell\ncoffee /path/to/script.coffee\n```\n\nCompile a script:\n\n```shell\ncoffee -c /path/to/script.coffee\n```\n\nFor documentation, usage, and examples, see: http://coffeescript.org/\n\nTo suggest a feature or report a bug: http://github.com/jashkenas/coffeescript/issues\n\nIf you\'d like to chat, drop by #coffeescript on Freenode IRC.\n\nThe source repository: https://github.com/jashkenas/coffeescript.git\n\nChangelog: http://coffeescript.org/#changelog\n\nOur lovely and talented contributors are listed here: http://github.com/jashkenas/coffeescript/contributors\n',
+35 silly resolved     readmeFilename: 'README.md',
+35 silly resolved     _id: 'coffee-script@1.10.0',
+35 silly resolved     _from: 'coffee-script@' } ]
+36 info install coffee-script@1.10.0 into /usr/local/lib
+37 info installOne coffee-script@1.10.0
+38 info /usr/local/lib/node_modules/coffee-script unbuild
+39 info /usr/local/lib/node_modules/coffee-script unbuild
+40 error error rolling back Error: EACCES, unlink '/usr/local/lib/node_modules/coffee-script'
+40 error error rolling back  coffee-script@1.10.0 { [Error: EACCES, unlink '/usr/local/lib/node_modules/coffee-script']
+40 error error rolling back   errno: 3,
+40 error error rolling back   code: 'EACCES',
+40 error error rolling back   path: '/usr/local/lib/node_modules/coffee-script' }
+41 error Error: EACCES, unlink '/usr/local/lib/node_modules/coffee-script'
+41 error  { [Error: EACCES, unlink '/usr/local/lib/node_modules/coffee-script']
+41 error   errno: 3,
+41 error   code: 'EACCES',
+41 error   path: '/usr/local/lib/node_modules/coffee-script' }
+42 error Please try running this command again as root/Administrator.
+43 error System Linux 3.16.0-38-generic
+44 error command "/usr/bin/nodejs" "/usr/bin/npm" "install" "coffee-script" "-g"
+45 error cwd /home/qqwy/Programming/Vanpelt/multishop/multishop_docs/content_tools/ContentTools
+46 error node -v v0.10.25
+47 error npm -v 1.3.10
+48 error path /usr/local/lib/node_modules/coffee-script
+49 error code EACCES
+50 error errno 3
+51 error stack Error: EACCES, unlink '/usr/local/lib/node_modules/coffee-script'
+52 verbose exit [ 3, true ]
