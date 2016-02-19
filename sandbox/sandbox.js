@@ -138,6 +138,7 @@
 
   window.onload = function() {
     var editor, req;
+    ContentTools.RESTRICTED_ATTRIBUTES['*'] = ['style', 'onclick', 'onload', 'onhover', 'onkeyup', 'onkeydown', 'onkeypress'];
     ContentTools.IMAGE_UPLOADER = ImageUploader.createImageUploader;
     ContentTools.StylePalette.add([new ContentTools.Style('By-line', 'article__by-line', ['p']), new ContentTools.Style('Caption', 'article__caption', ['p']), new ContentTools.Style('Example', 'example', ['pre']), new ContentTools.Style('Example + Good', 'example--good', ['pre']), new ContentTools.Style('Example + Bad', 'example--bad', ['pre'])]);
     editor = ContentTools.EditorApp.get();
