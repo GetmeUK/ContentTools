@@ -54,7 +54,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
                 changedAttributes[name] = value
 
         # Find removed attributes
-        restricted = ContentTools.RESTRICTED_ATTRIBUTES[@element.tagName()]
+        restricted = ContentTools.RESTRICTED_ATTRIBUTES[@element.tagName()].concat(ContentTools.RESTRICTED_ATTRIBUTES['*'])
         for name, value of @element.attributes()
             if restricted and restricted.indexOf(name.toLowerCase()) != -1
                 continue

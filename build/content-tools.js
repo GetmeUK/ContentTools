@@ -6597,7 +6597,7 @@
           changedAttributes[name] = value;
         }
       }
-      restricted = ContentTools.RESTRICTED_ATTRIBUTES[this.element.tagName()];
+      restricted = ContentTools.RESTRICTED_ATTRIBUTES[this.element.tagName()].concat(ContentTools.RESTRICTED_ATTRIBUTES['*']);
       _ref1 = this.element.attributes();
       for (name in _ref1) {
         value = _ref1[name];
