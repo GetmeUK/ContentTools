@@ -1,9 +1,5 @@
 window.onload = () ->
 
-    ContentTools.RESTRICTED_ATTRIBUTES['*'] = ['style', 'onclick', 'onload', 'onhover', 'onkeyup', 'onkeydown', 'onkeypress']
-
-
-
     ContentTools.IMAGE_UPLOADER = ImageUploader.createImageUploader
 
     # Uncomment the following lines to use the cloudinary image uploader
