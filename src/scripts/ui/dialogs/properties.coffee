@@ -54,7 +54,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
                 changedAttributes[name] = value
 
         # Find removed attributes
-        restricted = ContentTools.RESTRICTED_ATTRIBUTES[@element.tagName()]
+        restricted = ContentTools.getRestrictedAtributes(@element.tagName())
         for name, value of @element.attributes()
             if restricted and restricted.indexOf(name.toLowerCase()) != -1
                 continue
@@ -126,7 +126,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
         @_domView.appendChild(@_domAttributes)
 
         # Add the elements attributes
-        restricted = ContentTools.RESTRICTED_ATTRIBUTES[@element.tagName()]
+        restricted = ContentTools.getRestrictedAtributes(@element.tagName())
         attributes = @element.attributes()
 
         # Build a list of attribute names that we can sort alphabetically. We
@@ -318,7 +318,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
         attributeUI.bind 'namechange', () ->
             element = dialog.element
             name = @name().toLowerCase()
-            restricted = ContentTools.RESTRICTED_ATTRIBUTES[element.tagName()]
+            restricted = ContentTools.getRestrictedAtributes(element.tagName())
 
             # Validate the name
             valid = true

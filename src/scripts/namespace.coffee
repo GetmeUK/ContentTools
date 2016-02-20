@@ -69,7 +69,11 @@ window.ContentTools =
     #
     # Attribute and tag names must be specified in lower case.
     #
+    # '*' is a special case tag name, ant attributes defined against it will  be
+    # restricted for all tags.
+    #
     RESTRICTED_ATTRIBUTES: {
+        '*': ['style'],
         'img': [
             'height',
             'src',
@@ -150,3 +154,20 @@ window.ContentTools =
                 return url
 
         return null
+
+    getRestrictedAtributes: (tagName) ->
+        # Return a list of restricted attributes for the given `tagName`. This
+        # will include restricted attributes defined against all tags using '*'
+        # as the tag name.
+        restricted = []
+        if ContentTools.RESTRICTED_ATTRIBUTES[tagName]
+            restricted = restricted.concat(
+                ContentTools.RESTRICTED_ATTRIBUTES[tagName]
+                )
+
+        if ContentTools.RESTRICTED_ATTRIBUTES['*']
+            restricted = restricted.concat(
+                ContentTools.RESTRICTED_ATTRIBUTES['*']
+                )
+
+        return restricted

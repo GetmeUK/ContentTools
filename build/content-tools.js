@@ -4930,6 +4930,7 @@
     IMAGE_UPLOADER: null,
     MIN_CROP: 10,
     RESTRICTED_ATTRIBUTES: {
+      '*': ['style'],
       'img': ['height', 'src', 'width', 'data-ce-max-width', 'data-ce-min-width'],
       'iframe': ['height', 'width']
     },
@@ -5008,6 +5009,17 @@
           return url;
       }
       return null;
+    },
+    getRestrictedAtributes: function(tagName) {
+      var restricted;
+      restricted = [];
+      if (ContentTools.RESTRICTED_ATTRIBUTES[tagName]) {
+        restricted = restricted.concat(ContentTools.RESTRICTED_ATTRIBUTES[tagName]);
+      }
+      if (ContentTools.RESTRICTED_ATTRIBUTES['*']) {
+        restricted = restricted.concat(ContentTools.RESTRICTED_ATTRIBUTES['*']);
+      }
+      return restricted;
     }
   };
 
@@ -6597,7 +6609,7 @@
           changedAttributes[name] = value;
         }
       }
-      restricted = ContentTools.RESTRICTED_ATTRIBUTES[this.element.tagName()];
+      restricted = ContentTools.getRestrictedAtributes(this.element.tagName());
       _ref1 = this.element.attributes();
       for (name in _ref1) {
         value = _ref1[name];
@@ -6652,7 +6664,7 @@
       }
       this._domAttributes = this.constructor.createDiv(['ct-properties-dialog__attributes']);
       this._domView.appendChild(this._domAttributes);
-      restricted = ContentTools.RESTRICTED_ATTRIBUTES[this.element.tagName()];
+      restricted = ContentTools.getRestrictedAtributes(this.element.tagName());
       attributes = this.element.attributes();
       attributeNames = [];
       for (name in attributes) {
@@ -6751,7 +6763,7 @@
         var element, otherAttributeUI, restricted, valid, _i, _len, _ref;
         element = dialog.element;
         name = this.name().toLowerCase();
-        restricted = ContentTools.RESTRICTED_ATTRIBUTES[element.tagName()];
+        restricted = ContentTools.getRestrictedAtributes(element.tagName());
         valid = true;
         if (restricted && restricted.indexOf(name) !== -1) {
           valid = false;
