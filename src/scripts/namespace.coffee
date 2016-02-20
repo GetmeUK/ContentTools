@@ -69,7 +69,7 @@ window.ContentTools =
     #
     # Attribute and tag names must be specified in lower case.
     #
-    # '*' is a special case tag name, ant attributes defined against it will  be
+    # '*' is a special case tag name any attributes defined against it will  be
     # restricted for all tags.
     #
     RESTRICTED_ATTRIBUTES: {
