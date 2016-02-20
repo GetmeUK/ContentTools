@@ -7339,6 +7339,22 @@
       return this._shiftDown;
     };
 
+    _EditorApp.prototype.getState = function() {
+      return this._state;
+    };
+
+    _EditorApp.prototype.isDormant = function() {
+      return this._state === ContentTools.EditorApp.DORMANT;
+    };
+
+    _EditorApp.prototype.isReady = function() {
+      return this._state === ContentTools.EditorApp.READY;
+    };
+
+    _EditorApp.prototype.isEditing = function() {
+      return this._state === ContentTools.EditorApp.EDITING;
+    };
+
     _EditorApp.prototype.busy = function(busy) {
       return this._ignition.busy(busy);
     };

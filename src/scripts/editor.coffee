@@ -48,6 +48,21 @@ class _EditorApp extends ContentTools.ComponentUI
     shiftDown: () ->
         return @_shiftDown
 
+    getState: () ->
+        # Returns the current editor state. 
+        # One of:
+        # - ContentTools.EditorApp.DORMANT, (when there is nothing to edit, or it is loading up) 
+        # - ContentTools.EditorApp.READY, (while all changes have been saved)
+        # - ContentTools.EditorApp.EDITING (while editing, i.e. there are unsaved changes)
+        return @_state
+    isDormant: () ->
+        return @_state is ContentTools.EditorApp.DORMANT
+    isReady: () ->
+        return @_state is ContentTools.EditorApp.READY
+    isEditing: () ->
+        return @_state is ContentTools.EditorApp.EDITING
+
+
     # Methods
 
     busy: (busy) ->
