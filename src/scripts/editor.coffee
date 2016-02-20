@@ -49,19 +49,21 @@ class _EditorApp extends ContentTools.ComponentUI
         return @_shiftDown
 
     getState: () ->
-        # Returns the current editor state. 
-        # One of:
-        # - ContentTools.EditorApp.DORMANT, (when there is nothing to edit, or it is loading up) 
-        # - ContentTools.EditorApp.READY, (while all changes have been saved)
-        # - ContentTools.EditorApp.EDITING (while editing, i.e. there are unsaved changes)
+        # Returns the current state of the editor (see `ContentTools.EditorApp`
+        # for information on possible editor states).
         return @_state
-    isDormant: () ->
-        return @_state is ContentTools.EditorApp.DORMANT
-    isReady: () ->
-        return @_state is ContentTools.EditorApp.READY
-    isEditing: () ->
-        return @_state is ContentTools.EditorApp.EDITING
 
+    isDormant: () ->
+        # Return true if the editor is currently in the dormant state
+        return @_state is ContentTools.EditorApp.DORMANT
+
+    isReady: () ->
+        # Return true if the editor is currently in the ready state
+        return @_state is ContentTools.EditorApp.READY
+
+    isEditing: () ->
+        # Return true if the editor is currently in the editing state
+        return @_state is ContentTools.EditorApp.EDITING
 
     # Methods
 
@@ -594,10 +596,22 @@ class ContentTools.EditorApp
 
     # Constants
 
+    # A set of possible states for the editor.
+
+    # An instance of the `_EditorApp` class exists but the `init` method has not
+    # yet been called (the primary distinction here is that the editor has not
+    # been mounted to the DOM).
     @DORMANT = 'dormant'
+
+    # The editor has been mounted to the DOM and is ready (e.g the `start`
+    # method can be called to begin editing the document).
     @READY = 'ready'
+
+    # The editor is in the editing state allowing changes to be made to the
+    # document.
     @EDITING = 'editing'
 
+    # Storage for the singleton instance that will be created for the editor app
     instance = null
 
     @get: () ->
