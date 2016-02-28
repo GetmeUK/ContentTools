@@ -1005,7 +1005,7 @@
       }
       this.tagName = '';
       this.selfClosed = false;
-      return this.attributes = [];
+      return this.attributes = {};
     };
 
     _Parser.prototype._popTag = function() {
@@ -1310,7 +1310,6 @@
   })();
 
 }).call(this);
-
 (function() {
   var SELF_CLOSING_NODE_NAMES, _containedBy, _getChildNodeAndOffset, _getNodeRange, _getOffsetOfChildNode,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -3518,11 +3517,11 @@
     };
 
     Text.prototype._syncContent = function(ev) {
-      var newSnaphot, snapshot;
+      var newSnapshot, snapshot;
       snapshot = this.content.html();
       this.content = new HTMLString.String(this._domElement.innerHTML, this.content.preserveWhitespace());
-      newSnaphot = this.content.html();
-      if (snapshot !== newSnaphot) {
+      newSnapshot = this.content.html();
+      if (snapshot !== newSnapshot) {
         this.taint();
       }
       return this._flagIfEmpty();
@@ -4912,6 +4911,7 @@
   })(ContentEdit.Text);
 
 }).call(this);
+
 (function() {
   var AttributeUI, CropMarksUI, StyleUI, _EditorApp,
     __slice = [].slice,
