@@ -368,7 +368,18 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
         # element/selection.
 
         return element.content != undefined and
-                element.parent().type() is 'Region'
+                ['Text', 'PreText'].indexOf(element.type()) != -1
+
+    @isApplied: (element, selection) ->
+        # Return true if the tool is currently applied to the current
+        # element/selection.
+        if not element.content
+            return false
+
+        if ['Text', 'PreText'].indexOf(element.type()) == -1
+            return false
+
+        return element.tagName() == @tagName
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
@@ -394,7 +405,14 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
 
         else
             # Change the text elements tag name
-            element.tagName(@tagName)
+
+            # If the element already has the same tag name as the tool will
+            # apply revert the element to a paragraph.
+            if element.tagName() == @tagName
+                element.tagName('p')
+            else
+                element.tagName(@tagName)
+
             element.restoreState()
 
         callback(true)
@@ -465,6 +483,12 @@ class ContentTools.Tools.Preformatted extends ContentTools.Tools.Heading
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
+
+        # If the element is already a PreText element then convert it to a
+        # paragraph instead.
+        if element.type() is 'PreText'
+            ContentTools.Tools.Paragraph.apply(element, selection, callback)
+            return
 
         # Escape the contents of the existing element
         text = element.content.text()

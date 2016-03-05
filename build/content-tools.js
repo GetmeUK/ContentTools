@@ -8382,7 +8382,17 @@
     Heading.tagName = 'h1';
 
     Heading.canApply = function(element, selection) {
-      return element.content !== void 0 && element.parent().type() === 'Region';
+      return element.content !== void 0 && ['Text', 'PreText'].indexOf(element.type()) !== -1;
+    };
+
+    Heading.isApplied = function(element, selection) {
+      if (!element.content) {
+        return false;
+      }
+      if (['Text', 'PreText'].indexOf(element.type()) === -1) {
+        return false;
+      }
+      return element.tagName() === this.tagName;
     };
 
     Heading.apply = function(element, selection, callback) {
@@ -8399,7 +8409,11 @@
         textElement.focus();
         textElement.selection(selection);
       } else {
-        element.tagName(this.tagName);
+        if (element.tagName() === this.tagName) {
+          element.tagName('p');
+        } else {
+          element.tagName(this.tagName);
+        }
         element.restoreState();
       }
       return callback(true);
@@ -8488,6 +8502,10 @@
 
     Preformatted.apply = function(element, selection, callback) {
       var insertAt, parent, preText, text;
+      if (element.type() === 'PreText') {
+        ContentTools.Tools.Paragraph.apply(element, selection, callback);
+        return;
+      }
       text = element.content.text();
       preText = new ContentEdit.PreText('pre', {}, HTMLString.String.encode(text));
       parent = element.parent();
