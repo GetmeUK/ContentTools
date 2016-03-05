@@ -4616,6 +4616,19 @@
       return 'table-row';
     };
 
+    TableRow.prototype.isEmpty = function() {
+      var cell, text, _i, _len, _ref;
+      _ref = this.children;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        cell = _ref[_i];
+        text = cell.tableCellText();
+        if (text && text.content.length() > 0) {
+          return false;
+        }
+      }
+      return true;
+    };
+
     TableRow.prototype.type = function() {
       return 'TableRow';
     };
@@ -4813,12 +4826,42 @@
       return this._dragTimeout = setTimeout(initDrag, ContentEdit.DRAG_HOLD_DURATION);
     };
 
-    TableCellText.prototype._keyReturn = function(ev) {
+    TableCellText.prototype._keyBack = function(ev) {
+      var cell, previous, row, selection;
+      selection = ContentSelect.Range.query(this._domElement);
+      if (!(selection.get()[0] === 0 && selection.isCollapsed())) {
+        return;
+      }
       ev.preventDefault();
-      return this._keyTab({
-        'shiftKey': false,
-        'preventDefault': function() {}
-      });
+      cell = this.parent();
+      row = cell.parent();
+      if (this.content.length() === 0 && row.children.indexOf(cell) === 0) {
+        if (row.isEmpty()) {
+          previous = this.previousContent();
+          if (previous) {
+            previous.focus();
+            selection = new ContentSelect.Range(previous.content.length(), previous.content.length());
+            selection.select(previous.domElement());
+          }
+          return row.parent().detach(row);
+        }
+      }
+    };
+
+    TableCellText.prototype._keyDelete = function(ev) {
+      var lastChild, nextElement, row, selection;
+      row = this.parent().parent();
+      if (row.isEmpty()) {
+        ev.preventDefault();
+        lastChild = row.children[row.children.length - 1];
+        nextElement = lastChild.tableCellText().nextContent();
+        if (nextElement) {
+          nextElement.focus();
+          selection = new ContentSelect.Range(0, 0);
+          selection.select(nextElement.domElement());
+        }
+        return row.parent().detach(row);
+      }
     };
 
     TableCellText.prototype._keyDown = function(ev) {
@@ -4844,6 +4887,14 @@
         cellIndex = Math.min(cellIndex, nextRow.children.length);
         return nextRow.children[cellIndex].tableCellText().focus();
       }
+    };
+
+    TableCellText.prototype._keyReturn = function(ev) {
+      ev.preventDefault();
+      return this._keyTab({
+        'shiftKey': false,
+        'preventDefault': function() {}
+      });
     };
 
     TableCellText.prototype._keyTab = function(ev) {
