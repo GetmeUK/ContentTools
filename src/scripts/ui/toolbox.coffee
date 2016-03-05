@@ -176,9 +176,11 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 if element and element.selection
                     selection = element.selection()
 
-                    if @_lastUpdateSelection and
-                            not selection.eq(@_lastUpdateSelection)
-                        # Not the same selection
+                    # Check the selection hasn't changed
+                    if @_lastUpdateSelection
+                        if not selection.eq(@_lastUpdateSelection)
+                            update = true
+                    else
                         update = true
 
             else
@@ -204,7 +206,6 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
             @_lastUpdateSelection = selection
 
             # Only update the tools if we can detect something has changed
-
             if update
                 for name, toolUI of @_toolUIs
                     toolUI.update(element, selection)

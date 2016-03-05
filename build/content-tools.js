@@ -5764,7 +5764,11 @@
           if (element === _this._lastUpdateElement) {
             if (element && element.selection) {
               selection = element.selection();
-              if (_this._lastUpdateSelection && !selection.eq(_this._lastUpdateSelection)) {
+              if (_this._lastUpdateSelection) {
+                if (!selection.eq(_this._lastUpdateSelection)) {
+                  update = true;
+                }
+              } else {
                 update = true;
               }
             }
@@ -8232,10 +8236,23 @@
     };
 
     Link.canApply = function(element, selection) {
+      var character;
       if (element.type() === 'Image') {
         return true;
       } else {
-        return Link.__super__.constructor.canApply.call(this, element, selection);
+        if (!element.content) {
+          return false;
+        }
+        if (!selection) {
+          return false;
+        }
+        if (selection.isCollapsed()) {
+          character = element.content.characters[selection.get()[0]];
+          if (!character || !character.hasTags('a')) {
+            return false;
+          }
+        }
+        return true;
       }
     };
 
@@ -8248,11 +8265,24 @@
     };
 
     Link.apply = function(element, selection, callback) {
-      var allowScrolling, app, applied, dialog, domElement, from, measureSpan, modal, rect, selectTag, to, transparent, _ref;
+      var allowScrolling, app, applied, characters, dialog, domElement, ends, from, measureSpan, modal, rect, selectTag, starts, to, transparent, _ref;
       applied = false;
       if (element.type() === 'Image') {
         rect = element.domElement().getBoundingClientRect();
       } else {
+        if (selection.isCollapsed()) {
+          characters = element.content.characters;
+          starts = selection.get(0)[0];
+          ends = starts;
+          while (starts > 0 && characters[starts - 1].hasTags('a')) {
+            starts -= 1;
+          }
+          while (ends < characters.length && characters[ends].hasTags('a')) {
+            ends += 1;
+          }
+          selection = new ContentSelect.Range(starts, ends);
+          selection.select(element.domElement());
+        }
         element.storeState();
         selectTag = new HTMLString.Tag('span', {
           'class': 'ct--puesdo-select'

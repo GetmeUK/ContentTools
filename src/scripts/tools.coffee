@@ -183,7 +183,22 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         if element.type() is 'Image'
             return true
         else
-            return super(element, selection)
+            # Must support content
+            unless element.content
+                return false
+
+            # A selection must exist
+            if not selection
+                return false
+
+            # If the selection is collapsed then it must be within an existing
+            # link.
+            if selection.isCollapsed()
+                character = element.content.characters[selection.get()[0]]
+                if not character or not character.hasTags('a')
+                    return false
+
+            return true
 
     @isApplied: (element, selection) ->
         # Return true if the tool is currently applied to the current
@@ -202,6 +217,25 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             rect = element.domElement().getBoundingClientRect()
 
         else
+            # If the selection is collapsed then we need to select the entire
+            # entire link.
+            if selection.isCollapsed()
+
+                # Find the bounds of the link
+                characters = element.content.characters
+                starts = selection.get(0)[0]
+                ends = starts
+
+                while starts > 0 and characters[starts - 1].hasTags('a')
+                    starts -= 1
+
+                while ends < characters.length and characters[ends].hasTags('a')
+                    ends += 1
+
+                # Select the link in full
+                selection = new ContentSelect.Range(starts, ends)
+                selection.select(element.domElement())
+
             # Text elements
             element.storeState()
 
