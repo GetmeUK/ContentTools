@@ -7811,12 +7811,21 @@
     };
 
     _EditorApp.prototype._preventEmptyRegions = function() {
-      var name, placeholder, region, _ref, _results;
+      var child, hasEditableChildren, name, placeholder, region, _i, _len, _ref, _ref1, _results;
       _ref = this._regions;
       _results = [];
       for (name in _ref) {
         region = _ref[name];
-        if (region.children.length > 0) {
+        hasEditableChildren = false;
+        _ref1 = region.children;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          child = _ref1[_i];
+          if (child.type() !== 'Static') {
+            hasEditableChildren = true;
+            break;
+          }
+        }
+        if (hasEditableChildren) {
           continue;
         }
         placeholder = new ContentEdit.Text('p', {}, '');
@@ -9165,6 +9174,10 @@
         element.nextContent().focus();
       } else if (element.previousContent()) {
         element.previousContent().focus();
+      }
+      if (!element.isMounted()) {
+        callback(true);
+        return;
       }
       switch (element.type()) {
         case 'ListItemText':

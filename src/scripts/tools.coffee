@@ -1144,6 +1144,13 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
         else if element.previousContent()
             element.previousContent().focus()
 
+        # Check the element is still mounted (some elements may automatically
+        # remove themselves when they lose focus, for example empty text
+        # elements.
+        if not element.isMounted()
+            callback(true)
+            return
+
         # Remove the element
         switch element.type()
             when 'ListItemText'
