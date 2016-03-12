@@ -7450,7 +7450,7 @@
         return function(save) {
           var focused;
           focused = ContentEdit.Root.get().focused();
-          if (focused && focused._syncContent !== void 0) {
+          if (focused && focused.isMounted() && focused._syncContent !== void 0) {
             focused._syncContent();
           }
           if (save) {

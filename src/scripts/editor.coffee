@@ -114,7 +114,9 @@ class _EditorApp extends ContentTools.ComponentUI
             # For now though we manually perform a content sync if an
             # element supporting that method has focus.
             focused = ContentEdit.Root.get().focused()
-            if focused and focused._syncContent != undefined
+            if focused and focused.isMounted() and
+                    focused._syncContent != undefined
+
                 focused._syncContent()
 
             if save
