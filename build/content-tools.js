@@ -1616,6 +1616,7 @@
     HELPER_CHAR_LIMIT: 250,
     INDENT: '    ',
     LANGUAGE: 'en',
+    PREFER_LINE_BREAKS: false,
     RESIZE_CORNER_SIZE: 15,
     _translations: {},
     _: function(s) {
@@ -3442,7 +3443,7 @@
       selection = ContentSelect.Range.query(this._domElement);
       tip = this.content.substring(0, selection.get()[0]);
       tail = this.content.substring(selection.get()[1]);
-      if (ev.shiftKey) {
+      if (ev.shiftKey ^ ContentEdit.PREFER_LINE_BREAKS) {
         insertAt = selection.get()[0];
         lineBreakStr = '<br>';
         if (this.content.length() === insertAt) {
@@ -4962,7 +4963,6 @@
   })(ContentEdit.Text);
 
 }).call(this);
-
 (function() {
   var AttributeUI, CropMarksUI, StyleUI, _EditorApp,
     __slice = [].slice,
