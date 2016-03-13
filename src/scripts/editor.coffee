@@ -101,8 +101,9 @@ class _EditorApp extends ContentTools.ComponentUI
         @_ignition = new ContentTools.IgnitionUI()
         @attach(@_ignition)
 
-        @_ignition.bind 'start', () =>
-            @start()
+        @_ignition.addEventListener 'start', (ev) =>
+            if !ev.defaultPrevented
+                @start()
 
         @_ignition.bind 'stop', (save) =>
             # HACK: We can't currently capture certain changes to text

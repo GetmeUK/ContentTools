@@ -5075,6 +5075,7 @@
 
   ContentTools.ComponentUI = (function() {
     function ComponentUI() {
+      this._eventBinderDOM = document.createElement('div');
       this._bindings = {};
       this._parent = null;
       this._children = [];
@@ -5193,6 +5194,26 @@
         }
       }
       return _results;
+    };
+
+    ComponentUI.prototype.addEventListener = function(eventName, callback) {
+      return this._eventBinderDOM.addEventListener(eventName, callback);
+    };
+
+    ComponentUI.prototype.createEvent = function(name, details) {
+      return new CustomEvent(name, {
+        details: details,
+        bubbles: true,
+        cancelable: true
+      });
+    };
+
+    ComponentUI.prototype.dispatchEvent = function(ev) {
+      return this._eventBinderDOM.dispatchEvent(ev);
+    };
+
+    ComponentUI.prototype.removeEventListener = function(eventName, callback) {
+      return this._eventBinderDOM.removeEventListener(eventName, callback);
     };
 
     ComponentUI.prototype._addDOMEventListeners = function() {};
@@ -5392,7 +5413,7 @@
           ev.preventDefault();
           _this.addCSSClass('ct-ignition--editing');
           _this.removeCSSClass('ct-ignition--ready');
-          return _this.trigger('start');
+          return _this.dispatchEvent(_this.createEvent('start'));
         };
       })(this));
       this._domConfirm.addEventListener('click', (function(_this) {
@@ -5400,7 +5421,9 @@
           ev.preventDefault();
           _this.removeCSSClass('ct-ignition--editing');
           _this.addCSSClass('ct-ignition--ready');
-          return _this.trigger('stop', true);
+          return _this.dispatchEvent(_this.createEvent('stop', {
+            'save': true
+          }));
         };
       })(this));
       return this._domCancel.addEventListener('click', (function(_this) {
@@ -5408,7 +5431,9 @@
           ev.preventDefault();
           _this.removeCSSClass('ct-ignition--editing');
           _this.addCSSClass('ct-ignition--ready');
-          return _this.trigger('stop', false);
+          return _this.dispatchEvent(_this.createEvent('stop', {
+            'save': false
+          }));
         };
       })(this));
     };
@@ -5630,7 +5655,7 @@
     ModalUI.prototype._addDOMEventListeners = function() {
       return this._domElement.addEventListener('click', (function(_this) {
         return function(ev) {
-          return _this.trigger('click');
+          return _this.dispatchEvent(_this.createEvent('click'));
         };
       })(this));
     };
@@ -5937,18 +5962,24 @@
     }
 
     ToolUI.prototype.apply = function(element, selection) {
-      var callback;
+      var callback, data;
       if (!this.tool.canApply(element, selection)) {
         return;
       }
+      data = {
+        'element': element,
+        'selection': selection
+      };
       callback = (function(_this) {
         return function(applied) {
           if (applied) {
-            return _this.trigger('apply');
+            return _this.dispatchEvent(_this.createEvent('apply', data));
           }
         };
       })(this);
-      return this.tool.apply(element, selection, callback);
+      if (this.dispatchEvent(this.createEvent('apply', data))) {
+        return this.tool.apply(element, selection, callback);
+      }
     };
 
     ToolUI.prototype.disabled = function(disabledState) {
@@ -6149,7 +6180,7 @@
             return;
           }
           if (ev.keyCode === 27) {
-            return _this.trigger('cancel');
+            return _this.dispatchEvent(_this.createEvent('cancel'));
           }
         };
       })(this);
@@ -6160,7 +6191,7 @@
           if (_this._busy) {
             return;
           }
-          return _this.trigger('cancel');
+          return _this.dispatchEvent(_this.createEvent('cancel'));
         };
       })(this));
     };
@@ -6291,7 +6322,11 @@
     };
 
     ImageDialog.prototype.save = function(imageURL, imageSize, imageAttrs) {
-      return this.trigger('save', imageURL, imageSize, imageAttrs);
+      return this.dispatchEvents(this.createEvent('save', {
+        'imageURL': imageURL,
+        'imageSize': imageSize,
+        'imageAttrs': imageAttrs
+      }));
     };
 
     ImageDialog.prototype.state = function(state) {
@@ -7441,9 +7476,11 @@
       this.mount();
       this._ignition = new ContentTools.IgnitionUI();
       this.attach(this._ignition);
-      this._ignition.bind('start', (function(_this) {
-        return function() {
-          return _this.start();
+      this._ignition.addEventListener('start', (function(_this) {
+        return function(ev) {
+          if (!ev.defaultPrevented) {
+            return _this.start();
+          }
         };
       })(this));
       this._ignition.bind('stop', (function(_this) {

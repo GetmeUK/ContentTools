@@ -403,11 +403,17 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
         unless @tool.canApply(element, selection)
             return
 
+        data = {
+            'element': element,
+            'selection': selection
+            }
+
         callback = (applied) =>
             if applied
-                @trigger('apply')
+                @dispatchEvent(@createEvent('apply', data))
 
-        @tool.apply(element, selection, callback)
+        if @dispatchEvent(@createEvent('apply', data))
+            @tool.apply(element, selection, callback)
 
     disabled: (disabledState) ->
         # Get/Set the disabled state of the tool

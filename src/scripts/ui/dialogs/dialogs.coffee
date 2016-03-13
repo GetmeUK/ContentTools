@@ -160,7 +160,7 @@ class ContentTools.DialogUI extends ContentTools.WidgetUI
                 return
 
             if ev.keyCode is 27
-                @trigger('cancel')
+                @dispatchEvent(@createEvent('cancel'))
 
         document.addEventListener('keyup', @_handleEscape)
 
@@ -172,7 +172,7 @@ class ContentTools.DialogUI extends ContentTools.WidgetUI
             if @_busy
                 return
 
-            @trigger('cancel')
+            @dispatchEvent(@createEvent('cancel'))
 
     _removeDOMEventListeners: () ->
 

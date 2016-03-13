@@ -106,7 +106,7 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
             @removeCSSClass('ct-ignition--ready')
 
             # Trigger the start event
-            @trigger('start')
+            @dispatchEvent(@createEvent('start'))
 
         # Stop editing - Confirm changes
         @_domConfirm.addEventListener 'click', (ev) =>
@@ -117,7 +117,7 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
             @addCSSClass('ct-ignition--ready')
 
             # Trigger the start event
-            @trigger('stop', true)
+            @dispatchEvent(@createEvent('stop', {'save': true}))
 
         # Stop editing - Cancel changes
         @_domCancel.addEventListener 'click', (ev) =>
@@ -128,4 +128,4 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
             @addCSSClass('ct-ignition--ready')
 
             # Trigger the start event
-            @trigger('stop', false)
+            @dispatchEvent(@createEvent('stop', {'save': false}))

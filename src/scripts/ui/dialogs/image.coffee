@@ -230,7 +230,15 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
 
     save: (imageURL, imageSize, imageAttrs) ->
         # Save and insert the current image
-        @trigger('save', imageURL, imageSize, imageAttrs)
+        @dispatchEvents(
+            @createEvent(
+                'save',
+                {
+                    'imageURL': imageURL,
+                    'imageSize': imageSize,
+                    'imageAttrs': imageAttrs
+                })
+            )
 
     state: (state) ->
         # Set/get the state of the dialog (empty, uploading, populated)

@@ -57,4 +57,4 @@ class ContentTools.ModalUI extends ContentTools.WidgetUI
 
         # Trigger a custom event for clicks on the modal
         @_domElement.addEventListener 'click', (ev) =>
-            @trigger('click')
+            @dispatchEvent(@createEvent('click'))

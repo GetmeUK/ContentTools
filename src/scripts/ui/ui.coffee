@@ -5,6 +5,11 @@ class ContentTools.ComponentUI
 
     constructor: () ->
 
+        # Events are supported using the native DOM event system. We create a
+        # DOM element that's never attached to the DOM but allows us to plugin
+        # to the native event system.
+        @_eventBinderDOM = document.createElement('div')
+
         # Event bindings for the component
         @_bindings = {}
 
@@ -87,7 +92,7 @@ class ContentTools.ComponentUI
         @_domElement.parentNode.removeChild(@_domElement)
         @_domElement = null
 
-    # Event methods
+    # Old event methods
 
     bind: (eventName, callback) ->
         # Bind a callback to an event
@@ -135,6 +140,34 @@ class ContentTools.ComponentUI
         for suspect, i in @_bindings[eventName]
             if suspect is callback
                 @_bindings[eventName].splice(i, 1)
+
+    # Event methods
+
+    addEventListener: (eventName, callback) ->
+        # Add an event listener for the UI component
+        @_eventBinderDOM.addEventListener(eventName, callback)
+
+    createEvent: (name, details) ->
+        # Create an event
+        return new CustomEvent(
+            name,
+            {
+                details: details,
+                bubbles: true,
+                cancelable: true
+            }
+        )
+
+        # TODO: Add support for custom events in IE
+        # https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent
+
+    dispatchEvent: (ev) ->
+        # Dispatch an event against the UI compontent
+        @_eventBinderDOM.dispatchEvent(ev)
+
+    removeEventListener: (eventName, callback) ->
+        # Remove a previously registered event listener for the UI component
+        @_eventBinderDOM.removeEventListener(eventName, callback)
 
     # Private methods
 
