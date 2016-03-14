@@ -101,36 +101,6 @@ class _EditorApp extends ContentTools.ComponentUI
         @_ignition = new ContentTools.IgnitionUI()
         @attach(@_ignition)
 
-        @_ignition.addEventListener 'start', (ev) =>
-            if !ev.defaultPrevented
-                @start()
-
-        @_ignition.bind 'stop', (save) =>
-            # HACK: We can't currently capture certain changes to text
-            # elements (for example deletion of a section of text from the
-            # context menu option). Long-term mutation observers or
-            # consistent support for the `input` event against
-            # `contenteditable` elements would resolve this.
-            #
-            # For now though we manually perform a content sync if an
-            # element supporting that method has focus.
-            focused = ContentEdit.Root.get().focused()
-            if focused and focused.isMounted() and
-                    focused._syncContent != undefined
-
-                focused._syncContent()
-
-            if save
-                @save()
-            else
-                # If revert returns false then we cancel the stop action
-                if not @revert()
-                    # Reset the ignition state
-                    @_ignition.changeState('editing')
-                    return
-
-            @stop()
-
         if @_domRegions.length
             @_ignition.show()
 
@@ -361,10 +331,14 @@ class _EditorApp extends ContentTools.ComponentUI
     revert: () ->
         # Revert the page to it's previous state before we started editing
         # the page.
+        if not @dispatchEvent(@createEvent('revert'))
+            return
 
         # Check if there are any changes, and if there are make the user confirm
         # they want to lose them.
-        confirmMessage = ContentEdit._('Your changes have not been saved, do you really want to lose them?')
+        confirmMessage = ContentEdit._(
+            'Your changes have not been saved, do you really want to lose them?'
+            )
         if ContentEdit.Root.get().lastModified() > @_rootLastModified and
                 not window.confirm(confirmMessage)
             return false
@@ -408,8 +382,10 @@ class _EditorApp extends ContentTools.ComponentUI
             # Update the inspector tags
             @_inspector.updateTags()
 
-    save: (passive, args...) ->
+    save: (passive) ->
         # Save changes to the current page
+        if not @dispatchEvent(@createEvent('save'))
+            return
 
         # Check the document has changed, if not we don't need do anything
         root = ContentEdit.Root.get()
@@ -443,7 +419,9 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Trigger the save event with a region HTML map for the changed
         # content.
-        @trigger('save', modifiedRegions, args...)
+        @dispatchEvent(
+            @createEvent('saved', {regions: modifiedRegions})
+            )
 
     setRegionOrder: (regionNames) ->
         # Set the navigation order of regions on the page to the order set in
@@ -452,6 +430,8 @@ class _EditorApp extends ContentTools.ComponentUI
 
     start: () ->
         # Start editing the page
+        if not @dispatchEvent(@createEvent('start'))
+            return false
 
         # Set the edtior to busy while we set up
         @busy(true)
@@ -490,8 +470,35 @@ class _EditorApp extends ContentTools.ComponentUI
 
         @busy(false)
 
-    stop: () ->
-        # Stop editing the page.
+        return true
+
+    stop: (save) ->
+        # Stop editing the page
+        if not @dispatchEvent(@createEvent('stop', {save: save}))
+            return false
+
+        # HACK: We can't currently capture certain changes to text
+        # elements (for example deletion of a section of text from the
+        # context menu option). Long-term mutation observers or
+        # consistent support for the `input` event against
+        # `contenteditable` elements would resolve this.
+        #
+        # For now though we manually perform a content sync if an
+        # element supporting that method has focus.
+        focused = ContentEdit.Root.get().focused()
+        if focused and focused.isMounted() and
+                focused._syncContent != undefined
+
+            focused._syncContent()
+
+        if save
+            @save()
+        else
+            # If revert returns false then we cancel the stop action
+            if not @revert()
+                # Reset the ignition state
+                @_ignition.changeState('editing')
+                return
 
         # Blur any existing focused element
         if ContentEdit.Root.get().focused()
@@ -510,6 +517,8 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Set the application state to ready to edit
         @_state = ContentTools.EditorApp.READY
+
+        return true
 
     # Private methods
 

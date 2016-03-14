@@ -101,31 +101,31 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
         @_domEdit.addEventListener 'click', (ev) =>
             ev.preventDefault()
 
-            # Change the state of the switch
-            @addCSSClass('ct-ignition--editing')
-            @removeCSSClass('ct-ignition--ready')
+            # Start the editor
+            if ContentTools.EditorApp.get().start()
 
-            # Trigger the start event
-            @dispatchEvent(@createEvent('start'))
+                # Change the state of the switch
+                @addCSSClass('ct-ignition--editing')
+                @removeCSSClass('ct-ignition--ready')
 
         # Stop editing - Confirm changes
         @_domConfirm.addEventListener 'click', (ev) =>
             ev.preventDefault()
 
-            # Change the state of the switch
-            @removeCSSClass('ct-ignition--editing')
-            @addCSSClass('ct-ignition--ready')
+            # Stop the editor (saving any changes)
+            if ContentTools.EditorApp.get().stop(true)
 
-            # Trigger the start event
-            @dispatchEvent(@createEvent('stop', {'save': true}))
+                # Change the state of the switch
+                @removeCSSClass('ct-ignition--editing')
+                @addCSSClass('ct-ignition--ready')
 
         # Stop editing - Cancel changes
         @_domCancel.addEventListener 'click', (ev) =>
             ev.preventDefault()
 
-            # Change the state of the switch
-            @removeCSSClass('ct-ignition--editing')
-            @addCSSClass('ct-ignition--ready')
+            # Stop the editor (reverting any changes)
+            if ContentTools.EditorApp.get().stop(false)
 
-            # Trigger the start event
-            @dispatchEvent(@createEvent('stop', {'save': false}))
+                # Change the state of the switch
+                @removeCSSClass('ct-ignition--editing')
+                @addCSSClass('ct-ignition--ready')

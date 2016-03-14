@@ -20,9 +20,13 @@ window.onload = () ->
     editor = ContentTools.EditorApp.get()
     editor.init('.editable', 'data-name')
 
-    editor.bind 'save', (regions, autoSave) ->
+    editor.addEventListener 'stop', (ev) ->
+        if ev.detail.save
+            ev.preventDefault()
+
+    editor.addEventListener 'saved', (ev) ->
         # Handle the page being saved
-        console.log regions
+        console.log ev.detail.regions
 
         # Mark the ignition as busy while we save the page
         editor.busy(true)

@@ -5200,12 +5200,18 @@
       return this._eventBinderDOM.addEventListener(eventName, callback);
     };
 
-    ComponentUI.prototype.createEvent = function(name, details) {
-      return new CustomEvent(name, {
-        details: details,
-        bubbles: true,
-        cancelable: true
-      });
+    ComponentUI.prototype.createEvent = function(name, detail) {
+      var ev;
+      if (typeof window.CustomEvent === 'function') {
+        return new CustomEvent(name, {
+          detail: detail,
+          bubbles: true,
+          cancelable: true
+        });
+      }
+      ev = document.createEvent('CustomEvent');
+      evt.initCustomEvent(eventName, true, true, detail);
+      return ev;
     };
 
     ComponentUI.prototype.dispatchEvent = function(ev) {
@@ -5411,29 +5417,28 @@
       this._domEdit.addEventListener('click', (function(_this) {
         return function(ev) {
           ev.preventDefault();
-          _this.addCSSClass('ct-ignition--editing');
-          _this.removeCSSClass('ct-ignition--ready');
-          return _this.dispatchEvent(_this.createEvent('start'));
+          if (ContentTools.EditorApp.get().start()) {
+            _this.addCSSClass('ct-ignition--editing');
+            return _this.removeCSSClass('ct-ignition--ready');
+          }
         };
       })(this));
       this._domConfirm.addEventListener('click', (function(_this) {
         return function(ev) {
           ev.preventDefault();
-          _this.removeCSSClass('ct-ignition--editing');
-          _this.addCSSClass('ct-ignition--ready');
-          return _this.dispatchEvent(_this.createEvent('stop', {
-            'save': true
-          }));
+          if (ContentTools.EditorApp.get().stop(true)) {
+            _this.removeCSSClass('ct-ignition--editing');
+            return _this.addCSSClass('ct-ignition--ready');
+          }
         };
       })(this));
       return this._domCancel.addEventListener('click', (function(_this) {
         return function(ev) {
           ev.preventDefault();
-          _this.removeCSSClass('ct-ignition--editing');
-          _this.addCSSClass('ct-ignition--ready');
-          return _this.dispatchEvent(_this.createEvent('stop', {
-            'save': false
-          }));
+          if (ContentTools.EditorApp.get().stop(false)) {
+            _this.removeCSSClass('ct-ignition--editing');
+            return _this.addCSSClass('ct-ignition--ready');
+          }
         };
       })(this));
     };
@@ -7476,31 +7481,6 @@
       this.mount();
       this._ignition = new ContentTools.IgnitionUI();
       this.attach(this._ignition);
-      this._ignition.addEventListener('start', (function(_this) {
-        return function(ev) {
-          if (!ev.defaultPrevented) {
-            return _this.start();
-          }
-        };
-      })(this));
-      this._ignition.bind('stop', (function(_this) {
-        return function(save) {
-          var focused;
-          focused = ContentEdit.Root.get().focused();
-          if (focused && focused.isMounted() && focused._syncContent !== void 0) {
-            focused._syncContent();
-          }
-          if (save) {
-            _this.save();
-          } else {
-            if (!_this.revert()) {
-              _this._ignition.changeState('editing');
-              return;
-            }
-          }
-          return _this.stop();
-        };
-      })(this));
       if (this._domRegions.length) {
         this._ignition.show();
       }
@@ -7685,6 +7665,9 @@
 
     _EditorApp.prototype.revert = function() {
       var confirmMessage;
+      if (!this.dispatchEvent(this.createEvent('revert'))) {
+        return;
+      }
       confirmMessage = ContentEdit._('Your changes have not been saved, do you really want to lose them?');
       if (ContentEdit.Root.get().lastModified() > this._rootLastModified && !window.confirm(confirmMessage)) {
         return false;
@@ -7723,9 +7706,11 @@
       }
     };
 
-    _EditorApp.prototype.save = function() {
-      var args, child, html, modifiedRegions, name, passive, region, root, _ref;
-      passive = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    _EditorApp.prototype.save = function(passive) {
+      var child, html, modifiedRegions, name, region, root, _ref;
+      if (!this.dispatchEvent(this.createEvent('save'))) {
+        return;
+      }
       root = ContentEdit.Root.get();
       if (root.lastModified() === this._rootLastModified && passive) {
         return;
@@ -7750,7 +7735,9 @@
         modifiedRegions[name] = html;
         this._regionsLastModified[name] = region.lastModified();
       }
-      return this.trigger.apply(this, ['save', modifiedRegions].concat(__slice.call(args)));
+      return this.dispatchEvent(this.createEvent('saved', {
+        regions: modifiedRegions
+      }));
     };
 
     _EditorApp.prototype.setRegionOrder = function(regionNames) {
@@ -7759,6 +7746,9 @@
 
     _EditorApp.prototype.start = function() {
       var domRegion, i, name, _i, _len, _ref;
+      if (!this.dispatchEvent(this.createEvent('start'))) {
+        return false;
+      }
       this.busy(true);
       this._regions = {};
       this._orderedRegions = [];
@@ -7780,10 +7770,29 @@
       this._state = ContentTools.EditorApp.EDITING;
       this._toolbox.show();
       this._inspector.show();
-      return this.busy(false);
+      this.busy(false);
+      return true;
     };
 
-    _EditorApp.prototype.stop = function() {
+    _EditorApp.prototype.stop = function(save) {
+      var focused;
+      if (!this.dispatchEvent(this.createEvent('stop', {
+        save: save
+      }))) {
+        return false;
+      }
+      focused = ContentEdit.Root.get().focused();
+      if (focused && focused.isMounted() && focused._syncContent !== void 0) {
+        focused._syncContent();
+      }
+      if (save) {
+        this.save();
+      } else {
+        if (!this.revert()) {
+          this._ignition.changeState('editing');
+          return;
+        }
+      }
       if (ContentEdit.Root.get().focused()) {
         ContentEdit.Root.get().focused().blur();
       }
@@ -7792,7 +7801,8 @@
       this._toolbox.hide();
       this._inspector.hide();
       this._regions = {};
-      return this._state = ContentTools.EditorApp.READY;
+      this._state = ContentTools.EditorApp.READY;
+      return true;
     };
 
     _EditorApp.prototype._addDOMEventListeners = function() {

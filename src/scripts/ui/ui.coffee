@@ -147,19 +147,24 @@ class ContentTools.ComponentUI
         # Add an event listener for the UI component
         @_eventBinderDOM.addEventListener(eventName, callback)
 
-    createEvent: (name, details) ->
+    createEvent: (name, detail) ->
         # Create an event
-        return new CustomEvent(
-            name,
-            {
-                details: details,
-                bubbles: true,
-                cancelable: true
-            }
-        )
 
-        # TODO: Add support for custom events in IE
-        # https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent
+        # Create the custom event using the standard model
+        if typeof window.CustomEvent == 'function'
+            return new CustomEvent(
+                name,
+                {
+                    detail: detail,
+                    bubbles: true,
+                    cancelable: true
+                }
+            )
+
+        # For older versions of IE we use a polyfill (thank you MDN)
+        ev = document.createEvent('CustomEvent')
+        evt.initCustomEvent(eventName, true, true, detail)
+        return ev
 
     dispatchEvent: (ev) ->
         # Dispatch an event against the UI compontent
