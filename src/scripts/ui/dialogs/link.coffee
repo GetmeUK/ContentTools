@@ -56,13 +56,15 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         # the outcome.
 
         if not @isMounted
-            return @trigger('save', '')
+            @dispatchEvent(@createEvent('save'))
+            return
 
-        linkAttr = {}
-        linkAttr.href = @_domInput.value.trim()
-        linkAttr.target = @_target if @_target
+        detail = {
+            href: @_domInput.value.trim(),
+            target: @_target if @_target
+        }
 
-        @trigger('save', linkAttr)
+        @dispatchEvent(@createEvent('save', linkAttr))
 
     show: () ->
         # Show the widget

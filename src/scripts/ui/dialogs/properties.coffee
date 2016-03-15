@@ -263,7 +263,12 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
         if @_supportsCoding
             innerHTML = @_domInnerHTML.value
 
-        @trigger('save', @changedAttributes(), @changedStyles(), innerHTML)
+        detail = {
+            changedAttributes: @changedAttributes(),
+            changedStyles: @changedAttributes(),
+            innerHtml: innerHTML
+            }
+        @dispatchEvent(@createEvent('save', detail))
 
     # Private methods
 
@@ -277,7 +282,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
         @_attributeUIs.push(attributeUI)
 
         # Handle blur events
-        attributeUI.bind 'blur', () ->
+        attributeUI.addEventListener 'blur', (ev) ->
 
             # Mark that no attribute currently has focus
             dialog._focusedAttributeUI = null
@@ -304,7 +309,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
                     dialog._addAttributeUI('', '')
 
         # Handle focus events
-        attributeUI.bind 'focus', () ->
+        attributeUI.addEventListener 'focus', (ev) ->
             # Mark that this is the attribute that currently has focus
             dialog._focusedAttributeUI = this
 
@@ -315,7 +320,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
                 )
 
         # Handle input events
-        attributeUI.bind 'namechange', () ->
+        attributeUI.addEventListener 'namechange', (ev) ->
             element = dialog.element
             name = @name().toLowerCase()
             restricted = ContentTools.getRestrictedAtributes(element.tagName())
@@ -588,7 +593,7 @@ class AttributeUI extends ContentTools.AnchoredComponentUI
             name = @name()
             nextDomAttribute = @_domElement.nextSibling
 
-            @trigger 'blur'
+            @dispatchEvent(@createEvent('blur'))
 
             # Determine if the next DOM element is an attribute
             if name is '' and nextDomAttribute
@@ -598,10 +603,10 @@ class AttributeUI extends ContentTools.AnchoredComponentUI
                 nextNameDom.focus()
 
         @_domName.addEventListener 'focus', () =>
-            @trigger 'focus'
+            @dispatchEvent(@createEvent('focus'))
 
         @_domName.addEventListener 'input', () =>
-            @trigger 'namechange'
+            @dispatchEvent(@createEvent('namechange'))
 
         @_domName.addEventListener 'keydown', (ev) =>
             if ev.keyCode is 13
@@ -609,10 +614,10 @@ class AttributeUI extends ContentTools.AnchoredComponentUI
 
         # Value
         @_domValue.addEventListener 'blur', () =>
-            @trigger 'blur'
+            @dispatchEvent(@createEvent('blur'))
 
         @_domValue.addEventListener 'focus', () =>
-            @trigger 'focus'
+            @dispatchEvent(@createEvent('focus'))
 
         @_domValue.addEventListener 'keydown', (ev) =>
             if ev.keyCode != 13 and (ev.keyCode != 9 or ev.shiftKey)

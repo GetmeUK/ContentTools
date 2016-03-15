@@ -37,21 +37,18 @@ class _EditorApp extends ContentTools.ComponentUI
         # Return a list of DOM nodes that are assigned as be editable regions
         return @_domRegions
 
-    orderedRegions: () ->
-        # Return a list of regions in the given order
-        return (@_regions[name] for name in @_orderedRegions)
-
-    regions: () ->
-        # Return a list of editable regions on the page
-        return @_regions
-
-    shiftDown: () ->
-        return @_shiftDown
-
     getState: () ->
         # Returns the current state of the editor (see `ContentTools.EditorApp`
         # for information on possible editor states).
         return @_state
+
+    ignition: () ->
+        # Return the ignition component for the editor
+        return @_ignition
+
+    inspector: () ->
+        # Return the inspector component for the editor
+        return @_inspector
 
     isDormant: () ->
         # Return true if the editor is currently in the dormant state
@@ -64,6 +61,21 @@ class _EditorApp extends ContentTools.ComponentUI
     isEditing: () ->
         # Return true if the editor is currently in the editing state
         return @_state is ContentTools.EditorApp.EDITING
+
+    orderedRegions: () ->
+        # Return a list of regions in the given order
+        return (@_regions[name] for name in @_orderedRegions)
+
+    regions: () ->
+        # Return a list of editable regions on the page
+        return @_regions
+
+    shiftDown: () ->
+        return @_shiftDown
+
+    toolbox: () ->
+        # Return the toolbox component for the editor
+        return @_toolbox
 
     # Methods
 
@@ -103,6 +115,19 @@ class _EditorApp extends ContentTools.ComponentUI
 
         if @_domRegions.length
             @_ignition.show()
+
+            # Set up events to allow the ignition switch to manage the editor
+            # state.
+            @_ignition.addEventListener 'edit', (ev) =>
+                @start()
+
+            @_ignition.addEventListener 'confirm', (ev) =>
+                ev.preventDefault()
+                @stop(true)
+
+            @_ignition.addEventListener 'cancel', (ev) =>
+                ev.preventDefault()
+                @stop(false)
 
         # Toolbox
         @_toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS)
@@ -181,7 +206,6 @@ class _EditorApp extends ContentTools.ComponentUI
                 return
 
             ContentEdit.Root.get().trigger('previous-region', region)
-
 
     destroy: () ->
         # Destroy the editor application
@@ -431,7 +455,7 @@ class _EditorApp extends ContentTools.ComponentUI
     start: () ->
         # Start editing the page
         if not @dispatchEvent(@createEvent('start'))
-            return false
+            return
 
         # Set the edtior to busy while we set up
         @busy(true)
@@ -470,12 +494,10 @@ class _EditorApp extends ContentTools.ComponentUI
 
         @busy(false)
 
-        return true
-
     stop: (save) ->
         # Stop editing the page
         if not @dispatchEvent(@createEvent('stop', {save: save}))
-            return false
+            return
 
         # HACK: We can't currently capture certain changes to text
         # elements (for example deletion of a section of text from the
@@ -497,7 +519,7 @@ class _EditorApp extends ContentTools.ComponentUI
             # If revert returns false then we cancel the stop action
             if not @revert()
                 # Reset the ignition state
-                @_ignition.changeState('editing')
+                @_ignition.state('editing')
                 return
 
         # Blur any existing focused element
@@ -518,7 +540,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # Set the application state to ready to edit
         @_state = ContentTools.EditorApp.READY
 
-        return true
+        return
 
     # Private methods
 

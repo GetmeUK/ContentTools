@@ -72,11 +72,11 @@ class ContentTools.VideoDialog extends ContentTools.DialogUI
         videoURL = @_domInput.value.trim()
         embedURL = ContentTools.getEmbedVideoURL(videoURL)
         if embedURL
-            @trigger('save', embedURL)
+            @dispatchEvent(@createEvent('save', {'url': embedURL}))
         else
             # If we can't generate an embed URL trust that the user's knows what
             # they are doing and save with the supplied URL.
-            @trigger('save', videoURL)
+            @dispatchEvent(@createEvent('save', {'url': videoURL}))
 
     show: () ->
         # Show the widget

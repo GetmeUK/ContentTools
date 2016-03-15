@@ -5363,31 +5363,37 @@
 
     function IgnitionUI() {
       IgnitionUI.__super__.constructor.call(this);
-      this._busy = false;
+      this._revertToState = 'ready';
+      this._state = 'ready';
     }
 
     IgnitionUI.prototype.busy = function(busy) {
-      if (busy === void 0) {
-        return this._busy;
-      }
-      if (this._busy === busy) {
+      if (busy === (this._state === 'busy')) {
         return;
       }
-      this._busy = busy;
       if (busy) {
-        return this.addCSSClass('ct-ignition--busy');
+        this._revertToState = this._state;
+        return this.state('busy');
       } else {
-        return this.removeCSSClass('ct-ignition--busy');
+        return this.state(this._revertToState);
       }
     };
 
-    IgnitionUI.prototype.changeState = function(state) {
-      if (state === 'editing') {
-        this.addCSSClass('ct-ignition--editing');
-        return this.removeCSSClass('ct-ignition--ready');
-      } else if (state === 'ready') {
-        this.removeCSSClass('ct-ignition--editing');
-        return this.addCSSClass('ct-ignition--ready');
+    IgnitionUI.prototype.cancel = function() {
+      if (this.dispatchEvent(this.createEvent('cancel'))) {
+        return this.state('ready');
+      }
+    };
+
+    IgnitionUI.prototype.confirm = function() {
+      if (this.dispatchEvent(this.createEvent('confirm'))) {
+        return this.state('ready');
+      }
+    };
+
+    IgnitionUI.prototype.edit = function() {
+      if (this.dispatchEvent(this.createEvent('edit'))) {
+        return this.state('editing');
       }
     };
 
@@ -5406,6 +5412,32 @@
       return this._addDOMEventListeners();
     };
 
+    IgnitionUI.prototype.state = function(state) {
+      if (state === void 0) {
+        return this._state;
+      }
+      if (this._state === state) {
+        return;
+      }
+      if (!this.dispatchEvent(this.createEvent('statechange', {
+        state: state
+      }))) {
+        return;
+      }
+      console.log(state);
+      this._state = state;
+      this.removeCSSClass('ct-ignition--busy');
+      this.removeCSSClass('ct-ignition--editing');
+      this.removeCSSClass('ct-ignition--ready');
+      if (this._state === 'busy') {
+        return this.addCSSClass('ct-ignition--busy');
+      } else if (this._state === 'editing') {
+        return this.addCSSClass('ct-ignition--editing');
+      } else if (this._state === 'ready') {
+        return this.addCSSClass('ct-ignition--ready');
+      }
+    };
+
     IgnitionUI.prototype.unmount = function() {
       IgnitionUI.__super__.unmount.call(this);
       this._domEdit = null;
@@ -5417,28 +5449,19 @@
       this._domEdit.addEventListener('click', (function(_this) {
         return function(ev) {
           ev.preventDefault();
-          if (ContentTools.EditorApp.get().start()) {
-            _this.addCSSClass('ct-ignition--editing');
-            return _this.removeCSSClass('ct-ignition--ready');
-          }
+          return _this.edit();
         };
       })(this));
       this._domConfirm.addEventListener('click', (function(_this) {
         return function(ev) {
           ev.preventDefault();
-          if (ContentTools.EditorApp.get().stop(true)) {
-            _this.removeCSSClass('ct-ignition--editing');
-            return _this.addCSSClass('ct-ignition--ready');
-          }
+          return _this.confirm();
         };
       })(this));
       return this._domCancel.addEventListener('click', (function(_this) {
         return function(ev) {
           ev.preventDefault();
-          if (ContentTools.EditorApp.get().stop(false)) {
-            _this.removeCSSClass('ct-ignition--editing');
-            return _this.addCSSClass('ct-ignition--ready');
-          }
+          return _this.cancel();
         };
       })(this));
     };
@@ -5722,7 +5745,7 @@
           this._toolUIs[toolName] = new ContentTools.ToolUI(tool);
           this._toolUIs[toolName].mount(domToolGroup);
           this._toolUIs[toolName].disabled(true);
-          this._toolUIs[toolName].bind('apply', (function(_this) {
+          this._toolUIs[toolName].addEventListener('apply', (function(_this) {
             return function() {
               return _this.updateTools();
             };
@@ -5967,22 +5990,22 @@
     }
 
     ToolUI.prototype.apply = function(element, selection) {
-      var callback, data;
+      var callback, detail;
       if (!this.tool.canApply(element, selection)) {
         return;
       }
-      data = {
+      detail = {
         'element': element,
         'selection': selection
       };
       callback = (function(_this) {
         return function(applied) {
           if (applied) {
-            return _this.dispatchEvent(_this.createEvent('apply', data));
+            return _this.dispatchEvent(_this.createEvent('applied', detail));
           }
         };
       })(this);
-      if (this.dispatchEvent(this.createEvent('apply', data))) {
+      if (this.dispatchEvent(this.createEvent('apply', detail))) {
         return this.tool.apply(element, selection, callback);
       }
     };
@@ -6292,7 +6315,7 @@
       this._domClear.textContent = ContentEdit._('Clear');
       domActions.appendChild(this._domClear);
       this._addDOMEventListeners();
-      return this.trigger('imageUploader.mount');
+      return this.dispatchEvent(this.createEvent('imageUploader.mount'));
     };
 
     ImageDialog.prototype.populate = function(imageURL, imageSize) {
@@ -6362,7 +6385,7 @@
       this._domRotateCCW = null;
       this._domRotateCW = null;
       this._domUpload = null;
-      return this.trigger('imageUploader.unmount');
+      return this.dispatchEvent(this.createEvent('imageUploader.unmount'));
     };
 
     ImageDialog.prototype._addDOMEventListeners = function() {
@@ -6374,32 +6397,32 @@
           ev.target.value = '';
           if (ev.target.value) {
             ev.target.type = 'text';
-            ev.target.type = 'file';
+            return ev.target.type = 'file';
           }
-          return _this.trigger('imageUploader.fileReady', file);
         };
       })(this));
+      this.dispatchEvent(this.createEvent('imageUploader.fileready'));
       this._domCancelUpload.addEventListener('click', (function(_this) {
         return function(ev) {
-          return _this.trigger('imageUploader.cancelUpload');
+          return _this.dispatchEvent(_this.createEvent('imageUploader.cancelupload'));
         };
       })(this));
       this._domClear.addEventListener('click', (function(_this) {
         return function(ev) {
           _this.removeCropMarks();
-          return _this.trigger('imageUploader.clear');
+          return _this.dispatchEvent(_this.createEvent('imageUploader.clear'));
         };
       })(this));
       this._domRotateCCW.addEventListener('click', (function(_this) {
         return function(ev) {
           _this.removeCropMarks();
-          return _this.trigger('imageUploader.rotateCCW');
+          return _this.dispatchEvent(_this.createEvent('imageUploader.rotateccw'));
         };
       })(this));
       this._domRotateCW.addEventListener('click', (function(_this) {
         return function(ev) {
           _this.removeCropMarks();
-          return _this.trigger('imageUploader.rotateCW');
+          return _this.dispatchEvent(_this.createEvent('imageUploader.rotatecw'));
         };
       })(this));
       this._domCrop.addEventListener('click', (function(_this) {
@@ -6413,7 +6436,7 @@
       })(this));
       return this._domInsert.addEventListener('click', (function(_this) {
         return function(ev) {
-          return _this.trigger('imageUploader.save');
+          return _this.dispatchEvent(_this.createEvent('imageUploader.save'));
         };
       })(this));
     };
@@ -6601,16 +6624,16 @@
     };
 
     LinkDialog.prototype.save = function() {
-      var linkAttr;
+      var detail;
       if (!this.isMounted) {
-        return this.trigger('save', '');
+        this.dispatchEvent(this.createEvent('save'));
+        return;
       }
-      linkAttr = {};
-      linkAttr.href = this._domInput.value.trim();
-      if (this._target) {
-        linkAttr.target = this._target;
-      }
-      return this.trigger('save', linkAttr);
+      detail = {
+        href: this._domInput.value.trim(),
+        target: this._target ? this._target : void 0
+      };
+      return this.dispatchEvent(this.createEvent('save', linkAttr));
     };
 
     LinkDialog.prototype.show = function() {
@@ -6819,12 +6842,17 @@
     };
 
     PropertiesDialog.prototype.save = function() {
-      var innerHTML;
+      var detail, innerHTML;
       innerHTML = null;
       if (this._supportsCoding) {
         innerHTML = this._domInnerHTML.value;
       }
-      return this.trigger('save', this.changedAttributes(), this.changedStyles(), innerHTML);
+      detail = {
+        changedAttributes: this.changedAttributes(),
+        changedStyles: this.changedAttributes(),
+        innerHtml: innerHTML
+      };
+      return this.dispatchEvent(this.createEvent('save', detail));
     };
 
     PropertiesDialog.prototype._addAttributeUI = function(name, value) {
@@ -6832,7 +6860,7 @@
       dialog = this;
       attributeUI = new AttributeUI(name, value);
       this._attributeUIs.push(attributeUI);
-      attributeUI.bind('blur', function() {
+      attributeUI.addEventListener('blur', function(ev) {
         var index, lastAttributeUI, length;
         dialog._focusedAttributeUI = null;
         ContentEdit.addCSSClass(dialog._domRemoveAttribute, 'ct-control--muted');
@@ -6849,11 +6877,11 @@
           }
         }
       });
-      attributeUI.bind('focus', function() {
+      attributeUI.addEventListener('focus', function(ev) {
         dialog._focusedAttributeUI = this;
         return ContentEdit.removeCSSClass(dialog._domRemoveAttribute, 'ct-control--muted');
       });
-      attributeUI.bind('namechange', function() {
+      attributeUI.addEventListener('namechange', function(ev) {
         var element, otherAttributeUI, restricted, valid, _i, _len, _ref;
         element = dialog.element;
         name = this.name().toLowerCase();
@@ -7082,7 +7110,7 @@
           var name, nextDomAttribute, nextNameDom;
           name = _this.name();
           nextDomAttribute = _this._domElement.nextSibling;
-          _this.trigger('blur');
+          _this.dispatchEvent(_this.createEvent('blur'));
           if (name === '' && nextDomAttribute) {
             nextNameDom = nextDomAttribute.querySelector('.ct-attribute__name');
             return nextNameDom.focus();
@@ -7091,12 +7119,12 @@
       })(this));
       this._domName.addEventListener('focus', (function(_this) {
         return function() {
-          return _this.trigger('focus');
+          return _this.dispatchEvent(_this.createEvent('focus'));
         };
       })(this));
       this._domName.addEventListener('input', (function(_this) {
         return function() {
-          return _this.trigger('namechange');
+          return _this.dispatchEvent(_this.createEvent('namechange'));
         };
       })(this));
       this._domName.addEventListener('keydown', (function(_this) {
@@ -7108,12 +7136,12 @@
       })(this));
       this._domValue.addEventListener('blur', (function(_this) {
         return function() {
-          return _this.trigger('blur');
+          return _this.dispatchEvent(_this.createEvent('blur'));
         };
       })(this));
       this._domValue.addEventListener('focus', (function(_this) {
         return function() {
-          return _this.trigger('focus');
+          return _this.dispatchEvent(_this.createEvent('focus'));
         };
       })(this));
       return this._domValue.addEventListener('keydown', (function(_this) {
@@ -7212,15 +7240,15 @@
     };
 
     TableDialog.prototype.save = function() {
-      var footCSSClass, headCSSClass, tableCfg;
+      var detail, footCSSClass, headCSSClass;
       footCSSClass = this._domFootSection.getAttribute('class');
       headCSSClass = this._domHeadSection.getAttribute('class');
-      tableCfg = {
+      detail = {
         columns: parseInt(this._domBodyInput.value),
         foot: footCSSClass.indexOf('ct-section--applied') > -1,
         head: headCSSClass.indexOf('ct-section--applied') > -1
       };
-      return this.trigger('save', tableCfg);
+      return this.dispacheEvent(this.createEvent('save', detail));
     };
 
     TableDialog.prototype.unmount = function() {
@@ -7329,9 +7357,13 @@
       videoURL = this._domInput.value.trim();
       embedURL = ContentTools.getEmbedVideoURL(videoURL);
       if (embedURL) {
-        return this.trigger('save', embedURL);
+        return this.dispatchEvent(this.createEvent('save', {
+          'url': embedURL
+        }));
       } else {
-        return this.trigger('save', videoURL);
+        return this.dispatchEvent(this.createEvent('save', {
+          'url': videoURL
+        }));
       }
     };
 
@@ -7423,6 +7455,30 @@
       return this._domRegions;
     };
 
+    _EditorApp.prototype.getState = function() {
+      return this._state;
+    };
+
+    _EditorApp.prototype.ignition = function() {
+      return this._ignition;
+    };
+
+    _EditorApp.prototype.inspector = function() {
+      return this._inspector;
+    };
+
+    _EditorApp.prototype.isDormant = function() {
+      return this._state === ContentTools.EditorApp.DORMANT;
+    };
+
+    _EditorApp.prototype.isReady = function() {
+      return this._state === ContentTools.EditorApp.READY;
+    };
+
+    _EditorApp.prototype.isEditing = function() {
+      return this._state === ContentTools.EditorApp.EDITING;
+    };
+
     _EditorApp.prototype.orderedRegions = function() {
       var name;
       return (function() {
@@ -7445,20 +7501,8 @@
       return this._shiftDown;
     };
 
-    _EditorApp.prototype.getState = function() {
-      return this._state;
-    };
-
-    _EditorApp.prototype.isDormant = function() {
-      return this._state === ContentTools.EditorApp.DORMANT;
-    };
-
-    _EditorApp.prototype.isReady = function() {
-      return this._state === ContentTools.EditorApp.READY;
-    };
-
-    _EditorApp.prototype.isEditing = function() {
-      return this._state === ContentTools.EditorApp.EDITING;
+    _EditorApp.prototype.toolbox = function() {
+      return this._toolbox;
     };
 
     _EditorApp.prototype.busy = function(busy) {
@@ -7483,6 +7527,23 @@
       this.attach(this._ignition);
       if (this._domRegions.length) {
         this._ignition.show();
+        this._ignition.addEventListener('edit', (function(_this) {
+          return function(ev) {
+            return _this.start();
+          };
+        })(this));
+        this._ignition.addEventListener('confirm', (function(_this) {
+          return function(ev) {
+            ev.preventDefault();
+            return _this.stop(true);
+          };
+        })(this));
+        this._ignition.addEventListener('cancel', (function(_this) {
+          return function(ev) {
+            ev.preventDefault();
+            return _this.stop(false);
+          };
+        })(this));
       }
       this._toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS);
       this.attach(this._toolbox);
@@ -7747,7 +7808,7 @@
     _EditorApp.prototype.start = function() {
       var domRegion, i, name, _i, _len, _ref;
       if (!this.dispatchEvent(this.createEvent('start'))) {
-        return false;
+        return;
       }
       this.busy(true);
       this._regions = {};
@@ -7770,8 +7831,7 @@
       this._state = ContentTools.EditorApp.EDITING;
       this._toolbox.show();
       this._inspector.show();
-      this.busy(false);
-      return true;
+      return this.busy(false);
     };
 
     _EditorApp.prototype.stop = function(save) {
@@ -7779,7 +7839,7 @@
       if (!this.dispatchEvent(this.createEvent('stop', {
         save: save
       }))) {
-        return false;
+        return;
       }
       focused = ContentEdit.Root.get().focused();
       if (focused && focused.isMounted() && focused._syncContent !== void 0) {
@@ -7789,7 +7849,7 @@
         this.save();
       } else {
         if (!this.revert()) {
-          this._ignition.changeState('editing');
+          this._ignition.state('editing');
           return;
         }
       }
@@ -7802,7 +7862,6 @@
       this._inspector.hide();
       this._regions = {};
       this._state = ContentTools.EditorApp.READY;
-      return true;
     };
 
     _EditorApp.prototype._addDOMEventListeners = function() {

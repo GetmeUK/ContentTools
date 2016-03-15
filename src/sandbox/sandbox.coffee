@@ -20,10 +20,6 @@ window.onload = () ->
     editor = ContentTools.EditorApp.get()
     editor.init('.editable', 'data-name')
 
-    editor.addEventListener 'stop', (ev) ->
-        if ev.detail.save
-            ev.preventDefault()
-
     editor.addEventListener 'saved', (ev) ->
         # Handle the page being saved
         console.log ev.detail.regions
@@ -33,7 +29,6 @@ window.onload = () ->
 
         # Simulate saving the page
         saved = () =>
-
             # Save has completed set the app as no longer busy
             editor.busy(false)
 

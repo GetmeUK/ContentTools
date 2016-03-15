@@ -184,7 +184,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
         # Add interaction handlers
         @_addDOMEventListeners()
 
-        @trigger('imageUploader.mount')
+        @dispatchEvent(@createEvent('imageUploader.mount'))
 
     populate: (imageURL, imageSize) ->
         # Populate the dialog with an image
@@ -278,7 +278,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
         @_domRotateCW = null
         @_domUpload = null
 
-        @trigger('imageUploader.unmount')
+        @dispatchEvent(@createEvent('imageUploader.unmount'))
 
     # Private methods
 
@@ -300,25 +300,25 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
                 ev.target.type = 'text'
                 ev.target.type = 'file'
 
-            @trigger('imageUploader.fileReady', file)
+        @dispatchEvent(@createEvent('imageUploader.fileready'))
 
         # Cancel upload
         @_domCancelUpload.addEventListener 'click', (ev) =>
-            @trigger('imageUploader.cancelUpload')
+            @dispatchEvent(@createEvent('imageUploader.cancelupload'))
 
         # Clear image
         @_domClear.addEventListener 'click', (ev) =>
             @removeCropMarks()
-            @trigger('imageUploader.clear')
+            @dispatchEvent(@createEvent('imageUploader.clear'))
 
         # Rotate the image
         @_domRotateCCW.addEventListener 'click', (ev) =>
             @removeCropMarks()
-            @trigger('imageUploader.rotateCCW')
+            @dispatchEvent(@createEvent('imageUploader.rotateccw'))
 
         @_domRotateCW.addEventListener 'click', (ev) =>
             @removeCropMarks()
-            @trigger('imageUploader.rotateCW')
+            @dispatchEvent(@createEvent('imageUploader.rotatecw'))
 
         @_domCrop.addEventListener 'click', (ev) =>
             if @_cropMarks
@@ -328,7 +328,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
                 @addCropMarks()
 
         @_domInsert.addEventListener 'click', (ev) =>
-            @trigger('imageUploader.save')
+            @dispatchEvent(@createEvent('imageUploader.save'))
 
 
 class CropMarksUI extends ContentTools.AnchoredComponentUI

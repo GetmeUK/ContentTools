@@ -108,13 +108,13 @@ class ContentTools.TableDialog extends ContentTools.DialogUI
         footCSSClass = @_domFootSection.getAttribute('class')
         headCSSClass = @_domHeadSection.getAttribute('class')
 
-        tableCfg = {
+        detail = {
             columns: parseInt(@_domBodyInput.value),
             foot: footCSSClass.indexOf('ct-section--applied') > -1,
             head: headCSSClass.indexOf('ct-section--applied') > -1
             }
 
-        @trigger('save', tableCfg)
+        @dispacheEvent(@createEvent('save', detail))
 
     unmount: () ->
         # Unmount the component from the DOM
