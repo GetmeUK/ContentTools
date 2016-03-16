@@ -4965,13 +4965,14 @@
 }).call(this);
 (function() {
   var AttributeUI, CropMarksUI, StyleUI, _EditorApp,
-    __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __slice = [].slice;
 
   window.ContentTools = {
     Tools: {},
+    CANCEL_MESSAGE: 'Your changes have not been saved, do you really want to lose them?'.trim(),
     DEFAULT_TOOLS: [['bold', 'italic', 'link', 'align-left', 'align-center', 'align-right'], ['heading', 'subheading', 'paragraph', 'unordered-list', 'ordered-list', 'table', 'indent', 'unindent', 'line-break'], ['image', 'video', 'preformatted'], ['undo', 'redo', 'remove']],
     DEFAULT_VIDEO_HEIGHT: 300,
     DEFAULT_VIDEO_WIDTH: 400,
@@ -5142,58 +5143,6 @@
       this._removeDOMEventListeners();
       this._domElement.parentNode.removeChild(this._domElement);
       return this._domElement = null;
-    };
-
-    ComponentUI.prototype.bind = function(eventName, callback) {
-      if (this._bindings[eventName] === void 0) {
-        this._bindings[eventName] = [];
-      }
-      this._bindings[eventName].push(callback);
-      return callback;
-    };
-
-    ComponentUI.prototype.trigger = function() {
-      var args, callback, eventName, _i, _len, _ref, _results;
-      eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      if (!this._bindings[eventName]) {
-        return;
-      }
-      _ref = this._bindings[eventName];
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        callback = _ref[_i];
-        if (!callback) {
-          continue;
-        }
-        _results.push(callback.call.apply(callback, [this].concat(__slice.call(args))));
-      }
-      return _results;
-    };
-
-    ComponentUI.prototype.unbind = function(eventName, callback) {
-      var i, suspect, _i, _len, _ref, _results;
-      if (!eventName) {
-        this._bindings = {};
-        return;
-      }
-      if (!callback) {
-        this._bindings[eventName] = void 0;
-        return;
-      }
-      if (!this._bindings[eventName]) {
-        return;
-      }
-      _ref = this._bindings[eventName];
-      _results = [];
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        suspect = _ref[i];
-        if (suspect === callback) {
-          _results.push(this._bindings[eventName].splice(i, 1));
-        } else {
-          _results.push(void 0);
-        }
-      }
-      return _results;
     };
 
     ComponentUI.prototype.addEventListener = function(eventName, callback) {
@@ -5424,7 +5373,6 @@
       }))) {
         return;
       }
-      console.log(state);
       this._state = state;
       this.removeCSSClass('ct-ignition--busy');
       this.removeCSSClass('ct-ignition--editing');
@@ -5745,7 +5693,7 @@
           this._toolUIs[toolName] = new ContentTools.ToolUI(tool);
           this._toolUIs[toolName].mount(domToolGroup);
           this._toolUIs[toolName].disabled(true);
-          this._toolUIs[toolName].addEventListener('apply', (function(_this) {
+          this._toolUIs[toolName].addEventListener('applied', (function(_this) {
             return function() {
               return _this.updateTools();
             };
@@ -6633,7 +6581,7 @@
         href: this._domInput.value.trim(),
         target: this._target ? this._target : void 0
       };
-      return this.dispatchEvent(this.createEvent('save', linkAttr));
+      return this.dispatchEvent(this.createEvent('save', detail));
     };
 
     LinkDialog.prototype.show = function() {
@@ -7437,7 +7385,7 @@
     function _EditorApp() {
       _EditorApp.__super__.constructor.call(this);
       this.history = null;
-      this._state = ContentTools.EditorApp.DORMANT;
+      this._state = 'dormant';
       this._regions = null;
       this._orderedRegions = null;
       this._rootLastModified = null;
@@ -7468,15 +7416,15 @@
     };
 
     _EditorApp.prototype.isDormant = function() {
-      return this._state === ContentTools.EditorApp.DORMANT;
+      return this._state === 'dormant';
     };
 
     _EditorApp.prototype.isReady = function() {
-      return this._state === ContentTools.EditorApp.READY;
+      return this._state === 'ready';
     };
 
     _EditorApp.prototype.isEditing = function() {
-      return this._state === ContentTools.EditorApp.EDITING;
+      return this._state === 'editing';
     };
 
     _EditorApp.prototype.orderedRegions = function() {
@@ -7529,19 +7477,29 @@
         this._ignition.show();
         this._ignition.addEventListener('edit', (function(_this) {
           return function(ev) {
-            return _this.start();
+            ev.preventDefault();
+            _this.start();
+            return _this._ignition.state('editing');
           };
         })(this));
         this._ignition.addEventListener('confirm', (function(_this) {
           return function(ev) {
             ev.preventDefault();
+            _this._ignition.state('ready');
+            _this._ignition.busy(true);
             return _this.stop(true);
           };
         })(this));
         this._ignition.addEventListener('cancel', (function(_this) {
           return function(ev) {
             ev.preventDefault();
-            return _this.stop(false);
+            _this._ignition.busy(true);
+            _this.stop(false);
+            if (_this.isEditing()) {
+              return _this._ignition.state('editing');
+            } else {
+              return _this._ignition.state('ready');
+            }
           };
         })(this));
       }
@@ -7549,7 +7507,7 @@
       this.attach(this._toolbox);
       this._inspector = new ContentTools.InspectorUI();
       this.attach(this._inspector);
-      this._state = ContentTools.EditorApp.READY;
+      this._state = 'ready';
       ContentEdit.Root.get().bind('detach', (function(_this) {
         return function(element) {
           return _this._preventEmptyRegions();
@@ -7828,7 +7786,7 @@
       this._rootLastModified = ContentEdit.Root.get().lastModified();
       this.history = new ContentTools.History(this._regions);
       this.history.watch();
-      this._state = ContentTools.EditorApp.EDITING;
+      this._state = 'editing';
       this._toolbox.show();
       this._inspector.show();
       return this.busy(false);
@@ -7849,7 +7807,6 @@
         this.save();
       } else {
         if (!this.revert()) {
-          this._ignition.state('editing');
           return;
         }
       }
@@ -7861,7 +7818,7 @@
       this._toolbox.hide();
       this._inspector.hide();
       this._regions = {};
-      this._state = ContentTools.EditorApp.READY;
+      this._state = 'ready';
     };
 
     _EditorApp.prototype._addDOMEventListeners = function() {
@@ -7904,8 +7861,8 @@
       document.addEventListener('keyup', this._handleHighlightOff);
       window.onbeforeunload = (function(_this) {
         return function(ev) {
-          if (_this._state === ContentTools.EditorApp.EDITING) {
-            return ContentEdit._('Your changes have not been saved, do you really want to lose them?');
+          if (_this._state === 'editing') {
+            return ContentEdit._(ContentTools.CANCEL_MESSAGE);
           }
         };
       })(this);
@@ -7954,12 +7911,6 @@
     var instance;
 
     function EditorApp() {}
-
-    EditorApp.DORMANT = 'dormant';
-
-    EditorApp.READY = 'ready';
-
-    EditorApp.EDITING = 'editing';
 
     instance = null;
 
@@ -8411,7 +8362,7 @@
       }
       app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI(transparent = true, allowScrolling = true);
-      modal.bind('click', function() {
+      modal.addEventListener('click', function() {
         this.unmount();
         dialog.hide();
         if (element.content) {
@@ -8423,16 +8374,16 @@
       });
       dialog = new ContentTools.LinkDialog(this.getAttr('href', element, selection), this.getAttr('target', element, selection));
       dialog.position([rect.left + (rect.width / 2) + window.scrollX, rect.top + (rect.height / 2) + window.scrollY]);
-      dialog.bind('save', function(linkAttr) {
-        var a, alignmentClassNames, className, linkClasses, _i, _j, _len, _len1;
-        dialog.unbind('save');
+      dialog.addEventListener('save', function(ev) {
+        var a, alignmentClassNames, className, detail, linkClasses, _i, _j, _len, _len1;
+        detail = ev.detail;
         applied = true;
         if (element.type() === 'Image') {
           alignmentClassNames = ['align-center', 'align-left', 'align-right'];
-          if (linkAttr.href) {
+          if (detail.href) {
             element.a = {
-              href: linkAttr.href,
-              target: linkAttr.target ? linkAttr.target : '',
+              href: detail.href,
+              target: detail.target ? detail.target : '',
               "class": element.a ? element.a['class'] : ''
             };
             for (_i = 0, _len = alignmentClassNames.length; _i < _len; _i++) {
@@ -8461,15 +8412,15 @@
           element.mount();
         } else {
           element.content = element.content.unformat(from, to, 'a');
-          if (linkAttr.href) {
-            a = new HTMLString.Tag('a', linkAttr);
+          if (detail.href) {
+            a = new HTMLString.Tag('a', detail);
             element.content = element.content.format(from, to, a);
             element.content.optimize();
           }
           element.updateInnerHTML();
         }
         element.taint();
-        return modal.trigger('click');
+        return modal.dispatchEvent(modal.createEvent('click'));
       });
       app.attach(modal);
       app.attach(dialog);
@@ -8824,9 +8775,8 @@
         return node && node.type() === 'Table';
       });
       dialog = new ContentTools.TableDialog(table);
-      dialog.bind('cancel', (function(_this) {
+      dialog.addEventListener('cancel', (function(_this) {
         return function() {
-          dialog.unbind('cancel');
           modal.hide();
           dialog.hide();
           if (element.restoreState) {
@@ -8835,10 +8785,10 @@
           return callback(false);
         };
       })(this));
-      dialog.bind('save', (function(_this) {
-        return function(tableCfg) {
-          var index, keepFocus, node, _ref;
-          dialog.unbind('save');
+      dialog.addEventListener('save', (function(_this) {
+        return function(ev) {
+          var index, keepFocus, node, tableCfg, _ref;
+          tableCfg = ev.detail.tableCfg;
           keepFocus = true;
           if (table) {
             _this._updateTable(tableCfg, table);
@@ -9077,9 +9027,8 @@
       app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI();
       dialog = new ContentTools.ImageDialog();
-      dialog.bind('cancel', (function(_this) {
+      dialog.addEventListener('cancel', (function(_this) {
         return function() {
-          dialog.unbind('cancel');
           modal.hide();
           dialog.hide();
           if (element.restoreState) {
@@ -9088,10 +9037,12 @@
           return callback(false);
         };
       })(this));
-      dialog.bind('save', (function(_this) {
-        return function(imageURL, imageSize, imageAttrs) {
-          var image, index, node, _ref;
-          dialog.unbind('save');
+      dialog.addEventListener('save', (function(_this) {
+        return function(ev) {
+          var image, imageAttrs, imageSize, imageUrl, index, node, _ref;
+          imageUrl = ev.detail.imageUrl;
+          imageSize = ev.detail.imageSize;
+          imageAttrs = ev.detail.imageAttrs;
           if (!imageAttrs) {
             imageAttrs = {};
           }
@@ -9142,9 +9093,8 @@
       app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI();
       dialog = new ContentTools.VideoDialog();
-      dialog.bind('cancel', (function(_this) {
+      dialog.addEventListener('cancel', (function(_this) {
         return function() {
-          dialog.unbind('cancel');
           modal.hide();
           dialog.hide();
           if (element.restoreState) {
@@ -9153,10 +9103,10 @@
           return callback(false);
         };
       })(this));
-      dialog.bind('save', (function(_this) {
-        return function(videoURL) {
-          var index, node, video, _ref;
-          dialog.unbind('save');
+      dialog.addEventListener('save', (function(_this) {
+        return function() {
+          var index, node, video, videoURL, _ref;
+          videoURL = videoURL.detail.videoURL;
           if (videoURL) {
             video = new ContentEdit.Video('iframe', {
               'frameborder': 0,

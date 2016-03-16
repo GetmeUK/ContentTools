@@ -5,6 +5,12 @@ window.ContentTools =
 
     # Global settings
 
+    # The message displayed to user's when we want them to confirm there changes
+    # are cancelled.
+    CANCEL_MESSAGE: '''
+        Your changes have not been saved, do you really want to lose them?
+        '''.trim()
+
     # The default tool configuration for the editor
     DEFAULT_TOOLS: [
         [

@@ -103,8 +103,6 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
         if not @dispatchEvent(@createEvent('statechange', {state: state}))
             return
 
-        console.log state
-
         # Modify the state of the switch
         @_state = state
 

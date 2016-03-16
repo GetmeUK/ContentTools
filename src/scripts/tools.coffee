@@ -259,7 +259,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         modal = new ContentTools.ModalUI(transparent=true, allowScrolling=true)
 
         # When the modal is clicked on the dialog should close
-        modal.bind 'click', () ->
+        modal.addEventListener 'click', () ->
             @unmount()
             dialog.hide()
 
@@ -283,8 +283,8 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             rect.top + (rect.height / 2) + window.scrollY
             ])
 
-        dialog.bind 'save', (linkAttr) ->
-            dialog.unbind('save')
+        dialog.addEventListener 'save', (ev) ->
+            detail = ev.detail
 
             applied = true
 
@@ -302,10 +302,10 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                     'align-right'
                     ]
 
-                if linkAttr.href
+                if detail.href
                     element.a = {
-                        href: linkAttr.href,
-                        target: if linkAttr.target then linkAttr.target else ''
+                        href: detail.href,
+                        target: if detail.target then detail.target else ''
                         class: if element.a then element.a['class'] else ''
                     }
                     for className in alignmentClassNames
@@ -334,8 +334,8 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                 element.content = element.content.unformat(from, to, 'a')
 
                 # If specified add the new link
-                if linkAttr.href
-                    a = new HTMLString.Tag('a', linkAttr)
+                if detail.href
+                    a = new HTMLString.Tag('a', detail)
                     element.content = element.content.format(from, to, a)
                     element.content.optimize()
 
@@ -345,7 +345,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             element.taint()
 
             # Close the modal and dialog
-            modal.trigger('click')
+            modal.dispatchEvent(modal.createEvent('click'))
 
         app.attach(modal)
         app.attach(dialog)
@@ -685,8 +685,7 @@ class ContentTools.Tools.Table extends ContentTools.Tool
         dialog = new ContentTools.TableDialog(table)
 
         # Support cancelling the dialog
-        dialog.bind 'cancel', () =>
-            dialog.unbind('cancel')
+        dialog.addEventListener 'cancel', () =>
 
             modal.hide()
             dialog.hide()
@@ -697,8 +696,8 @@ class ContentTools.Tools.Table extends ContentTools.Tool
             callback(false)
 
         # Support saving the dialog
-        dialog.bind 'save', (tableCfg) =>
-            dialog.unbind('save')
+        dialog.addEventListener 'save', (ev) =>
+            tableCfg = ev.detail.tableCfg
 
             # This flag indicates if we can restore the previous elements focus
             # and state or if we need to change the focus to the first cell in
@@ -940,8 +939,7 @@ class ContentTools.Tools.Image extends ContentTools.Tool
         dialog = new ContentTools.ImageDialog()
 
         # Support cancelling the dialog
-        dialog.bind 'cancel', () =>
-            dialog.unbind('cancel')
+        dialog.addEventListener 'cancel', () =>
 
             modal.hide()
             dialog.hide()
@@ -952,8 +950,10 @@ class ContentTools.Tools.Image extends ContentTools.Tool
             callback(false)
 
         # Support saving the dialog
-        dialog.bind 'save', (imageURL, imageSize, imageAttrs) =>
-            dialog.unbind('save')
+        dialog.addEventListener 'save', (ev) =>
+            imageUrl = ev.detail.imageUrl
+            imageSize = ev.detail.imageSize
+            imageAttrs = ev.detail.imageAttrs
 
             if not imageAttrs
                 imageAttrs = {}
@@ -1015,8 +1015,7 @@ class ContentTools.Tools.Video extends ContentTools.Tool
         dialog = new ContentTools.VideoDialog()
 
         # Support cancelling the dialog
-        dialog.bind 'cancel', () =>
-            dialog.unbind('cancel')
+        dialog.addEventListener 'cancel', () =>
 
             modal.hide()
             dialog.hide()
@@ -1027,8 +1026,8 @@ class ContentTools.Tools.Video extends ContentTools.Tool
             callback(false)
 
         # Support saving the dialog
-        dialog.bind 'save', (videoURL) =>
-            dialog.unbind('save')
+        dialog.addEventListener 'save', () =>
+            videoURL = videoURL.detail.videoURL
 
             if videoURL
                 # Create the new video

@@ -104,7 +104,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 @_toolUIs[toolName].disabled(true)
 
                 # Whenever the tool is applied we'll want to force an update
-                @_toolUIs[toolName].addEventListener 'apply', () =>
+                @_toolUIs[toolName].addEventListener 'applied', () =>
                     @updateTools()
 
         # Restore the position of the element (if there's a restore set)

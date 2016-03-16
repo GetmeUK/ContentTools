@@ -92,55 +92,6 @@ class ContentTools.ComponentUI
         @_domElement.parentNode.removeChild(@_domElement)
         @_domElement = null
 
-    # Old event methods
-
-    bind: (eventName, callback) ->
-        # Bind a callback to an event
-
-        # Check a list has been set for the specified event
-        if @_bindings[eventName] is undefined
-            @_bindings[eventName] = []
-
-        # Add the callback to list for the event
-        @_bindings[eventName].push(callback)
-
-        return callback
-
-    trigger: (eventName, args...) ->
-        # Trigger an event against the node
-
-        # Check we have callbacks to trigger for the event
-        unless @_bindings[eventName]
-            return
-
-        # Call each function bound to the event
-        for callback in @_bindings[eventName]
-            if not callback
-                continue
-            callback.call(this, args...)
-
-    unbind: (eventName, callback) ->
-        # Unbind a callback from an event
-
-        # If no eventName is specified remove all events
-        unless eventName
-            @_bindings = {}
-            return
-
-        # If no callback is specified remove all callbacks for the event
-        unless callback
-            @_bindings[eventName] = undefined
-            return
-
-        # Check if any callbacks are bound to this event
-        unless @_bindings[eventName]
-            return
-
-        # Remove the callback from the event
-        for suspect, i in @_bindings[eventName]
-            if suspect is callback
-                @_bindings[eventName].splice(i, 1)
-
     # Event methods
 
     addEventListener: (eventName, callback) ->

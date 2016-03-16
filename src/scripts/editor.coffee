@@ -10,7 +10,7 @@ class _EditorApp extends ContentTools.ComponentUI
         @history = null
 
         # The state of the app
-        @_state = ContentTools.EditorApp.DORMANT
+        @_state = 'dormant'
 
         # A map of editable regions (`ContentEdit.Region`) the editor will
         # manage.
@@ -52,15 +52,15 @@ class _EditorApp extends ContentTools.ComponentUI
 
     isDormant: () ->
         # Return true if the editor is currently in the dormant state
-        return @_state is ContentTools.EditorApp.DORMANT
+        return @_state is 'dormant'
 
     isReady: () ->
         # Return true if the editor is currently in the ready state
-        return @_state is ContentTools.EditorApp.READY
+        return @_state is 'ready'
 
     isEditing: () ->
         # Return true if the editor is currently in the editing state
-        return @_state is ContentTools.EditorApp.EDITING
+        return @_state is 'editing'
 
     orderedRegions: () ->
         # Return a list of regions in the given order
@@ -102,7 +102,7 @@ class _EditorApp extends ContentTools.ComponentUI
             @_domRegions = document.querySelectorAll(queryOrDOMElements)
 
         # If there aren't any editiable regions return early leaving the app
-        # DORMANT.
+        # dormant.
         if @_domRegions.length == 0
             return
 
@@ -119,15 +119,34 @@ class _EditorApp extends ContentTools.ComponentUI
             # Set up events to allow the ignition switch to manage the editor
             # state.
             @_ignition.addEventListener 'edit', (ev) =>
+                ev.preventDefault()
+
+                # Start the editor and set the ignition switch to `editing`
                 @start()
+                @_ignition.state('editing')
 
             @_ignition.addEventListener 'confirm', (ev) =>
                 ev.preventDefault()
+
+                # Stop the editor and request that changes are saved
+                @_ignition.state('ready')
+                @_ignition.busy(true)
                 @stop(true)
 
             @_ignition.addEventListener 'cancel', (ev) =>
                 ev.preventDefault()
+
+                # Stop the editor and request that changes are reverted
+                @_ignition.busy(true)
                 @stop(false)
+
+                # Update the state of the ignition switch based on the outcome
+                # of the stop action (e.g whether the revert was actioned or
+                # cancelled).
+                if this.isEditing()
+                    @_ignition.state('editing')
+                else
+                    @_ignition.state('ready')
 
         # Toolbox
         @_toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS)
@@ -138,7 +157,7 @@ class _EditorApp extends ContentTools.ComponentUI
         @attach(@_inspector)
 
         # Set as ready to edit
-        @_state = ContentTools.EditorApp.READY
+        @_state = 'ready'
 
         # Check when elements are detached that the parent region is not empty
         ContentEdit.Root.get().bind 'detach', (element) =>
@@ -486,7 +505,7 @@ class _EditorApp extends ContentTools.ComponentUI
         @history.watch()
 
         # Set the application state to editing
-        @_state = ContentTools.EditorApp.EDITING
+        @_state = 'editing'
 
         # Display the editing tools
         @_toolbox.show()
@@ -518,8 +537,6 @@ class _EditorApp extends ContentTools.ComponentUI
         else
             # If revert returns false then we cancel the stop action
             if not @revert()
-                # Reset the ignition state
-                @_ignition.state('editing')
                 return
 
         # Blur any existing focused element
@@ -538,7 +555,7 @@ class _EditorApp extends ContentTools.ComponentUI
         @_regions = {}
 
         # Set the application state to ready to edit
-        @_state = ContentTools.EditorApp.READY
+        @_state = 'ready'
 
         return
 
@@ -588,8 +605,8 @@ class _EditorApp extends ContentTools.ComponentUI
         # When unloading the page we check to see if the user is currently
         # editing and if so ask them to confirm the action.
         window.onbeforeunload = (ev) =>
-            if @_state is ContentTools.EditorApp.EDITING
-                return ContentEdit._('Your changes have not been saved, do you really want to lose them?')
+            if @_state is 'editing'
+                return ContentEdit._(ContentTools.CANCEL_MESSAGE)
 
         # When the page is unloaded we destroy the app to make sure everything
         # is cleaned up.
@@ -640,19 +657,6 @@ class ContentTools.EditorApp
     # Constants
 
     # A set of possible states for the editor.
-
-    # An instance of the `_EditorApp` class exists but the `init` method has not
-    # yet been called (the primary distinction here is that the editor has not
-    # been mounted to the DOM).
-    @DORMANT = 'dormant'
-
-    # The editor has been mounted to the DOM and is ready (e.g the `start`
-    # method can be called to begin editing the document).
-    @READY = 'ready'
-
-    # The editor is in the editing state allowing changes to be made to the
-    # document.
-    @EDITING = 'editing'
 
     # Storage for the singleton instance that will be created for the editor app
     instance = null

@@ -64,7 +64,7 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
             target: @_target if @_target
         }
 
-        @dispatchEvent(@createEvent('save', linkAttr))
+        @dispatchEvent(@createEvent('save', detail))
 
     show: () ->
         # Show the widget

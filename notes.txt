@@ -1,1 +1,2 @@
-- Tool Specs need to be modified to only test methods they override
+- Support for new event system
+- Support for configuring the cancel edits message
