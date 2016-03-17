@@ -5146,29 +5146,59 @@
     };
 
     ComponentUI.prototype.addEventListener = function(eventName, callback) {
-      return this._eventBinderDOM.addEventListener(eventName, callback);
+      if (this._bindings[eventName] === void 0) {
+        this._bindings[eventName] = [];
+      }
+      this._bindings[eventName].push(callback);
     };
 
     ComponentUI.prototype.createEvent = function(name, detail) {
-      var ev;
-      if (typeof window.CustomEvent === 'function') {
-        return new CustomEvent(name, {
-          detail: detail,
-          bubbles: true,
-          cancelable: true
-        });
-      }
-      ev = document.createEvent('CustomEvent');
-      evt.initCustomEvent(eventName, true, true, detail);
-      return ev;
+      return new ContentTools.Event(name, detail);
     };
 
     ComponentUI.prototype.dispatchEvent = function(ev) {
-      return this._eventBinderDOM.dispatchEvent(ev);
+      var callback, _i, _len, _ref;
+      if (!this._bindings[ev.name()]) {
+        return !ev.defaultPrevented();
+      }
+      _ref = this._bindings[ev.name()];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        callback = _ref[_i];
+        if (ev.propagationStopped()) {
+          break;
+        }
+        if (!callback) {
+          continue;
+        }
+        callback.call(this, ev);
+      }
+      return !ev.defaultPrevented();
     };
 
     ComponentUI.prototype.removeEventListener = function(eventName, callback) {
-      return this._eventBinderDOM.removeEventListener(eventName, callback);
+      var i, suspect, _i, _len, _ref, _results;
+      if (!eventName) {
+        this._bindings = {};
+        return;
+      }
+      if (!callback) {
+        this._bindings[eventName] = void 0;
+        return;
+      }
+      if (!this._bindings[eventName]) {
+        return;
+      }
+      _ref = this._bindings[eventName];
+      _results = [];
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        suspect = _ref[i];
+        if (suspect === callback) {
+          _results.push(this._bindings[eventName].splice(i, 1));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     ComponentUI.prototype._addDOMEventListeners = function() {};
@@ -5274,6 +5304,47 @@
     return AnchoredComponentUI;
 
   })(ContentTools.ComponentUI);
+
+  ContentTools.Event = (function() {
+    function Event(name, detail) {
+      this._name = name;
+      this._detail = detail;
+      this._timestamp = Date.now();
+      this._defaultPrevented = false;
+      this._propagationStopped = false;
+    }
+
+    Event.prototype.defaultPrevented = function() {
+      return this._defaultPrevented;
+    };
+
+    Event.prototype.detail = function() {
+      return this._detail;
+    };
+
+    Event.prototype.name = function() {
+      return this._name;
+    };
+
+    Event.prototype.propagationStopped = function() {
+      return this._propagationStopped;
+    };
+
+    Event.prototype.timestamp = function() {
+      return this._timeStamp;
+    };
+
+    Event.prototype.preventDefault = function() {
+      return this._defaultPrevented = true;
+    };
+
+    Event.prototype.stopImmediatePropagation = function() {
+      return this._propagationStopped = true;
+    };
+
+    return Event;
+
+  })();
 
   ContentTools.FlashUI = (function(_super) {
     __extends(FlashUI, _super);
@@ -8376,7 +8447,7 @@
       dialog.position([rect.left + (rect.width / 2) + window.scrollX, rect.top + (rect.height / 2) + window.scrollY]);
       dialog.addEventListener('save', function(ev) {
         var a, alignmentClassNames, className, detail, linkClasses, _i, _j, _len, _len1;
-        detail = ev.detail;
+        detail = ev.detail();
         applied = true;
         if (element.type() === 'Image') {
           alignmentClassNames = ['align-center', 'align-left', 'align-right'];
@@ -8788,7 +8859,7 @@
       dialog.addEventListener('save', (function(_this) {
         return function(ev) {
           var index, keepFocus, node, tableCfg, _ref;
-          tableCfg = ev.detail.tableCfg;
+          tableCfg = ev.detail().tableCfg;
           keepFocus = true;
           if (table) {
             _this._updateTable(tableCfg, table);
@@ -9039,10 +9110,11 @@
       })(this));
       dialog.addEventListener('save', (function(_this) {
         return function(ev) {
-          var image, imageAttrs, imageSize, imageUrl, index, node, _ref;
-          imageUrl = ev.detail.imageUrl;
-          imageSize = ev.detail.imageSize;
-          imageAttrs = ev.detail.imageAttrs;
+          var detail, image, imageAttrs, imageSize, imageUrl, index, node, _ref;
+          detail = ev.detail();
+          imageUrl = detail.imageUrl;
+          imageSize = detail.imageSize;
+          imageAttrs = detail.imageAttrs;
           if (!imageAttrs) {
             imageAttrs = {};
           }

@@ -284,7 +284,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             ])
 
         dialog.addEventListener 'save', (ev) ->
-            detail = ev.detail
+            detail = ev.detail()
 
             applied = true
 
@@ -697,7 +697,7 @@ class ContentTools.Tools.Table extends ContentTools.Tool
 
         # Support saving the dialog
         dialog.addEventListener 'save', (ev) =>
-            tableCfg = ev.detail.tableCfg
+            tableCfg = ev.detail().tableCfg
 
             # This flag indicates if we can restore the previous elements focus
             # and state or if we need to change the focus to the first cell in
@@ -951,9 +951,10 @@ class ContentTools.Tools.Image extends ContentTools.Tool
 
         # Support saving the dialog
         dialog.addEventListener 'save', (ev) =>
-            imageUrl = ev.detail.imageUrl
-            imageSize = ev.detail.imageSize
-            imageAttrs = ev.detail.imageAttrs
+            detail = ev.detail()
+            imageUrl = detail.imageUrl
+            imageSize = detail.imageSize
+            imageAttrs = detail.imageAttrs
 
             if not imageAttrs
                 imageAttrs = {}

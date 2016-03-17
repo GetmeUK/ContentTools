@@ -96,34 +96,60 @@ class ContentTools.ComponentUI
 
     addEventListener: (eventName, callback) ->
         # Add an event listener for the UI component
-        @_eventBinderDOM.addEventListener(eventName, callback)
+
+        # Check a list has been set for the specified event
+        if @_bindings[eventName] == undefined
+            @_bindings[eventName] = []
+
+        # Add the callback to list for the event
+        @_bindings[eventName].push(callback)
+
+        return
 
     createEvent: (name, detail) ->
         # Create an event
-
-        # Create the custom event using the standard model
-        if typeof window.CustomEvent == 'function'
-            return new CustomEvent(
-                name,
-                {
-                    detail: detail,
-                    bubbles: true,
-                    cancelable: true
-                }
-            )
-
-        # For older versions of IE we use a polyfill (thank you MDN)
-        ev = document.createEvent('CustomEvent')
-        evt.initCustomEvent(eventName, true, true, detail)
-        return ev
+        return new ContentTools.Event(name, detail)
 
     dispatchEvent: (ev) ->
         # Dispatch an event against the UI compontent
-        @_eventBinderDOM.dispatchEvent(ev)
+
+        # Check we have callbacks to trigger for the event
+        unless @_bindings[ev.name()]
+            return not ev.defaultPrevented()
+
+        # Call each function bound to the event
+        for callback in @_bindings[ev.name()]
+            if ev.propagationStopped()
+                break
+
+            if not callback
+                continue
+
+            callback.call(this, ev)
+
+        return not ev.defaultPrevented()
 
     removeEventListener: (eventName, callback) ->
         # Remove a previously registered event listener for the UI component
-        @_eventBinderDOM.removeEventListener(eventName, callback)
+
+        # If no eventName is specified remove all events
+        unless eventName
+            @_bindings = {}
+            return
+
+        # If no callback is specified remove all callbacks for the event
+        unless callback
+            @_bindings[eventName] = undefined
+            return
+
+        # Check if any callbacks are bound to this event
+        unless @_bindings[eventName]
+            return
+
+        # Remove the callback from the event
+        for suspect, i in @_bindings[eventName]
+            if suspect is callback
+                @_bindings[eventName].splice(i, 1)
 
     # Private methods
 

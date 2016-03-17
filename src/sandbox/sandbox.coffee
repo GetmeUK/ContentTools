@@ -26,8 +26,10 @@ window.onload = () ->
         editor.busy(true)
 
     editor.addEventListener 'saved', (ev) ->
+        console.log ev
+
         # Handle the page being saved
-        console.log ev.detail.regions
+        console.log ev.detail().regions
 
         # Simulate saving the page
         saved = () =>

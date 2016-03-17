@@ -16,6 +16,7 @@ module.exports = (grunt) ->
 
                         # UI
                         'src/scripts/ui/ui.coffee'
+                        'src/scripts/ui/events.coffee'
                         'src/scripts/ui/flashes.coffee'
                         'src/scripts/ui/ignition.coffee'
                         'src/scripts/ui/inspector.coffee'

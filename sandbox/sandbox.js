@@ -147,7 +147,8 @@
     });
     editor.addEventListener('saved', function(ev) {
       var saved;
-      console.log(ev.detail.regions);
+      console.log(ev);
+      console.log(ev.detail().regions);
       saved = (function(_this) {
         return function() {
           editor.busy(false);
