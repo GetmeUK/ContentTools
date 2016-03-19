@@ -148,10 +148,10 @@ describe 'ContentTools.ComponentUI.unmount()', () ->
         expect(component.isMounted()).toBe false
 
 
-describe 'ContentTools.ComponentUI.bind()', () ->
+describe 'ContentTools.ComponentUI.addEventListener()', () ->
 
-    it 'should bind a function so that it\'s called whenever the event is \
-        triggered against the component', () ->
+    it 'should bind a function to be called whenever the named event is
+        dispatched against the component', () ->
 
         # Create a function to call when the event is triggered
         foo = {
@@ -160,36 +160,190 @@ describe 'ContentTools.ComponentUI.bind()', () ->
         }
         spyOn(foo, 'handleFoo')
 
-        # Create a component and bind the function to an event
+        # Create a component and add an event listner
         component = new ContentTools.ComponentUI()
-        component.bind('foo', foo.handleFoo)
+        component.addEventListener('foo', foo.handleFoo)
 
-        # Trigger the event
-        component.trigger('foo')
+        # Dispatch the event
+        ev = component.createEvent('foo', {'bar': 1})
+        component.dispatchEvent(ev)
 
-        expect(foo.handleFoo).toHaveBeenCalled()
+        expect(foo.handleFoo).toHaveBeenCalledWith(ev)
 
 
-describe 'ContentTools.ComponentUI.trigger()', () ->
+describe 'ContentTools.ComponentUI.createEvent()', () ->
 
-    it 'should trigger an event against the component with specified \
+    it 'should return an new event', () ->
+
+        # Create a component to create an event against
+        component = new ContentTools.ComponentUI()
+        ev = new ContentTools.Event('foo', {bar: 1})
+
+        expect(ev.name()).toBe 'foo'
+        expect(ev.detail()).toEqual {bar: 1}
+
+
+describe 'ContentTools.ComponentUI.dispatchEvent()', () ->
+
+    it 'should dispatch an event against a component', () ->
+
+        # Create a function to call when the event is triggered
+        foo = {
+            handleFoo: () ->
+                return
+        }
+        spyOn(foo, 'handleFoo')
+
+        # Create a component and add an event listner
+        component = new ContentTools.ComponentUI()
+        component.addEventListener('foo', foo.handleFoo)
+
+        # Dispatch the event
+        ev = component.createEvent('foo', {'bar': 1})
+        component.dispatchEvent(ev)
+
+        expect(foo.handleFoo).toHaveBeenCalledWith(ev)
+
+    it 'should return false (prevent the default action) for the event if
+        cancelled', () ->
+
+        # Define a test component class that triggers an event when a method is
+        # called.
+        class TestComponent extends ContentTools.ComponentUI
+
+            foo: () ->
+                if @triggerEvent('foo')
+                    @bar = 1
+
+        # Create a function to call when the event is triggered
+        foo = {
+            handleFoo: (ev) ->
+                ev.preventDefault()
+                return
+        }
+        spyOn(foo, 'handleFoo')
+
+        # Create a test component and add an event listner
+        component = new TestComponent()
+        component.addEventListener('foo', foo.handleFoo)
+
+        # Dispatch the event
+        ev = component.createEvent('foo', {'bar': 1})
+        component.dispatchEvent(ev)
+
+        expect(foo.handleFoo).toHaveBeenCalledWith(ev)
+        expect(foo.bar).toBe undefined
+
+    it 'should prevent stop calling listener functions once the event has been
+        halted', () ->
+
+        # Create a set of functions to call when the event is triggered
+        foo = {
+            handleBar: () ->
+                return
+
+            handleFoo: () ->
+                ev.stopImmeditatePropagation()
+                return
+        }
+        spyOn(foo, 'handleBar')
+        spyOn(foo, 'handleFoo')
+
+        # Create a component and add an event listner
+        component = new ContentTools.ComponentUI()
+        component.addEventListener('foo', foo.handleFoo)
+        component.addEventListener('bar', foo.handleBar)
+
+        # Dispatch the event
+        ev = component.createEvent('foo', {'bar': 1})
+        component.dispatchEvent(ev)
+
+        expect(foo.handleFoo).toHaveBeenCalledWith(ev)
+        expect(foo.handleBar).not.toHaveBeenCalled()
+
+
+describe 'ContentTools.ComponentUI.removeEventListener()', () ->
+
+    component = null
+    listeners = null
+
+    beforeEach ->
+        listeners = {
+            handleBar: () ->
+                return
+
+            handleFoo: () ->
+                return
+
+            handleZee: () ->
+                return
+        }
+        spyOn(listeners, 'handleBar')
+        spyOn(listeners, 'handleFoo')
+        spyOn(listeners, 'handleZee')
+
+        # Create an editable region
+        component = new ContentTools.ComponentUI()
+        component.addEventListener('foo', listeners.handleFoo)
+        component.addEventListener('foo', listeners.handleBar)
+        component.addEventListener('zee', listeners.handleZee)
+
+    it 'should remove a single event listener against a component if called with
+        an event name and the listener function', () ->
+
+        # Remove an individual event listener
+        component.removeEventListener('foo', listeners.handleFoo)
+
+        # Dispatch foo event
+        ev = component.createEvent('foo', {'bar': 1})
+        component.dispatchEvent(ev)
+
+        expect(listeners.handleFoo).not.toHaveBeenCalled()
+        expect(listeners.handleBar).toHaveBeenCalled()
+
+        # Dispatch zee event
+        ev = component.createEvent('zee')
+        component.dispatchEvent(ev)
+
+        expect(listeners.handleZee).toHaveBeenCalled()
+
+    it 'should remove multiple event listener against a component by
+        name', () ->
+
+        # Remove an individual event listener
+        component.removeEventListener('foo')
+
+        # Dispatch foo event
+        ev = component.createEvent('foo')
+        component.dispatchEvent(ev)
+
+        expect(listeners.handleFoo).not.toHaveBeenCalled()
+        expect(listeners.handleBar).not.toHaveBeenCalled()
+
+        # Dispatch zee event
+        ev = component.createEvent('zee')
+        component.dispatchEvent(ev)
+
+        expect(listeners.handleZee).toHaveBeenCalled()
+
+    it 'should remove all event listener against a component if called without
         arguments', () ->
 
-        # Create a function to call when the event is triggered
-        foo = {
-            handleFoo: () ->
-                return
-        }
-        spyOn(foo, 'handleFoo')
+        # Remove an individual event listener
+        component.removeEventListener()
 
-        # Create a component and bind the function to an event
-        component = new ContentTools.ComponentUI()
-        component.bind('foo', foo.handleFoo)
+        # Dispatch foo event
+        ev = component.createEvent('foo')
+        component.dispatchEvent(ev)
 
-        # Trigger the event
-        component.trigger('foo', 123)
+        expect(listeners.handleFoo).not.toHaveBeenCalled()
+        expect(listeners.handleBar).not.toHaveBeenCalled()
 
-        expect(foo.handleFoo).toHaveBeenCalledWith(123)
+        # Dispatch zee event
+        ev = component.createEvent('zee')
+        component.dispatchEvent(ev)
+
+        expect(listeners.handleZee).not.toHaveBeenCalled()
 
 
 describe 'ContentTools.ComponentUI.createDiv()', () ->

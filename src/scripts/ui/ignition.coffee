@@ -22,16 +22,17 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
     busy: (busy) ->
         # Set the widget to busy (or revert if from a busy state to it's
         # previous state.
+        if @dispatchEvent(@createEvent('busy', {busy: busy}))
 
-        # If the widget is already busy do nothing
-        if busy == (@_state == 'busy')
-            return
+            # If the widget is already busy do nothing
+            if busy == (@_state == 'busy')
+                return
 
-        if busy
-            @_revertToState = @_state
-            @state('busy')
-        else
-            @state(@_revertToState)
+            if busy
+                @_revertToState = @_state
+                @state('busy')
+            else
+                @state(@_revertToState)
 
     cancel: () ->
         # Perform the cancel action against the switch

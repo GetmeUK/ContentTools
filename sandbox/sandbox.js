@@ -8,47 +8,47 @@
 
     function ImageUploader(dialog) {
       this._dialog = dialog;
-      this._dialog.bind('cancel', (function(_this) {
+      this._dialog.addEventListener('cancel', (function(_this) {
         return function() {
           return _this._onCancel();
         };
       })(this));
-      this._dialog.bind('imageUploader.cancelUpload', (function(_this) {
+      this._dialog.addEventListener('imageUploader.cancelupload', (function(_this) {
         return function() {
           return _this._onCancelUpload();
         };
       })(this));
-      this._dialog.bind('imageUploader.clear', (function(_this) {
+      this._dialog.addEventListener('imageUploader.clear', (function(_this) {
         return function() {
           return _this._onClear();
         };
       })(this));
-      this._dialog.bind('imageUploader.fileReady', (function(_this) {
-        return function(files) {
-          return _this._onFileReady(files);
+      this._dialog.addEventListener('imageUploader.fileready', (function(_this) {
+        return function(ev) {
+          return _this._onFileReady(ev.files);
         };
       })(this));
-      this._dialog.bind('imageUploader.mount', (function(_this) {
+      this._dialog.addEventListener('imageUploader.mount', (function(_this) {
         return function() {
           return _this._onMount();
         };
       })(this));
-      this._dialog.bind('imageUploader.rotateCCW', (function(_this) {
+      this._dialog.addEventListener('imageUploader.rotateccw', (function(_this) {
         return function() {
           return _this._onRotateCCW();
         };
       })(this));
-      this._dialog.bind('imageUploader.rotateCW', (function(_this) {
+      this._dialog.addEventListener('imageUploader.rotatecw', (function(_this) {
         return function() {
           return _this._onRotateCW();
         };
       })(this));
-      this._dialog.bind('imageUploader.save', (function(_this) {
+      this._dialog.addEventListener('imageUploader.save', (function(_this) {
         return function() {
           return _this._onSave();
         };
       })(this));
-      this._dialog.bind('imageUploader.unmount', (function(_this) {
+      this._dialog.addEventListener('imageUploader.unmount', (function(_this) {
         return function() {
           return _this._onUnmount();
         };

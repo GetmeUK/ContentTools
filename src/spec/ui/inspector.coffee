@@ -172,7 +172,13 @@ describe 'ContentTools.TagUI', () ->
 
             # Trigger a save event against the dialog and test that the changes
             # are applied correctly.
-            dialog.trigger('save', {title: 'bar'}, {'zee': true}, 'foo')
+            dialog.dispatchEvent(
+                dialog.createEvent('save', {
+                    changedAttributes: {title: 'bar'},
+                    changedStyles: {'zee': true},
+                    innerHTML: 'foo'
+                    })
+                )
             expect(element.attr('title')).toBe 'bar'
             expect(element.hasCSSClass('zee')).toBe true
             expect(element.content.html()).toBe 'foo'
@@ -181,7 +187,13 @@ describe 'ContentTools.TagUI', () ->
             tag.domElement().dispatchEvent(mouseDownEvent)
             dialog = app.children()[app.children().length - 1]
 
-            dialog.trigger('save', {title: null}, {'zee': false}, 'bar')
+            dialog.dispatchEvent(
+                dialog.createEvent('save', {
+                    changedAttributes: {title: null},
+                    changedStyles: {'zee': false},
+                    innerHTML: 'bar'
+                    })
+                )
             expect(element.attr('title')).toBe undefined
             expect(element.hasCSSClass('zee')).toBe false
             expect(element.content.html()).toBe 'bar'

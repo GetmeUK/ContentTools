@@ -952,7 +952,7 @@ class ContentTools.Tools.Image extends ContentTools.Tool
         # Support saving the dialog
         dialog.addEventListener 'save', (ev) =>
             detail = ev.detail()
-            imageUrl = detail.imageUrl
+            imageURL = detail.imageURL
             imageSize = detail.imageSize
             imageAttrs = detail.imageAttrs
 
@@ -1027,16 +1027,16 @@ class ContentTools.Tools.Video extends ContentTools.Tool
             callback(false)
 
         # Support saving the dialog
-        dialog.addEventListener 'save', () =>
-            videoURL = videoURL.detail.videoURL
+        dialog.addEventListener 'save', (ev) =>
+            url = ev.detail().url
 
-            if videoURL
+            if url
                 # Create the new video
                 video = new ContentEdit.Video(
                     'iframe', {
                         'frameborder': 0,
                         'height': ContentTools.DEFAULT_VIDEO_HEIGHT,
-                        'src': videoURL,
+                        'src': url,
                         'width': ContentTools.DEFAULT_VIDEO_WIDTH
                         })
 
@@ -1055,7 +1055,7 @@ class ContentTools.Tools.Video extends ContentTools.Tool
             modal.hide()
             dialog.hide()
 
-            callback(videoURL != '')
+            callback(url != '')
 
         # Show the dialog
         app.attach(modal)

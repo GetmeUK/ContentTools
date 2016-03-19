@@ -5309,7 +5309,7 @@
     function Event(name, detail) {
       this._name = name;
       this._detail = detail;
-      this._timestamp = Date.now();
+      this._timeStamp = Date.now();
       this._defaultPrevented = false;
       this._propagationStopped = false;
     }
@@ -5330,7 +5330,7 @@
       return this._propagationStopped;
     };
 
-    Event.prototype.timestamp = function() {
+    Event.prototype.timeStamp = function() {
       return this._timeStamp;
     };
 
@@ -5388,14 +5388,18 @@
     }
 
     IgnitionUI.prototype.busy = function(busy) {
-      if (busy === (this._state === 'busy')) {
-        return;
-      }
-      if (busy) {
-        this._revertToState = this._state;
-        return this.state('busy');
-      } else {
-        return this.state(this._revertToState);
+      if (this.dispatchEvent(this.createEvent('busy', {
+        busy: busy
+      }))) {
+        if (busy === (this._state === 'busy')) {
+          return;
+        }
+        if (busy) {
+          this._revertToState = this._state;
+          return this.state('busy');
+        } else {
+          return this.state(this._revertToState);
+        }
       }
     };
 
@@ -5584,9 +5588,8 @@
       app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI();
       dialog = new ContentTools.PropertiesDialog(this.element);
-      dialog.bind('cancel', (function(_this) {
+      dialog.addEventListener('cancel', (function(_this) {
         return function() {
-          dialog.unbind('cancel');
           modal.hide();
           dialog.hide();
           if (_this.element.restoreState) {
@@ -5594,10 +5597,13 @@
           }
         };
       })(this));
-      dialog.bind('save', (function(_this) {
-        return function(attributes, styles, innerHTML) {
-          var applied, className, classNames, cssClass, element, name, value, _i, _j, _len, _len1, _ref, _ref1;
-          dialog.unbind('save');
+      dialog.addEventListener('save', (function(_this) {
+        return function(ev) {
+          var applied, attributes, className, classNames, cssClass, detail, element, innerHTML, name, styles, value, _i, _j, _len, _len1, _ref, _ref1;
+          detail = ev.detail();
+          attributes = detail.changedAttributes;
+          styles = detail.changedStyles;
+          innerHTML = detail.innerHTML;
           for (name in attributes) {
             value = attributes[name];
             if (name === 'class') {
@@ -6369,7 +6375,7 @@
     };
 
     ImageDialog.prototype.save = function(imageURL, imageSize, imageAttrs) {
-      return this.dispatchEvents(this.createEvent('save', {
+      return this.dispatchEvent(this.createEvent('save', {
         'imageURL': imageURL,
         'imageSize': imageSize,
         'imageAttrs': imageAttrs
@@ -6416,11 +6422,11 @@
           ev.target.value = '';
           if (ev.target.value) {
             ev.target.type = 'text';
-            return ev.target.type = 'file';
+            ev.target.type = 'file';
           }
+          return _this.dispatchEvent(_this.createEvent('imageUploader.fileready'));
         };
       })(this));
-      this.dispatchEvent(this.createEvent('imageUploader.fileready'));
       this._domCancelUpload.addEventListener('click', (function(_this) {
         return function(ev) {
           return _this.dispatchEvent(_this.createEvent('imageUploader.cancelupload'));
@@ -6868,8 +6874,8 @@
       }
       detail = {
         changedAttributes: this.changedAttributes(),
-        changedStyles: this.changedAttributes(),
-        innerHtml: innerHTML
+        changedStyles: this.changedStyles(),
+        innerHTML: innerHTML
       };
       return this.dispatchEvent(this.createEvent('save', detail));
     };
@@ -9110,9 +9116,9 @@
       })(this));
       dialog.addEventListener('save', (function(_this) {
         return function(ev) {
-          var detail, image, imageAttrs, imageSize, imageUrl, index, node, _ref;
+          var detail, image, imageAttrs, imageSize, imageURL, index, node, _ref;
           detail = ev.detail();
-          imageUrl = detail.imageUrl;
+          imageURL = detail.imageURL;
           imageSize = detail.imageSize;
           imageAttrs = detail.imageAttrs;
           if (!imageAttrs) {
@@ -9176,14 +9182,14 @@
         };
       })(this));
       dialog.addEventListener('save', (function(_this) {
-        return function() {
-          var index, node, video, videoURL, _ref;
-          videoURL = videoURL.detail.videoURL;
-          if (videoURL) {
+        return function(ev) {
+          var index, node, url, video, _ref;
+          url = ev.detail().url;
+          if (url) {
             video = new ContentEdit.Video('iframe', {
               'frameborder': 0,
               'height': ContentTools.DEFAULT_VIDEO_HEIGHT,
-              'src': videoURL,
+              'src': url,
               'width': ContentTools.DEFAULT_VIDEO_WIDTH
             });
             _ref = _this._insertAt(element), node = _ref[0], index = _ref[1];
@@ -9196,7 +9202,7 @@
           }
           modal.hide();
           dialog.hide();
-          return callback(videoURL !== '');
+          return callback(url !== '');
         };
       })(this));
       app.attach(modal);

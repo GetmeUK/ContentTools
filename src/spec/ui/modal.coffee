@@ -103,7 +103,7 @@ describe 'ContentTools.ModalUI', () ->
             spyOn(foo, 'handleFoo')
 
             # Bind the spied on function to the event
-            modal.bind('click', foo.handleFoo)
+            modal.addEventListener('click', foo.handleFoo)
 
             # Create a fake click event against the modal's DOM element
             clickEvent = document.createEvent('CustomEvent')

@@ -33,38 +33,97 @@ describe 'ContentTools.IgnitionUI', () ->
 
     describe 'ContentTools.IgnitionUI.busy()', () ->
 
-        it 'should set/get the busy state for the ignition', () ->
+        it 'should set/unset the ignition to busy', () ->
 
             ignition = new ContentTools.IgnitionUI()
 
             # Check that the default ignition busy state is false
-            expect(ignition.busy()).toBe false
+            expect(ignition.state()).toBe 'ready'
 
             # Check we can change it
             ignition.busy(true)
-            expect(ignition.busy()).toBe true
+            expect(ignition.state()).toBe 'busy'
+
+            # Check we can change it back
+            ignition.busy(false)
+            expect(ignition.state()).toBe 'ready'
 
 
-    describe 'ContentTools.IgnitionUI.changeState()', () ->
+    describe 'ContentTools.IgnitionUI.cancel()', () ->
 
-        it 'should change the state of the ignition switch to editing', () ->
+        it 'should set the ignition to editing and trigger the cancel
+            event', () ->
 
-            ignition = editor._ignition
-            ignition.changeState('editing')
+            # Set the ignition to editing
+            ignition = new ContentTools.IgnitionUI()
+            ignition.state('editing')
 
-            # Check the correct modifier class has been applied
-            classes = ignition.domElement().getAttribute('class').split(' ')
-            expect(classes.indexOf('ct-ignition--editing') > -1).toBe true
+            # Create function we can spy on to ensure the event is triggered
+            foo = {
+                handleFoo: () ->
+                    return
+            }
+            spyOn(foo, 'handleFoo')
 
-        it 'should change the state of the ignition switch to ready', () ->
+            # Bind the spied on function to the event
+            ignition.addEventListener('cancel', foo.handleFoo)
 
-            ignition = editor._ignition
-            ignition.changeState('editing')
-            ignition.changeState('ready')
+            # Trigger the cancel event
+            ignition.cancel()
 
-            # Check the correct modifier class has been applied
-            classes = ignition.domElement().getAttribute('class').split(' ')
-            expect(classes.indexOf('ct-ignition--ready') > -1).toBe true
+            expect(foo.handleFoo).toHaveBeenCalled()
+            expect(ignition.state()).toBe 'ready'
+
+    describe 'ContentTools.IgnitionUI.confim()', () ->
+
+        it 'should set the ignition to ready and trigger the confirm
+            event', () ->
+
+            # Set the ignition to editing
+            ignition = new ContentTools.IgnitionUI()
+            ignition.state('editing')
+
+            # Create function we can spy on to ensure the event is triggered
+            foo = {
+                handleFoo: () ->
+                    return
+            }
+            spyOn(foo, 'handleFoo')
+
+            # Bind the spied on function to the event
+            ignition.addEventListener('confirm', foo.handleFoo)
+
+            # Trigger the confirm event
+            ignition.confirm()
+
+            expect(foo.handleFoo).toHaveBeenCalled()
+            expect(ignition.state()).toBe 'ready'
+
+
+    describe 'ContentTools.IgnitionUI.edit()', () ->
+
+        it 'should set the ignition to editing and trigger the edit
+            event', () ->
+
+            # Set the ignition to editing
+            ignition = new ContentTools.IgnitionUI()
+            ignition.state('ready')
+
+            # Create function we can spy on to ensure the event is triggered
+            foo = {
+                handleFoo: () ->
+                    return
+            }
+            spyOn(foo, 'handleFoo')
+
+            # Bind the spied on function to the event
+            ignition.addEventListener('edit', foo.handleFoo)
+
+            # Trigger the edit event
+            ignition.edit()
+
+            expect(foo.handleFoo).toHaveBeenCalled()
+            expect(ignition.state()).toBe 'editing'
 
 
     describe 'ContentTools.IgnitionUI.mount()', () ->
@@ -75,6 +134,43 @@ describe 'ContentTools.IgnitionUI', () ->
             editor.attach(ignition)
             ignition.mount()
             expect(ignition.isMounted()).toBe true
+
+
+    describe 'ContentTools.IgnitionUI.state()', () ->
+
+        it 'should change the state of the ignition switch', () ->
+
+            # Set the ignition to editing
+            ignition = new ContentTools.IgnitionUI()
+            ignition.state('ready')
+
+            # Create function we can spy on to ensure the event is triggered
+            foo = {
+                handleFoo: () ->
+                    return
+            }
+            spyOn(foo, 'handleFoo')
+
+            # Bind the spied on function to the event
+            ignition.addEventListener('statechange', foo.handleFoo)
+
+            # Trigger the edit event
+            ignition.state('editing')
+
+            expect(foo.handleFoo).toHaveBeenCalled()
+            expect(ignition.state()).toBe 'editing'
+
+        it 'should get the state of the iginition switch', () ->
+
+            # Set the ignition to editing
+            ignition = new ContentTools.IgnitionUI()
+            expect(ignition.state()).toBe 'ready'
+
+            ignition.edit()
+            expect(ignition.state()).toBe 'editing'
+
+            ignition.busy(true)
+            expect(ignition.state()).toBe 'busy'
 
 
     describe 'ContentTools.IgnitionUI.unmount()', () ->
@@ -92,70 +188,44 @@ describe 'ContentTools.IgnitionUI', () ->
 
     describe 'ContentTools.IgnitionUI > Events', () ->
 
-        it 'should trigger a `start` event if edit button clicked', () ->
+        it 'should call `edit` when edit button is clicked', () ->
 
             ignition = editor._ignition
 
-            # Create function we can spy on to ensure the event is triggered
-            foo = {
-                handleFoo: () ->
-                    return
-            }
-            spyOn(foo, 'handleFoo')
-
-            # Bind the spied on function to the event
-            ignition.bind('start', foo.handleFoo)
+            # Spy on the edit methof
+            spyOn(ignition, 'edit')
 
             # Create a fake click event against the modal's DOM element
             clickEvent = document.createEvent('CustomEvent')
             clickEvent.initCustomEvent('click', false, false, null)
             ignition._domEdit.dispatchEvent(clickEvent)
 
-            expect(foo.handleFoo).toHaveBeenCalled()
+            expect(ignition.edit).toHaveBeenCalled()
 
-        it 'should trigger a `stop` event with a value of true if confirm button
-                button clicked', () ->
+        it 'should call `cancel` when cancel button is clicked', () ->
 
             ignition = editor._ignition
 
-            # Create function we can spy on to ensure the event is triggered
-            foo = {
-                handleFoo: (confirmed) ->
-                    return
-            }
-            spyOn(foo, 'handleFoo')
+            # Spy on the edit methof
+            spyOn(ignition, 'cancel')
 
-            # Bind the spied on function to the event
-            ignition.bind('stop', foo.handleFoo)
+            # Create a fake click event against the modal's DOM element
+            clickEvent = document.createEvent('CustomEvent')
+            clickEvent.initCustomEvent('click', false, false, null)
+            ignition._domCancel.dispatchEvent(clickEvent)
+
+            expect(ignition.cancel).toHaveBeenCalled()
+
+        it 'should call `confirm` when confirm button is clicked', () ->
+
+            ignition = editor._ignition
+
+            # Spy on the edit methof
+            spyOn(ignition, 'confirm')
 
             # Create a fake click event against the modal's DOM element
             clickEvent = document.createEvent('CustomEvent')
             clickEvent.initCustomEvent('click', false, false, null)
             ignition._domConfirm.dispatchEvent(clickEvent)
 
-            expect(foo.handleFoo).toHaveBeenCalledWith(true)
-
-        it 'should trigger a `stop` event with a value of false if cancel button
-                clicked', () ->
-
-            ignition = editor._ignition
-
-            # Create function we can spy on to ensure the event is triggered
-            foo = {
-                handleFoo: (confirmed) ->
-                    return
-            }
-            spyOn(foo, 'handleFoo')
-
-            # Bind the spied on function to the event
-            ignition.bind('stop', foo.handleFoo)
-
-            # Create a fake click event against the modal's DOM element
-            clickEvent = document.createEvent('CustomEvent')
-            clickEvent.initCustomEvent('click', false, false, null)
-
-            ignition._domEdit.dispatchEvent(clickEvent)
-            ContentEdit.Root.get().commit()
-            ignition._domCancel.dispatchEvent(clickEvent)
-
-            expect(foo.handleFoo).toHaveBeenCalledWith(false)
+            expect(ignition.confirm).toHaveBeenCalled()

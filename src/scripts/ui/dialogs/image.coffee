@@ -230,7 +230,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
 
     save: (imageURL, imageSize, imageAttrs) ->
         # Save and insert the current image
-        @dispatchEvents(
+        @dispatchEvent(
             @createEvent(
                 'save',
                 {
@@ -300,7 +300,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
                 ev.target.type = 'text'
                 ev.target.type = 'file'
 
-        @dispatchEvent(@createEvent('imageUploader.fileready'))
+            @dispatchEvent(@createEvent('imageUploader.fileready'))
 
         # Cancel upload
         @_domCancelUpload.addEventListener 'click', (ev) =>

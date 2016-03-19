@@ -129,9 +129,7 @@ class ContentTools.TagUI extends ContentTools.AnchoredComponentUI
         dialog = new ContentTools.PropertiesDialog(@element)
 
         # Support cancelling the dialog
-        dialog.bind 'cancel', () =>
-            dialog.unbind('cancel')
-
+        dialog.addEventListener 'cancel', () =>
             modal.hide()
             dialog.hide()
 
@@ -139,8 +137,11 @@ class ContentTools.TagUI extends ContentTools.AnchoredComponentUI
                 @element.restoreState()
 
         # Support saving the dialog
-        dialog.bind 'save', (attributes, styles, innerHTML) =>
-            dialog.unbind('save')
+        dialog.addEventListener 'save', (ev) =>
+            detail = ev.detail()
+            attributes = detail.changedAttributes
+            styles = detail.changedStyles
+            innerHTML = detail.innerHTML
 
             # Apply the attribute changes
             for name, value of attributes

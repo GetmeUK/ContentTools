@@ -265,8 +265,8 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
 
         detail = {
             changedAttributes: @changedAttributes(),
-            changedStyles: @changedAttributes(),
-            innerHtml: innerHTML
+            changedStyles: @changedStyles(),
+            innerHTML: innerHTML
             }
         @dispatchEvent(@createEvent('save', detail))
 

@@ -13,7 +13,7 @@ class ContentTools.Event
         @_detail = detail
 
         # The date/time the event was created
-        @_timestamp = Date.now()
+        @_timeStamp = Date.now()
 
         # A flag indicating if the event has been cancelled
         @_defaultPrevented = false
@@ -36,7 +36,7 @@ class ContentTools.Event
     propagationStopped: () ->
         return @_propagationStopped
 
-    timestamp: () ->
+    timeStamp: () ->
         return @_timeStamp
 
     # Methods

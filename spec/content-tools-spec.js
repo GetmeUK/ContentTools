@@ -1,4 +1,7 @@
 (function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   describe('ContentTools.getEmbedVideoURL()', function() {
     it('should return a valid video embbed URL from a youtube URL', function() {
       var embedURL, insecureURL, pageURL, shareURL;
@@ -141,31 +144,159 @@
     });
   });
 
-  describe('ContentTools.ComponentUI.bind()', function() {
-    return it('should bind a function so that it\'s called whenever the event is triggered against the component', function() {
-      var component, foo;
+  describe('ContentTools.ComponentUI.addEventListener()', function() {
+    return it('should bind a function to be called whenever the named event is dispatched against the component', function() {
+      var component, ev, foo;
       foo = {
         handleFoo: function() {}
       };
       spyOn(foo, 'handleFoo');
       component = new ContentTools.ComponentUI();
-      component.bind('foo', foo.handleFoo);
-      component.trigger('foo');
-      return expect(foo.handleFoo).toHaveBeenCalled();
+      component.addEventListener('foo', foo.handleFoo);
+      ev = component.createEvent('foo', {
+        'bar': 1
+      });
+      component.dispatchEvent(ev);
+      return expect(foo.handleFoo).toHaveBeenCalledWith(ev);
     });
   });
 
-  describe('ContentTools.ComponentUI.trigger()', function() {
-    return it('should trigger an event against the component with specified arguments', function() {
-      var component, foo;
+  describe('ContentTools.ComponentUI.createEvent()', function() {
+    return it('should return an new event', function() {
+      var component, ev;
+      component = new ContentTools.ComponentUI();
+      ev = new ContentTools.Event('foo', {
+        bar: 1
+      });
+      expect(ev.name()).toBe('foo');
+      return expect(ev.detail()).toEqual({
+        bar: 1
+      });
+    });
+  });
+
+  describe('ContentTools.ComponentUI.dispatchEvent()', function() {
+    it('should dispatch an event against a component', function() {
+      var component, ev, foo;
       foo = {
         handleFoo: function() {}
       };
       spyOn(foo, 'handleFoo');
       component = new ContentTools.ComponentUI();
-      component.bind('foo', foo.handleFoo);
-      component.trigger('foo', 123);
-      return expect(foo.handleFoo).toHaveBeenCalledWith(123);
+      component.addEventListener('foo', foo.handleFoo);
+      ev = component.createEvent('foo', {
+        'bar': 1
+      });
+      component.dispatchEvent(ev);
+      return expect(foo.handleFoo).toHaveBeenCalledWith(ev);
+    });
+    it('should return false (prevent the default action) for the event if cancelled', function() {
+      var TestComponent, component, ev, foo;
+      TestComponent = (function(_super) {
+        __extends(TestComponent, _super);
+
+        function TestComponent() {
+          return TestComponent.__super__.constructor.apply(this, arguments);
+        }
+
+        TestComponent.prototype.foo = function() {
+          if (this.triggerEvent('foo')) {
+            return this.bar = 1;
+          }
+        };
+
+        return TestComponent;
+
+      })(ContentTools.ComponentUI);
+      foo = {
+        handleFoo: function(ev) {
+          ev.preventDefault();
+        }
+      };
+      spyOn(foo, 'handleFoo');
+      component = new TestComponent();
+      component.addEventListener('foo', foo.handleFoo);
+      ev = component.createEvent('foo', {
+        'bar': 1
+      });
+      component.dispatchEvent(ev);
+      expect(foo.handleFoo).toHaveBeenCalledWith(ev);
+      return expect(foo.bar).toBe(void 0);
+    });
+    return it('should prevent stop calling listener functions once the event has been halted', function() {
+      var component, ev, foo;
+      foo = {
+        handleBar: function() {},
+        handleFoo: function() {
+          ev.stopImmeditatePropagation();
+        }
+      };
+      spyOn(foo, 'handleBar');
+      spyOn(foo, 'handleFoo');
+      component = new ContentTools.ComponentUI();
+      component.addEventListener('foo', foo.handleFoo);
+      component.addEventListener('bar', foo.handleBar);
+      ev = component.createEvent('foo', {
+        'bar': 1
+      });
+      component.dispatchEvent(ev);
+      expect(foo.handleFoo).toHaveBeenCalledWith(ev);
+      return expect(foo.handleBar).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ContentTools.ComponentUI.removeEventListener()', function() {
+    var component, listeners;
+    component = null;
+    listeners = null;
+    beforeEach(function() {
+      listeners = {
+        handleBar: function() {},
+        handleFoo: function() {},
+        handleZee: function() {}
+      };
+      spyOn(listeners, 'handleBar');
+      spyOn(listeners, 'handleFoo');
+      spyOn(listeners, 'handleZee');
+      component = new ContentTools.ComponentUI();
+      component.addEventListener('foo', listeners.handleFoo);
+      component.addEventListener('foo', listeners.handleBar);
+      return component.addEventListener('zee', listeners.handleZee);
+    });
+    it('should remove a single event listener against a component if called with an event name and the listener function', function() {
+      var ev;
+      component.removeEventListener('foo', listeners.handleFoo);
+      ev = component.createEvent('foo', {
+        'bar': 1
+      });
+      component.dispatchEvent(ev);
+      expect(listeners.handleFoo).not.toHaveBeenCalled();
+      expect(listeners.handleBar).toHaveBeenCalled();
+      ev = component.createEvent('zee');
+      component.dispatchEvent(ev);
+      return expect(listeners.handleZee).toHaveBeenCalled();
+    });
+    it('should remove multiple event listener against a component by name', function() {
+      var ev;
+      component.removeEventListener('foo');
+      ev = component.createEvent('foo');
+      component.dispatchEvent(ev);
+      expect(listeners.handleFoo).not.toHaveBeenCalled();
+      expect(listeners.handleBar).not.toHaveBeenCalled();
+      ev = component.createEvent('zee');
+      component.dispatchEvent(ev);
+      return expect(listeners.handleZee).toHaveBeenCalled();
+    });
+    return it('should remove all event listener against a component if called without arguments', function() {
+      var ev;
+      component.removeEventListener();
+      ev = component.createEvent('foo');
+      component.dispatchEvent(ev);
+      expect(listeners.handleFoo).not.toHaveBeenCalled();
+      expect(listeners.handleBar).not.toHaveBeenCalled();
+      ev = component.createEvent('zee');
+      component.dispatchEvent(ev);
+      return expect(listeners.handleZee).not.toHaveBeenCalled();
     });
   });
 
@@ -283,6 +414,75 @@
     });
   });
 
+  describe('ContentTools.Event', function() {
+    describe('ContentTools.Event()', function() {
+      return it('should return an instance of an Event', function() {
+        var ev;
+        ev = new ContentTools.Event('test');
+        return expect(ev instanceof ContentTools.Event).toBe(true);
+      });
+    });
+    describe('ContentTools.Event.defaultPrevented()', function() {
+      return it('should return true if the event is cancelled', function() {
+        var ev;
+        ev = new ContentTools.Event('test');
+        expect(ev.defaultPrevented()).toBe(false);
+        ev.preventDefault();
+        return expect(ev.defaultPrevented()).toBe(true);
+      });
+    });
+    describe('ContentTools.Event.detail()', function() {
+      return it('should return the detail of the event', function() {
+        var ev;
+        ev = new ContentTools.Event('test', {
+          foo: 1
+        });
+        return expect(ev.detail()).toEqual({
+          foo: 1
+        });
+      });
+    });
+    describe('ContentTools.Event.name()', function() {
+      return it('should return the name of the event', function() {
+        var ev;
+        ev = new ContentTools.Event('test');
+        return expect(ev.name()).toBe('test');
+      });
+    });
+    describe('ContentTools.Event.propagationStopped()', function() {
+      return it('should return true if the event has been halted', function() {
+        var ev;
+        ev = new ContentTools.Event('test');
+        expect(ev.propagationStopped()).toBe(false);
+        ev.stopImmediatePropagation();
+        return expect(ev.propagationStopped()).toBe(true);
+      });
+    });
+    describe('ContentTools.Event.propagationStopped()', function() {
+      return it('should return a timestamp of when the event was created', function() {
+        var ev;
+        ev = new ContentTools.Event('test');
+        return expect(ev.timeStamp()).toBeCloseTo(Date.now(), 10);
+      });
+    });
+    describe('ContentTools.Event.preventDefault()', function() {
+      return it('should cancel an event', function() {
+        var ev;
+        ev = new ContentTools.Event('test');
+        ev.preventDefault();
+        return expect(ev.defaultPrevented()).toBe(true);
+      });
+    });
+    return describe('ContentTools.Event.preventDefault()', function() {
+      return it('should halt an event', function() {
+        var ev;
+        ev = new ContentTools.Event('test');
+        ev.stopImmediatePropagation();
+        return expect(ev.propagationStopped()).toBe(true);
+      });
+    });
+  });
+
   describe('ContentTools.FlashUI', function() {
     var div, editor;
     div = null;
@@ -353,29 +553,59 @@
       });
     });
     describe('ContentTools.IgnitionUI.busy()', function() {
-      return it('should set/get the busy state for the ignition', function() {
+      return it('should set/unset the ignition to busy', function() {
         var ignition;
         ignition = new ContentTools.IgnitionUI();
-        expect(ignition.busy()).toBe(false);
+        expect(ignition.state()).toBe('ready');
         ignition.busy(true);
-        return expect(ignition.busy()).toBe(true);
+        expect(ignition.state()).toBe('busy');
+        ignition.busy(false);
+        return expect(ignition.state()).toBe('ready');
       });
     });
-    describe('ContentTools.IgnitionUI.changeState()', function() {
-      it('should change the state of the ignition switch to editing', function() {
-        var classes, ignition;
-        ignition = editor._ignition;
-        ignition.changeState('editing');
-        classes = ignition.domElement().getAttribute('class').split(' ');
-        return expect(classes.indexOf('ct-ignition--editing') > -1).toBe(true);
+    describe('ContentTools.IgnitionUI.cancel()', function() {
+      return it('should set the ignition to editing and trigger the cancel event', function() {
+        var foo, ignition;
+        ignition = new ContentTools.IgnitionUI();
+        ignition.state('editing');
+        foo = {
+          handleFoo: function() {}
+        };
+        spyOn(foo, 'handleFoo');
+        ignition.addEventListener('cancel', foo.handleFoo);
+        ignition.cancel();
+        expect(foo.handleFoo).toHaveBeenCalled();
+        return expect(ignition.state()).toBe('ready');
       });
-      return it('should change the state of the ignition switch to ready', function() {
-        var classes, ignition;
-        ignition = editor._ignition;
-        ignition.changeState('editing');
-        ignition.changeState('ready');
-        classes = ignition.domElement().getAttribute('class').split(' ');
-        return expect(classes.indexOf('ct-ignition--ready') > -1).toBe(true);
+    });
+    describe('ContentTools.IgnitionUI.confim()', function() {
+      return it('should set the ignition to ready and trigger the confirm event', function() {
+        var foo, ignition;
+        ignition = new ContentTools.IgnitionUI();
+        ignition.state('editing');
+        foo = {
+          handleFoo: function() {}
+        };
+        spyOn(foo, 'handleFoo');
+        ignition.addEventListener('confirm', foo.handleFoo);
+        ignition.confirm();
+        expect(foo.handleFoo).toHaveBeenCalled();
+        return expect(ignition.state()).toBe('ready');
+      });
+    });
+    describe('ContentTools.IgnitionUI.edit()', function() {
+      return it('should set the ignition to editing and trigger the edit event', function() {
+        var foo, ignition;
+        ignition = new ContentTools.IgnitionUI();
+        ignition.state('ready');
+        foo = {
+          handleFoo: function() {}
+        };
+        spyOn(foo, 'handleFoo');
+        ignition.addEventListener('edit', foo.handleFoo);
+        ignition.edit();
+        expect(foo.handleFoo).toHaveBeenCalled();
+        return expect(ignition.state()).toBe('editing');
       });
     });
     describe('ContentTools.IgnitionUI.mount()', function() {
@@ -385,6 +615,30 @@
         editor.attach(ignition);
         ignition.mount();
         return expect(ignition.isMounted()).toBe(true);
+      });
+    });
+    describe('ContentTools.IgnitionUI.state()', function() {
+      it('should change the state of the ignition switch', function() {
+        var foo, ignition;
+        ignition = new ContentTools.IgnitionUI();
+        ignition.state('ready');
+        foo = {
+          handleFoo: function() {}
+        };
+        spyOn(foo, 'handleFoo');
+        ignition.addEventListener('statechange', foo.handleFoo);
+        ignition.state('editing');
+        expect(foo.handleFoo).toHaveBeenCalled();
+        return expect(ignition.state()).toBe('editing');
+      });
+      return it('should get the state of the iginition switch', function() {
+        var ignition;
+        ignition = new ContentTools.IgnitionUI();
+        expect(ignition.state()).toBe('ready');
+        ignition.edit();
+        expect(ignition.state()).toBe('editing');
+        ignition.busy(true);
+        return expect(ignition.state()).toBe('busy');
       });
     });
     describe('ContentTools.IgnitionUI.unmount()', function() {
@@ -398,46 +652,32 @@
       });
     });
     return describe('ContentTools.IgnitionUI > Events', function() {
-      it('should trigger a `start` event if edit button clicked', function() {
-        var clickEvent, foo, ignition;
+      it('should call `edit` when edit button is clicked', function() {
+        var clickEvent, ignition;
         ignition = editor._ignition;
-        foo = {
-          handleFoo: function() {}
-        };
-        spyOn(foo, 'handleFoo');
-        ignition.bind('start', foo.handleFoo);
+        spyOn(ignition, 'edit');
         clickEvent = document.createEvent('CustomEvent');
         clickEvent.initCustomEvent('click', false, false, null);
         ignition._domEdit.dispatchEvent(clickEvent);
-        return expect(foo.handleFoo).toHaveBeenCalled();
+        return expect(ignition.edit).toHaveBeenCalled();
       });
-      it('should trigger a `stop` event with a value of true if confirm button button clicked', function() {
-        var clickEvent, foo, ignition;
+      it('should call `cancel` when cancel button is clicked', function() {
+        var clickEvent, ignition;
         ignition = editor._ignition;
-        foo = {
-          handleFoo: function(confirmed) {}
-        };
-        spyOn(foo, 'handleFoo');
-        ignition.bind('stop', foo.handleFoo);
+        spyOn(ignition, 'cancel');
+        clickEvent = document.createEvent('CustomEvent');
+        clickEvent.initCustomEvent('click', false, false, null);
+        ignition._domCancel.dispatchEvent(clickEvent);
+        return expect(ignition.cancel).toHaveBeenCalled();
+      });
+      return it('should call `confirm` when confirm button is clicked', function() {
+        var clickEvent, ignition;
+        ignition = editor._ignition;
+        spyOn(ignition, 'confirm');
         clickEvent = document.createEvent('CustomEvent');
         clickEvent.initCustomEvent('click', false, false, null);
         ignition._domConfirm.dispatchEvent(clickEvent);
-        return expect(foo.handleFoo).toHaveBeenCalledWith(true);
-      });
-      return it('should trigger a `stop` event with a value of false if cancel button clicked', function() {
-        var clickEvent, foo, ignition;
-        ignition = editor._ignition;
-        foo = {
-          handleFoo: function(confirmed) {}
-        };
-        spyOn(foo, 'handleFoo');
-        ignition.bind('stop', foo.handleFoo);
-        clickEvent = document.createEvent('CustomEvent');
-        clickEvent.initCustomEvent('click', false, false, null);
-        ignition._domEdit.dispatchEvent(clickEvent);
-        ContentEdit.Root.get().commit();
-        ignition._domCancel.dispatchEvent(clickEvent);
-        return expect(foo.handleFoo).toHaveBeenCalledWith(false);
+        return expect(ignition.confirm).toHaveBeenCalled();
       });
     });
   });
@@ -555,21 +795,29 @@
         app = ContentTools.EditorApp.get();
         dialog = app.children()[app.children().length - 1];
         expect(dialog instanceof ContentTools.PropertiesDialog).toBe(true);
-        dialog.trigger('save', {
-          title: 'bar'
-        }, {
-          'zee': true
-        }, 'foo');
+        dialog.dispatchEvent(dialog.createEvent('save', {
+          changedAttributes: {
+            title: 'bar'
+          },
+          changedStyles: {
+            'zee': true
+          },
+          innerHTML: 'foo'
+        }));
         expect(element.attr('title')).toBe('bar');
         expect(element.hasCSSClass('zee')).toBe(true);
         expect(element.content.html()).toBe('foo');
         tag.domElement().dispatchEvent(mouseDownEvent);
         dialog = app.children()[app.children().length - 1];
-        dialog.trigger('save', {
-          title: null
-        }, {
-          'zee': false
-        }, 'bar');
+        dialog.dispatchEvent(dialog.createEvent('save', {
+          changedAttributes: {
+            title: null
+          },
+          changedStyles: {
+            'zee': false
+          },
+          innerHTML: 'bar'
+        }));
         expect(element.attr('title')).toBe(void 0);
         expect(element.hasCSSClass('zee')).toBe(false);
         return expect(element.content.html()).toBe('bar');
@@ -653,7 +901,7 @@
           handleFoo: function() {}
         };
         spyOn(foo, 'handleFoo');
-        modal.bind('click', foo.handleFoo);
+        modal.addEventListener('click', foo.handleFoo);
         clickEvent = document.createEvent('CustomEvent');
         clickEvent.initCustomEvent('click', false, false, null);
         modal.domElement().dispatchEvent(clickEvent);
