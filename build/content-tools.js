@@ -5141,7 +5141,9 @@
         return;
       }
       this._removeDOMEventListeners();
-      this._domElement.parentNode.removeChild(this._domElement);
+      if (this._domElement.parentNode) {
+        this._domElement.parentNode.removeChild(this._domElement);
+      }
       return this._domElement = null;
     };
 

@@ -89,7 +89,9 @@ class ContentTools.ComponentUI
             return
 
         @_removeDOMEventListeners()
-        @_domElement.parentNode.removeChild(@_domElement)
+        if @_domElement.parentNode
+            @_domElement.parentNode.removeChild(@_domElement)
+
         @_domElement = null
 
     # Event methods
