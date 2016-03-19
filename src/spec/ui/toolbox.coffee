@@ -181,9 +181,6 @@ describe 'ContentTools.ToolboxUI', () ->
             region = editor.regions()['foo']
             element = region.children[1]
 
-            # Make a change
-            region.detach(element)
-
             # Spy on the `canApply` class method called if the short-cut is used
             spyOn(ContentTools.Tools.Undo, 'canApply')
 
@@ -204,14 +201,7 @@ describe 'ContentTools.ToolboxUI', () ->
             toolbox = editor._toolbox
             region = editor.regions()['foo']
             element = region.children[1]
-
-            # Make a change
-            region.detach(element)
-
-            # Undo the change
-            ContentTools.Tools.Undo.apply(null, null, () ->)
-            region = editor.regions()['foo']
-            expect(region.children.length).toBe 2
+            element.focus()
 
             # Spy on the `canApply` class method called if the short-cut is used
             spyOn(ContentTools.Tools.Redo, 'canApply')
@@ -224,7 +214,7 @@ describe 'ContentTools.ToolboxUI', () ->
             keyDownEvent.shiftKey = true
             window.dispatchEvent(keyDownEvent)
 
-            # Check the undo short-cut was called
+            # Check the redo short-cut was called
             expect(ContentTools.Tools.Redo.canApply).toHaveBeenCalled()
 
 

@@ -52,7 +52,7 @@ describe 'ContentTools.Event', () ->
         it 'should return a timestamp of when the event was created', () ->
 
             ev = new ContentTools.Event('test')
-            expect(ev.timeStamp()).toBeCloseTo Date.now(), 10
+            expect(ev.timeStamp()).toBeCloseTo Date.now(), 100
 
 
     describe 'ContentTools.Event.preventDefault()', () ->

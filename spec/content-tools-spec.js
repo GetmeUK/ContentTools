@@ -462,7 +462,7 @@
       return it('should return a timestamp of when the event was created', function() {
         var ev;
         ev = new ContentTools.Event('test');
-        return expect(ev.timeStamp()).toBeCloseTo(Date.now(), 10);
+        return expect(ev.timeStamp()).toBeCloseTo(Date.now(), 100);
       });
     });
     describe('ContentTools.Event.preventDefault()', function() {
@@ -1034,7 +1034,6 @@
         toolbox = editor._toolbox;
         region = editor.regions()['foo'];
         element = region.children[1];
-        region.detach(element);
         spyOn(ContentTools.Tools.Undo, 'canApply');
         keyDownEvent = document.createEvent('CustomEvent');
         keyDownEvent.initCustomEvent('keydown', false, false, null);
@@ -1048,10 +1047,7 @@
         toolbox = editor._toolbox;
         region = editor.regions()['foo'];
         element = region.children[1];
-        region.detach(element);
-        ContentTools.Tools.Undo.apply(null, null, function() {});
-        region = editor.regions()['foo'];
-        expect(region.children.length).toBe(2);
+        element.focus();
         spyOn(ContentTools.Tools.Redo, 'canApply');
         keyDownEvent = document.createEvent('CustomEvent');
         keyDownEvent.initCustomEvent('keydown', false, false, null);
