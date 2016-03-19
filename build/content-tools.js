@@ -8063,13 +8063,11 @@
         return;
       }
       region = this._regions[snapshot.selected.region];
-      console.log(snapshot.selected.element);
-      //console.log(region.descendants);
-      //element = region.descendants()[snapshot.selected.element];
-      //element.focus();
-      //if (element.selection && snapshot.selected.selection) {
-      //  return element.selection(snapshot.selected.selection);
-      //}
+      element = region.descendants()[snapshot.selected.element];
+      element.focus();
+      if (element.selection && snapshot.selected.selection) {
+        return element.selection(snapshot.selected.selection);
+      }
     };
 
     History.prototype.stopWatching = function() {
