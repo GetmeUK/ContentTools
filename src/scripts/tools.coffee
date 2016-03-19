@@ -697,7 +697,7 @@ class ContentTools.Tools.Table extends ContentTools.Tool
 
         # Support saving the dialog
         dialog.addEventListener 'save', (ev) =>
-            tableCfg = ev.detail().tableCfg
+            tableCfg = ev.detail()
 
             # This flag indicates if we can restore the previous elements focus
             # and state or if we need to change the focus to the first cell in

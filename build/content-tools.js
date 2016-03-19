@@ -5154,8 +5154,8 @@
       this._bindings[eventName].push(callback);
     };
 
-    ComponentUI.prototype.createEvent = function(name, detail) {
-      return new ContentTools.Event(name, detail);
+    ComponentUI.prototype.createEvent = function(eventName, detail) {
+      return new ContentTools.Event(eventName, detail);
     };
 
     ComponentUI.prototype.dispatchEvent = function(ev) {
@@ -7275,7 +7275,7 @@
         foot: footCSSClass.indexOf('ct-section--applied') > -1,
         head: headCSSClass.indexOf('ct-section--applied') > -1
       };
-      return this.dispacheEvent(this.createEvent('save', detail));
+      return this.dispatchEvent(this.createEvent('save', detail));
     };
 
     TableDialog.prototype.unmount = function() {
@@ -8867,7 +8867,7 @@
       dialog.addEventListener('save', (function(_this) {
         return function(ev) {
           var index, keepFocus, node, tableCfg, _ref;
-          tableCfg = ev.detail().tableCfg;
+          tableCfg = ev.detail();
           keepFocus = true;
           if (table) {
             _this._updateTable(tableCfg, table);

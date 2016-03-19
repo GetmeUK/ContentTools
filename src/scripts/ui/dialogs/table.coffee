@@ -114,7 +114,7 @@ class ContentTools.TableDialog extends ContentTools.DialogUI
             head: headCSSClass.indexOf('ct-section--applied') > -1
             }
 
-        @dispacheEvent(@createEvent('save', detail))
+        @dispatchEvent(@createEvent('save', detail))
 
     unmount: () ->
         # Unmount the component from the DOM

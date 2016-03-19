@@ -20,8 +20,8 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
     # Methods
 
     busy: (busy) ->
-        # Set the widget to busy (or revert if from a busy state to it's
-        # previous state.
+        # Set the widget to busy (or revert if from a busy state to its previous
+        # state.
         if @dispatchEvent(@createEvent('busy', {busy: busy}))
 
             # If the widget is already busy do nothing
@@ -35,17 +35,20 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
                 @state(@_revertToState)
 
     cancel: () ->
-        # Perform the cancel action against the switch
+        # Dispatch the cancel event against the switch and set its state to
+        # ready.
         if @dispatchEvent(@createEvent('cancel'))
             @state('ready')
 
     confirm: () ->
-        # Perform the confirm action against the switch
+        # Dispatch the confirm event against the switch set its state to
+        # ready.
         if @dispatchEvent(@createEvent('confirm'))
             @state('ready')
 
     edit: () ->
-        # Perform the edit action against the switch
+        # Dispatch the edit event against the switch and set its state to
+        # editing.
         if @dispatchEvent(@createEvent('edit'))
             @state('editing')
 
@@ -93,7 +96,14 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
         @_addDOMEventListeners()
 
     state: (state) ->
-        # Get/Set the state of the ignition switch
+        # Get/Set the state of the ignition switch. State must be one of the
+        # following values:
+        #
+        # - busy
+        # - editing
+        # - ready
+        #
+
         if state == undefined
             return @_state
 

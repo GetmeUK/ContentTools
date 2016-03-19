@@ -108,9 +108,9 @@ class ContentTools.ComponentUI
 
         return
 
-    createEvent: (name, detail) ->
+    createEvent: (eventName, detail) ->
         # Create an event
-        return new ContentTools.Event(name, detail)
+        return new ContentTools.Event(eventName, detail)
 
     dispatchEvent: (ev) ->
         # Dispatch an event against the UI compontent
