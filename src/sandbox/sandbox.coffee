@@ -20,16 +20,16 @@ window.onload = () ->
     editor = ContentTools.EditorApp.get()
     editor.init('.editable', 'data-name')
 
-    editor.addEventListener 'save', (ev) ->
-
-        # Mark the ignition as busy while we save the page
-        editor.busy(true)
-
     editor.addEventListener 'saved', (ev) ->
-        console.log ev
 
         # Handle the page being saved
         console.log ev.detail().regions
+
+        if Object.keys(ev.detail().regions).length == 0
+            return
+
+        # Mark the ignition as busy while we save the page
+        editor.busy(true)
 
         # Simulate saving the page
         saved = () =>

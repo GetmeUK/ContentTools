@@ -130,14 +130,12 @@ class _EditorApp extends ContentTools.ComponentUI
 
                 # Stop the editor and request that changes are saved
                 @_ignition.state('ready')
-                @_ignition.busy(true)
                 @stop(true)
 
             @_ignition.addEventListener 'cancel', (ev) =>
                 ev.preventDefault()
 
                 # Stop the editor and request that changes are reverted
-                @_ignition.busy(true)
                 @stop(false)
 
                 # Update the state of the ignition switch based on the outcome
@@ -427,12 +425,16 @@ class _EditorApp extends ContentTools.ComponentUI
 
     save: (passive) ->
         # Save changes to the current page
-        if not @dispatchEvent(@createEvent('save'))
+        if not @dispatchEvent(@createEvent('save', {passive: passive}))
             return
 
         # Check the document has changed, if not we don't need do anything
         root = ContentEdit.Root.get()
-        if root.lastModified() == @_rootLastModified and passive
+        if root.lastModified() == @_rootLastModified
+            # Trigger the saved event early with no modified regions,
+            @dispatchEvent(
+                @createEvent('saved', {regions: {}, passive: passive})
+                )
             return
 
         # Build a map of the modified regions
@@ -460,10 +462,10 @@ class _EditorApp extends ContentTools.ComponentUI
             # Set the region back to not modified
             @_regionsLastModified[name] = region.lastModified()
 
-        # Trigger the save event with a region HTML map for the changed
+        # Trigger the saved event with a region HTML map for the changed
         # content.
         @dispatchEvent(
-            @createEvent('saved', {regions: modifiedRegions})
+            @createEvent('saved', {regions: modifiedRegions, passive: passive})
             )
 
     setRegionOrder: (regionNames) ->

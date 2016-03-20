@@ -7574,14 +7574,12 @@
           return function(ev) {
             ev.preventDefault();
             _this._ignition.state('ready');
-            _this._ignition.busy(true);
             return _this.stop(true);
           };
         })(this));
         this._ignition.addEventListener('cancel', (function(_this) {
           return function(ev) {
             ev.preventDefault();
-            _this._ignition.busy(true);
             _this.stop(false);
             if (_this.isEditing()) {
               return _this._ignition.state('editing');
@@ -7815,11 +7813,17 @@
 
     _EditorApp.prototype.save = function(passive) {
       var child, html, modifiedRegions, name, region, root, _ref;
-      if (!this.dispatchEvent(this.createEvent('save'))) {
+      if (!this.dispatchEvent(this.createEvent('save', {
+        passive: passive
+      }))) {
         return;
       }
       root = ContentEdit.Root.get();
-      if (root.lastModified() === this._rootLastModified && passive) {
+      if (root.lastModified() === this._rootLastModified) {
+        this.dispatchEvent(this.createEvent('saved', {
+          regions: {},
+          passive: passive
+        }));
         return;
       }
       modifiedRegions = {};
@@ -7843,7 +7847,8 @@
         this._regionsLastModified[name] = region.lastModified();
       }
       return this.dispatchEvent(this.createEvent('saved', {
-        regions: modifiedRegions
+        regions: modifiedRegions,
+        passive: passive
       }));
     };
 

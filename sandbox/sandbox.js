@@ -13,42 +13,42 @@
           return _this._onCancel();
         };
       })(this));
-      this._dialog.addEventListener('imageUploader.cancelupload', (function(_this) {
+      this._dialog.addEventListener('imageuploader.cancelupload', (function(_this) {
         return function() {
           return _this._onCancelUpload();
         };
       })(this));
-      this._dialog.addEventListener('imageUploader.clear', (function(_this) {
+      this._dialog.addEventListener('imageuploader.clear', (function(_this) {
         return function() {
           return _this._onClear();
         };
       })(this));
-      this._dialog.addEventListener('imageUploader.fileready', (function(_this) {
+      this._dialog.addEventListener('imageuploader.fileready', (function(_this) {
         return function(ev) {
           return _this._onFileReady(ev.files);
         };
       })(this));
-      this._dialog.addEventListener('imageUploader.mount', (function(_this) {
+      this._dialog.addEventListener('imageuploader.mount', (function(_this) {
         return function() {
           return _this._onMount();
         };
       })(this));
-      this._dialog.addEventListener('imageUploader.rotateccw', (function(_this) {
+      this._dialog.addEventListener('imageuploader.rotateccw', (function(_this) {
         return function() {
           return _this._onRotateCCW();
         };
       })(this));
-      this._dialog.addEventListener('imageUploader.rotatecw', (function(_this) {
+      this._dialog.addEventListener('imageuploader.rotatecw', (function(_this) {
         return function() {
           return _this._onRotateCW();
         };
       })(this));
-      this._dialog.addEventListener('imageUploader.save', (function(_this) {
+      this._dialog.addEventListener('imageuploader.save', (function(_this) {
         return function() {
           return _this._onSave();
         };
       })(this));
-      this._dialog.addEventListener('imageUploader.unmount', (function(_this) {
+      this._dialog.addEventListener('imageuploader.unmount', (function(_this) {
         return function() {
           return _this._onUnmount();
         };
@@ -142,13 +142,13 @@
     ContentTools.StylePalette.add([new ContentTools.Style('By-line', 'article__by-line', ['p']), new ContentTools.Style('Caption', 'article__caption', ['p']), new ContentTools.Style('Example', 'example', ['pre']), new ContentTools.Style('Example + Good', 'example--good', ['pre']), new ContentTools.Style('Example + Bad', 'example--bad', ['pre'])]);
     editor = ContentTools.EditorApp.get();
     editor.init('.editable', 'data-name');
-    editor.addEventListener('save', function(ev) {
-      return editor.busy(true);
-    });
     editor.addEventListener('saved', function(ev) {
       var saved;
-      console.log(ev);
       console.log(ev.detail().regions);
+      if (Object.keys(ev.detail().regions).length === 0) {
+        return;
+      }
+      editor.busy(true);
       saved = (function(_this) {
         return function() {
           editor.busy(false);
