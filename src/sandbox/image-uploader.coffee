@@ -14,28 +14,28 @@ class ImageUploader
         @_dialog.addEventListener 'cancel', () =>
             @_onCancel()
 
-        @_dialog.addEventListener 'imageUploader.cancelupload', () =>
+        @_dialog.addEventListener 'imageuploader.cancelupload', () =>
             @_onCancelUpload()
 
-        @_dialog.addEventListener 'imageUploader.clear', () =>
+        @_dialog.addEventListener 'imageuploader.clear', () =>
             @_onClear()
 
-        @_dialog.addEventListener 'imageUploader.fileready', (ev) =>
+        @_dialog.addEventListener 'imageuploader.fileready', (ev) =>
             @_onFileReady(ev.files)
 
-        @_dialog.addEventListener 'imageUploader.mount', () =>
+        @_dialog.addEventListener 'imageuploader.mount', () =>
             @_onMount()
 
-        @_dialog.addEventListener 'imageUploader.rotateccw', () =>
+        @_dialog.addEventListener 'imageuploader.rotateccw', () =>
             @_onRotateCCW()
 
-        @_dialog.addEventListener 'imageUploader.rotatecw', () =>
+        @_dialog.addEventListener 'imageuploader.rotatecw', () =>
             @_onRotateCW()
 
-        @_dialog.addEventListener 'imageUploader.save', () =>
+        @_dialog.addEventListener 'imageuploader.save', () =>
             @_onSave()
 
-        @_dialog.addEventListener 'imageUploader.unmount', () =>
+        @_dialog.addEventListener 'imageuploader.unmount', () =>
             @_onUnmount()
 
     # Event handlers

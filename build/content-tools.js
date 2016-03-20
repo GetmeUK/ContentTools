@@ -4866,7 +4866,11 @@
     };
 
     TableCellText.prototype._keyDown = function(ev) {
-      var cell, cellIndex, lastCell, next, nextRow, row;
+      var cell, cellIndex, lastCell, next, nextRow, row, selection;
+      selection = ContentSelect.Range.query(this._domElement);
+      if (!(this._atEnd(selection) && selection.isCollapsed())) {
+        return;
+      }
       ev.preventDefault();
       cell = this.parent();
       if (this._isInLastRow()) {
@@ -4931,7 +4935,11 @@
     };
 
     TableCellText.prototype._keyUp = function(ev) {
-      var cell, cellIndex, previous, previousRow, row;
+      var cell, cellIndex, previous, previousRow, row, selection;
+      selection = ContentSelect.Range.query(this._domElement);
+      if (!(selection.get()[0] === 0 && selection.isCollapsed())) {
+        return;
+      }
       ev.preventDefault();
       cell = this.parent();
       if (this._isInFirstRow()) {
@@ -4963,6 +4971,7 @@
   })(ContentEdit.Text);
 
 }).call(this);
+
 (function() {
   var AttributeUI, CropMarksUI, StyleUI, _EditorApp,
     __hasProp = {}.hasOwnProperty,
@@ -6342,7 +6351,7 @@
       this._domClear.textContent = ContentEdit._('Clear');
       domActions.appendChild(this._domClear);
       this._addDOMEventListeners();
-      return this.dispatchEvent(this.createEvent('imageUploader.mount'));
+      return this.dispatchEvent(this.createEvent('imageuploader.mount'));
     };
 
     ImageDialog.prototype.populate = function(imageURL, imageSize) {
@@ -6412,7 +6421,7 @@
       this._domRotateCCW = null;
       this._domRotateCW = null;
       this._domUpload = null;
-      return this.dispatchEvent(this.createEvent('imageUploader.unmount'));
+      return this.dispatchEvent(this.createEvent('imageuploader.unmount'));
     };
 
     ImageDialog.prototype._addDOMEventListeners = function() {
@@ -6426,30 +6435,30 @@
             ev.target.type = 'text';
             ev.target.type = 'file';
           }
-          return _this.dispatchEvent(_this.createEvent('imageUploader.fileready'));
+          return _this.dispatchEvent(_this.createEvent('imageuploader.fileready'));
         };
       })(this));
       this._domCancelUpload.addEventListener('click', (function(_this) {
         return function(ev) {
-          return _this.dispatchEvent(_this.createEvent('imageUploader.cancelupload'));
+          return _this.dispatchEvent(_this.createEvent('imageuploader.cancelupload'));
         };
       })(this));
       this._domClear.addEventListener('click', (function(_this) {
         return function(ev) {
           _this.removeCropMarks();
-          return _this.dispatchEvent(_this.createEvent('imageUploader.clear'));
+          return _this.dispatchEvent(_this.createEvent('imageuploader.clear'));
         };
       })(this));
       this._domRotateCCW.addEventListener('click', (function(_this) {
         return function(ev) {
           _this.removeCropMarks();
-          return _this.dispatchEvent(_this.createEvent('imageUploader.rotateccw'));
+          return _this.dispatchEvent(_this.createEvent('imageuploader.rotateccw'));
         };
       })(this));
       this._domRotateCW.addEventListener('click', (function(_this) {
         return function(ev) {
           _this.removeCropMarks();
-          return _this.dispatchEvent(_this.createEvent('imageUploader.rotatecw'));
+          return _this.dispatchEvent(_this.createEvent('imageuploader.rotatecw'));
         };
       })(this));
       this._domCrop.addEventListener('click', (function(_this) {
@@ -6463,7 +6472,7 @@
       })(this));
       return this._domInsert.addEventListener('click', (function(_this) {
         return function(ev) {
-          return _this.dispatchEvent(_this.createEvent('imageUploader.save'));
+          return _this.dispatchEvent(_this.createEvent('imageuploader.save'));
         };
       })(this));
     };

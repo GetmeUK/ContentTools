@@ -4866,7 +4866,11 @@
     };
 
     TableCellText.prototype._keyDown = function(ev) {
-      var cell, cellIndex, lastCell, next, nextRow, row;
+      var cell, cellIndex, lastCell, next, nextRow, row, selection;
+      selection = ContentSelect.Range.query(this._domElement);
+      if (!(this._atEnd(selection) && selection.isCollapsed())) {
+        return;
+      }
       ev.preventDefault();
       cell = this.parent();
       if (this._isInLastRow()) {
@@ -4931,7 +4935,11 @@
     };
 
     TableCellText.prototype._keyUp = function(ev) {
-      var cell, cellIndex, previous, previousRow, row;
+      var cell, cellIndex, previous, previousRow, row, selection;
+      selection = ContentSelect.Range.query(this._domElement);
+      if (!(selection.get()[0] === 0 && selection.isCollapsed())) {
+        return;
+      }
       ev.preventDefault();
       cell = this.parent();
       if (this._isInFirstRow()) {
