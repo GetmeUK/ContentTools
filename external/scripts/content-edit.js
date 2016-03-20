@@ -2855,6 +2855,7 @@
         if (element) {
           this.attach(element);
         }
+        ContentEdit.Root.get().trigger('ready', this);
       }
     }
 
