@@ -6436,7 +6436,9 @@
             ev.target.type = 'text';
             ev.target.type = 'file';
           }
-          return _this.dispatchEvent(_this.createEvent('imageuploader.fileready'));
+          return _this.dispatchEvent(_this.createEvent('imageuploader.fileready', {
+            file: file
+          }));
         };
       })(this));
       this._domCancelUpload.addEventListener('click', (function(_this) {

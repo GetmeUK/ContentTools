@@ -21,7 +21,7 @@ class ImageUploader
             @_onClear()
 
         @_dialog.addEventListener 'imageuploader.fileready', (ev) =>
-            @_onFileReady(ev.files)
+            @_onFileReady(ev.detail().file)
 
         @_dialog.addEventListener 'imageuploader.mount', () =>
             @_onMount()
@@ -58,6 +58,7 @@ class ImageUploader
 
     _onFileReady: (file) ->
         # Handle a file being selected by the user
+        console.log file
 
         # Set the dialog state to uploading
         @_dialog.progress(0)

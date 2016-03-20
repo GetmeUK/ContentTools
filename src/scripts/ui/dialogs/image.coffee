@@ -300,7 +300,9 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
                 ev.target.type = 'text'
                 ev.target.type = 'file'
 
-            @dispatchEvent(@createEvent('imageuploader.fileready'))
+            @dispatchEvent(
+                @createEvent('imageuploader.fileready', {file: file})
+                )
 
         # Cancel upload
         @_domCancelUpload.addEventListener 'click', (ev) =>

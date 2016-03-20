@@ -25,7 +25,7 @@
       })(this));
       this._dialog.addEventListener('imageuploader.fileready', (function(_this) {
         return function(ev) {
-          return _this._onFileReady(ev.files);
+          return _this._onFileReady(ev.detail().file);
         };
       })(this));
       this._dialog.addEventListener('imageuploader.mount', (function(_this) {
@@ -68,6 +68,7 @@
 
     ImageUploader.prototype._onFileReady = function(file) {
       var upload;
+      console.log(file);
       this._dialog.progress(0);
       this._dialog.state('uploading');
       upload = (function(_this) {
