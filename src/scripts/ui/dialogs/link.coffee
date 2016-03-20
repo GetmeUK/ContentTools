@@ -55,7 +55,7 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         # allowing the calling code to listen for the `save` event and manage
         # the outcome.
 
-        if not @isMounted
+        if not @isMounted()
             @dispatchEvent(@createEvent('save'))
             return
 

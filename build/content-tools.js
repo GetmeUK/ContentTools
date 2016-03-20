@@ -6661,7 +6661,7 @@
 
     LinkDialog.prototype.save = function() {
       var detail;
-      if (!this.isMounted) {
+      if (!this.isMounted()) {
         this.dispatchEvent(this.createEvent('save'));
         return;
       }
