@@ -1,6 +1,6 @@
 class ContentTools.Event
 
-    # The `Event` class provides information about events dispatched from/to
+    # The `Event` class provides information about events dispatched by
     # `UIComponents`.
 
     constructor: (name, detail) ->
