@@ -7822,7 +7822,7 @@
         return;
       }
       root = ContentEdit.Root.get();
-      if (root.lastModified() === this._rootLastModified) {
+      if (root.lastModified() === this._rootLastModified && passive) {
         this.dispatchEvent(this.createEvent('saved', {
           regions: {},
           passive: passive
@@ -7970,11 +7970,12 @@
     };
 
     _EditorApp.prototype._preventEmptyRegions = function() {
-      var child, hasEditableChildren, name, placeholder, region, _i, _len, _ref, _ref1, _results;
+      var child, hasEditableChildren, lastModified, name, placeholder, region, _i, _len, _ref, _ref1, _results;
       _ref = this._regions;
       _results = [];
       for (name in _ref) {
         region = _ref[name];
+        lastModified = region.lastModified();
         hasEditableChildren = false;
         _ref1 = region.children;
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
@@ -7989,7 +7990,7 @@
         }
         placeholder = new ContentEdit.Text('p', {}, '');
         region.attach(placeholder);
-        _results.push(region.commit());
+        _results.push(region._modified = lastModified);
       }
       return _results;
     };

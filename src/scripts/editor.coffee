@@ -430,7 +430,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Check the document has changed, if not we don't need do anything
         root = ContentEdit.Root.get()
-        if root.lastModified() == @_rootLastModified
+        if root.lastModified() == @_rootLastModified and passive
             # Trigger the saved event early with no modified regions,
             @dispatchEvent(
                 @createEvent('saved', {regions: {}, passive: passive})
@@ -621,6 +621,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Check for any region that is now empty
         for name, region of @_regions
+            lastModified = region.lastModified()
 
             # We have to check for elements that can receive focus as static
             # elements alone don't allow new content to be added to a region.
@@ -638,9 +639,9 @@ class _EditorApp extends ContentTools.ComponentUI
             placeholder = new ContentEdit.Text('p', {}, '')
             region.attach(placeholder)
 
-            # This action will mark the region as modified which it technically
-            # isn't and so we commit the change to nullify this.
-            region.commit()
+            # HACK: This action will mark the region as modified which it
+            # technically isn't and so we commit the change to nullify this.
+            region._modified = lastModified
 
     _removeDOMEventListeners: () ->
         # Remove DOM event listeners for the widget
