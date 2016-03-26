@@ -8716,13 +8716,13 @@
     };
 
     AlignLeft.apply = function(element, selection, callback) {
-      var className, _i, _len, _ref, _ref1;
+      var alignmentClassNames, className, _i, _len, _ref;
       if ((_ref = element.type()) === 'ListItemText' || _ref === 'TableCellText') {
         element = element.parent();
       }
-      _ref1 = ['text-center', 'text-left', 'text-right'];
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        className = _ref1[_i];
+      alignmentClassNames = [ContentTools.Tools.AlignLeft.className, ContentTools.Tools.AlignCenter.className, ContentTools.Tools.AlignRight.className];
+      for (_i = 0, _len = alignmentClassNames.length; _i < _len; _i++) {
+        className = alignmentClassNames[_i];
         if (element.hasCSSClass(className)) {
           element.removeCSSClass(className);
           if (className === this.className) {

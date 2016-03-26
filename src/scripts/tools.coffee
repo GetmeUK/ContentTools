@@ -550,7 +550,12 @@ class ContentTools.Tools.AlignLeft extends ContentTools.Tool
             element = element.parent()
 
         # Remove any existing text alignment classes applied
-        for className in ['text-center', 'text-left', 'text-right']
+        alignmentClassNames = [
+            ContentTools.Tools.AlignLeft.className,
+            ContentTools.Tools.AlignCenter.className,
+            ContentTools.Tools.AlignRight.className
+            ]
+        for className in alignmentClassNames
             if element.hasCSSClass(className)
                 element.removeCSSClass(className)
 
