@@ -1609,6 +1609,10 @@
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.ContentEdit = {
+    ALIGNMENT_CLASS_NAMES: {
+      'left': 'align-left',
+      'right': 'align-right'
+    },
     DEFAULT_MAX_ELEMENT_WIDTH: 800,
     DEFAULT_MIN_ELEMENT_WIDTH: 80,
     DRAG_HOLD_DURATION: 500,
@@ -2513,21 +2517,23 @@
     };
 
     Element._dropBoth = function(element, target, placement) {
-      var aClassNames, className, insertIndex, _i, _len, _ref;
+      var aClassNames, alignLeft, alignRight, className, insertIndex, _i, _len, _ref;
       element.parent().detach(element);
       insertIndex = target.parent().children.indexOf(target);
       if (placement[0] === 'below' && placement[1] === 'center') {
         insertIndex += 1;
       }
+      alignLeft = ContentEdit.ALIGNMENT_CLASS_NAMES['left'];
+      alignRight = ContentEdit.ALIGNMENT_CLASS_NAMES['right'];
       if (element.a) {
-        element._removeCSSClass('align-left');
-        element._removeCSSClass('align-right');
+        element._removeCSSClass(alignLeft);
+        element._removeCSSClass(alignRight);
         if (element.a['class']) {
           aClassNames = [];
           _ref = element.a['class'].split(' ');
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             className = _ref[_i];
-            if (className === 'align-left' || className === 'align-right') {
+            if (className === alignLeft || className === alignRight) {
               continue;
             }
             aClassNames.push(className);
@@ -2539,31 +2545,31 @@
           }
         }
       } else {
-        element.removeCSSClass('align-left');
-        element.removeCSSClass('align-right');
+        element.removeCSSClass(alignLeft);
+        element.removeCSSClass(alignRight);
       }
       if (placement[1] === 'left') {
         if (element.a) {
           if (element.a['class']) {
-            element.a['class'] += ' align-left';
+            element.a['class'] += ' ' + alignLeft;
           } else {
-            element.a['class'] = 'align-left';
+            element.a['class'] = alignLeft;
           }
-          element._addCSSClass('align-left');
+          element._addCSSClass(alignLeft);
         } else {
-          element.addCSSClass('align-left');
+          element.addCSSClass(alignLeft);
         }
       }
       if (placement[1] === 'right') {
         if (element.a) {
           if (element.a['class']) {
-            element.a['class'] += ' align-right';
+            element.a['class'] += ' ' + alignRight;
           } else {
-            element.a['class'] = 'align-right';
+            element.a['class'] = alignRight;
           }
-          element._addCSSClass('align-right');
+          element._addCSSClass(alignRight);
         } else {
-          element.addCSSClass('align-right');
+          element.addCSSClass(alignRight);
         }
       }
       return target.parent().attach(element, insertIndex);
@@ -3597,6 +3603,7 @@
         content.optimize();
         this._lastCached = Date.now();
         this._cached = content.html();
+        this._cached = this._cached.replace(/\n$/gm, '');
       }
       return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("" + this._cached + "</" + this._tagName + ">");
     };
