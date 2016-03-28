@@ -7,6 +7,14 @@
 
 <a href="http://getcontenttools.com"><img width="728" src="http://getcontenttools.com/images/github-splash.png" alt="Demo"></a>
 
+## Install
+
+**Using bower**
+
+```
+bower install --save ContentTools
+```
+
 ## Building
 To build the library you'll need to use Grunt. First install the required node modules ([grunt-cli](http://gruntjs.com/getting-started) must be installed):
 ```

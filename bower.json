@@ -10,18 +10,28 @@
     "build/images/drop-vert-below.svg",
     "build/images/video.svg"
   ],
-  "keywords": [
-    "WYSIWYG",
-    "Inline",
-    "Content",
-    "Editor"
+  "authors": [
+    {
+      "name": "Anthony Blackshaw",
+      "email": "ant@getme.co.uk",
+      "url": "https://github.com/anthonyjb"
+    }
   ],
-  "author": {
-    "name": "Anthony Blackshaw",
-    "email": "ant@getme.co.uk",
-    "url": "https://github.com/anthonyjb"
-  },
   "license": "MIT",
+  "keywords": [
+    "wysiwyg",
+    "inline",
+    "html",
+    "editor"
+  ],
+  "homepage": "http://getcontenttools.com/api/content-tools",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:GetmeUK/ContentTools.git"
+  },
+  "moduleType": [
+    "globals"
+  ],
   "ignore": [
     "**/.*",
     "node_modules",
