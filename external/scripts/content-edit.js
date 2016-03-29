@@ -2085,6 +2085,14 @@
       this._tagName = tagName.toLowerCase();
       this._attributes = attributes ? attributes : {};
       this._domElement = null;
+      this._behaviours = {
+        drag: true,
+        drop: true,
+        merge: true,
+        remove: true,
+        resize: true,
+        spawn: true
+      };
     }
 
     Element.prototype.attributes = function() {
@@ -2161,6 +2169,13 @@
       }
     };
 
+    Element.prototype.can = function(behaviour, allowed) {
+      if (allowed === void 0) {
+        return this._behaviours[behaviour];
+      }
+      return this._behaviours[name] = allowed;
+    };
+
     Element.prototype.createDraggingDOMElement = function() {
       var helper;
       if (!this.isMounted()) {
@@ -2174,7 +2189,7 @@
 
     Element.prototype.drag = function(x, y) {
       var root;
-      if (!this.isMounted()) {
+      if (!(this.isMounted() && this.can('drag'))) {
         return;
       }
       root = ContentEdit.Root.get();
@@ -2240,6 +2255,9 @@
     };
 
     Element.prototype.merge = function(element) {
+      if (!(this.can('merge') && this.can('remove'))) {
+        return false;
+      }
       if (this.constructor.mergers[element.type()]) {
         return this.constructor.mergers[element.type()](element, this);
       } else if (element.constructor.mergers[this.type()]) {
@@ -2457,10 +2475,14 @@
       if (root._dropTarget) {
         return;
       }
-      if (this.constructor.droppers[dragging.type()] || dragging.constructor.droppers[this.type()]) {
-        this._addCSSClass('ce-element--drop');
-        return root._dropTarget = this;
+      if (!this.can('drop')) {
+        return;
       }
+      if (!(this.constructor.droppers[dragging.type()] || dragging.constructor.droppers[this.type()])) {
+        return;
+      }
+      this._addCSSClass('ce-element--drop');
+      return root._dropTarget = this;
     };
 
     Element.prototype._removeDOMEventListeners = function() {};
@@ -2719,7 +2741,7 @@
     };
 
     ResizableElement.prototype.resize = function(corner, x, y) {
-      if (!this.isMounted()) {
+      if (!(this.isMounted() && this.can('resize'))) {
         return;
       }
       return ContentEdit.Root.get().startResizing(this, corner, x, y, true);
@@ -2768,6 +2790,9 @@
     ResizableElement.prototype._onMouseMove = function(ev) {
       var corner;
       ResizableElement.__super__._onMouseMove.call(this);
+      if (!this.can('resize')) {
+        return;
+      }
       this._removeCSSClass('ce-element--resize-top-left');
       this._removeCSSClass('ce-element--resize-top-right');
       this._removeCSSClass('ce-element--resize-bottom-left');
@@ -3212,7 +3237,7 @@
       if (this.isMounted()) {
         this._syncContent();
       }
-      if (this.content.isWhitespace()) {
+      if (this.content.isWhitespace() && this.can('remove')) {
         if (this.parent()) {
           this.parent().detach(this);
         }
@@ -3465,6 +3490,9 @@
         selection.select(this.domElement());
         return;
       }
+      if (!this.can('spawn')) {
+        return;
+      }
       this.content = tip.trim();
       this.updateInnerHTML();
       element = new this.constructor('p', {}, tail.trim());
@@ -3603,7 +3631,7 @@
         content.optimize();
         this._lastCached = Date.now();
         this._cached = content.html();
-        this._cached = this._cached.replace(/\n$/gm, '');
+        this._cached = this._cached.replace(/\u200B\Z/g, '');
       }
       return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("" + this._cached + "</" + this._tagName + ">");
     };
@@ -3611,7 +3639,7 @@
     PreText.prototype.updateInnerHTML = function() {
       var html;
       html = this.content.html();
-      html += '\n';
+      html += '\u200B';
       this._domElement.innerHTML = html;
       ContentSelect.Range.prepareElement(this._domElement);
       return this._flagIfEmpty();
@@ -3620,7 +3648,7 @@
     PreText.prototype._onKeyUp = function(ev) {
       var html, newSnaphot, snapshot;
       snapshot = this.content.html();
-      html = this._domElement.innerHTML.replace(/[\n]$/, '');
+      html = this._domElement.innerHTML;
       this.content = new HTMLString.String(html, this.content.preserveWhitespace());
       newSnaphot = this.content.html();
       if (snapshot !== newSnaphot) {
@@ -4229,7 +4257,7 @@
     };
 
     ListItemText.prototype.blur = function() {
-      if (this.content.isWhitespace()) {
+      if (this.content.isWhitespace() && this.can('remove')) {
         this.parent().remove();
       } else if (this.isMounted()) {
         this._domElement.blur();
@@ -4302,6 +4330,9 @@
       ev.preventDefault();
       if (this.content.isWhitespace()) {
         this.parent().unindent();
+        return;
+      }
+      if (!this.can('spawn')) {
         return;
       }
       ContentSelect.Range.query(this._domElement);
@@ -4845,7 +4876,7 @@
       cell = this.parent();
       row = cell.parent();
       if (this.content.length() === 0 && row.children.indexOf(cell) === 0) {
-        if (row.isEmpty()) {
+        if (row.isEmpty() && this.can('remove')) {
           previous = this.previousContent();
           if (previous) {
             previous.focus();
@@ -4860,7 +4891,7 @@
     TableCellText.prototype._keyDelete = function(ev) {
       var lastChild, nextElement, row, selection;
       row = this.parent().parent();
-      if (row.isEmpty()) {
+      if (row.isEmpty() && this.can('remove')) {
         ev.preventDefault();
         lastChild = row.children[row.children.length - 1];
         nextElement = lastChild.tableCellText().nextContent();
@@ -4920,6 +4951,9 @@
         }
         return this.previousContent().focus();
       } else {
+        if (!this.can('spawn')) {
+          return;
+        }
         grandParent = cell.parent().parent();
         if (grandParent.tagName() === 'tbody' && this._isLastInSection()) {
           row = new ContentEdit.TableRow();
