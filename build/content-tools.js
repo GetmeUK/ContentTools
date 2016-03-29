@@ -6993,11 +6993,13 @@
           return selectTab('attributes');
         };
       })(this));
-      this._domCodeTab.addEventListener('mousedown', (function(_this) {
-        return function() {
-          return selectTab('code');
-        };
-      })(this));
+      if (this._supportsCoding) {
+        this._domCodeTab.addEventListener('mousedown', (function(_this) {
+          return function() {
+            return selectTab('code');
+          };
+        })(this));
+      }
       this._domRemoveAttribute.addEventListener('mousedown', (function(_this) {
         return function(ev) {
           var index, last;

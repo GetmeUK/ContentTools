@@ -408,8 +408,9 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             selectTab('attributes')
 
         # Code
-        @_domCodeTab.addEventListener 'mousedown', () =>
-            selectTab('code')
+        if @_supportsCoding
+            @_domCodeTab.addEventListener 'mousedown', () =>
+                selectTab('code')
 
         # Remove attribute
         @_domRemoveAttribute.addEventListener 'mousedown', (ev) =>
