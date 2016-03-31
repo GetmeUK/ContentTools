@@ -51,18 +51,6 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
 
         super()
 
-    tools: (tools) ->
-        # Get/Set the tools that populate the toolbox
-        if tools is undefined
-            return @_tools
-
-        # Set the tools
-        @_tools = tools
-
-        # Remount the toolbox to reflect any changes
-        @unmount()
-        @mount()
-
     mount: () ->
         # Mount the widget to the DOM
 
@@ -85,11 +73,47 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
         @_domGrip.appendChild(@constructor.createDiv(['ct-grip__bump']))
 
         # Tools
+        @_domToolGroups = @constructor.createDiv(['ct-tool-groups'])
+        @_domElement.appendChild(@_domToolGroups)
+        @tools(@_tools)
+
+        # Restore the position of the element (if there's a restore set)
+        restore = window.localStorage.getItem('ct-toolbox-position')
+        if restore and /^\d+,\d+$/.test(restore)
+            position = (parseInt(coord) for coord in restore.split(','))
+            @_domElement.style.left = "#{ position[0] }px"
+            @_domElement.style.top = "#{ position[1] }px"
+
+            # After restoring the position make sure the toolbox is still
+            # visible in the window.
+            @_contain()
+
+        # Add interaction handlers
+        @_addDOMEventListeners()
+
+    tools: (tools) ->
+        # Get/Set the tools that populate the toolbox
+        if tools is undefined
+            return @_tools
+
+        # Set the tools
+        @_tools = tools
+
+        # Clear existing tools
+        for toolName, toolUI of @_toolUIs
+            toolUI.unmount()
+        @_toolUIs = {}
+
+        # Remove tool groups
+        while @_domToolGroups.lastChild
+            @_domToolGroups.removeChild(@_domToolGroups.lastChild)
+
+        # Add the tools
         for toolGroup, i in @_tools
 
             # Create a group for the tools
             domToolGroup = @constructor.createDiv(['ct-tool-group'])
-            @_domElement.appendChild(domToolGroup)
+            @_domToolGroups.appendChild(domToolGroup)
 
             # Create an associated ToolUI compontent for each tool in the group
             for toolName in toolGroup
@@ -106,20 +130,6 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 # Whenever the tool is applied we'll want to force an update
                 @_toolUIs[toolName].addEventListener 'applied', () =>
                     @updateTools()
-
-        # Restore the position of the element (if there's a restore set)
-        restore = window.localStorage.getItem('ct-toolbox-position')
-        if restore and /^\d+,\d+$/.test(restore)
-            position = (parseInt(coord) for coord in restore.split(','))
-            @_domElement.style.left = "#{ position[0] }px"
-            @_domElement.style.top = "#{ position[1] }px"
-
-            # After restoring the position make sure the toolbox is still
-            # visible in the window.
-            @_contain()
-
-        # Add interaction handlers
-        @_addDOMEventListeners()
 
     updateTools: () ->
         # Refresh all tool UIs in the toolbox

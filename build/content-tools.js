@@ -5794,17 +5794,8 @@
       return ToolboxUI.__super__.hide.call(this);
     };
 
-    ToolboxUI.prototype.tools = function(tools) {
-      if (tools === void 0) {
-        return this._tools;
-      }
-      this._tools = tools;
-      this.unmount();
-      return this.mount();
-    };
-
     ToolboxUI.prototype.mount = function() {
-      var coord, domToolGroup, i, position, restore, tool, toolGroup, toolName, _i, _j, _len, _len1, _ref;
+      var coord, position, restore;
       this._domElement = this.constructor.createDiv(['ct-widget', 'ct-toolbox']);
       this.parent().domElement().appendChild(this._domElement);
       this._domGrip = this.constructor.createDiv(['ct-toolbox__grip', 'ct-grip']);
@@ -5812,32 +5803,17 @@
       this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
       this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
       this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
-      _ref = this._tools;
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        toolGroup = _ref[i];
-        domToolGroup = this.constructor.createDiv(['ct-tool-group']);
-        this._domElement.appendChild(domToolGroup);
-        for (_j = 0, _len1 = toolGroup.length; _j < _len1; _j++) {
-          toolName = toolGroup[_j];
-          tool = ContentTools.ToolShelf.fetch(toolName);
-          this._toolUIs[toolName] = new ContentTools.ToolUI(tool);
-          this._toolUIs[toolName].mount(domToolGroup);
-          this._toolUIs[toolName].disabled(true);
-          this._toolUIs[toolName].addEventListener('applied', (function(_this) {
-            return function() {
-              return _this.updateTools();
-            };
-          })(this));
-        }
-      }
+      this._domToolGroups = this.constructor.createDiv(['ct-tool-groups']);
+      this._domElement.appendChild(this._domToolGroups);
+      this.tools(this._tools);
       restore = window.localStorage.getItem('ct-toolbox-position');
       if (restore && /^\d+,\d+$/.test(restore)) {
         position = (function() {
-          var _k, _len2, _ref1, _results;
-          _ref1 = restore.split(',');
+          var _i, _len, _ref, _results;
+          _ref = restore.split(',');
           _results = [];
-          for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
-            coord = _ref1[_k];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            coord = _ref[_i];
             _results.push(parseInt(coord));
           }
           return _results;
@@ -5847,6 +5823,48 @@
         this._contain();
       }
       return this._addDOMEventListeners();
+    };
+
+    ToolboxUI.prototype.tools = function(tools) {
+      var domToolGroup, i, tool, toolGroup, toolName, toolUI, _i, _len, _ref, _ref1, _results;
+      if (tools === void 0) {
+        return this._tools;
+      }
+      this._tools = tools;
+      _ref = this._toolUIs;
+      for (toolName in _ref) {
+        toolUI = _ref[toolName];
+        toolUI.unmount();
+      }
+      this._toolUIs = {};
+      while (this._domToolGroups.lastChild) {
+        this._domToolGroups.removeChild(this._domToolGroups.lastChild);
+      }
+      _ref1 = this._tools;
+      _results = [];
+      for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
+        toolGroup = _ref1[i];
+        domToolGroup = this.constructor.createDiv(['ct-tool-group']);
+        this._domToolGroups.appendChild(domToolGroup);
+        _results.push((function() {
+          var _j, _len1, _results1;
+          _results1 = [];
+          for (_j = 0, _len1 = toolGroup.length; _j < _len1; _j++) {
+            toolName = toolGroup[_j];
+            tool = ContentTools.ToolShelf.fetch(toolName);
+            this._toolUIs[toolName] = new ContentTools.ToolUI(tool);
+            this._toolUIs[toolName].mount(domToolGroup);
+            this._toolUIs[toolName].disabled(true);
+            _results1.push(this._toolUIs[toolName].addEventListener('applied', (function(_this) {
+              return function() {
+                return _this.updateTools();
+              };
+            })(this)));
+          }
+          return _results1;
+        }).call(this));
+      }
+      return _results;
     };
 
     ToolboxUI.prototype.updateTools = function() {
