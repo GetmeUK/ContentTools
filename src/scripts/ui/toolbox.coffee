@@ -99,6 +99,10 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
         # Set the tools
         @_tools = tools
 
+        # Only attempt to mount the tools if the toolbox itself is mounted
+        if not @isMounted()
+            return
+
         # Clear existing tools
         for toolName, toolUI of @_toolUIs
             toolUI.unmount()

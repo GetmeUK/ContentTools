@@ -5831,6 +5831,9 @@
         return this._tools;
       }
       this._tools = tools;
+      if (!this.isMounted()) {
+        return;
+      }
       _ref = this._toolUIs;
       for (toolName in _ref) {
         toolUI = _ref[toolName];
