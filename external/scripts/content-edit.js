@@ -2173,7 +2173,7 @@
       if (allowed === void 0) {
         return this._behaviours[behaviour];
       }
-      return this._behaviours[name] = allowed;
+      return this._behaviours[behaviour] = allowed;
     };
 
     Element.prototype.createDraggingDOMElement = function() {
@@ -2199,6 +2199,9 @@
 
     Element.prototype.drop = function(element, placement) {
       var root;
+      if (!this.can('drop')) {
+        return;
+      }
       root = ContentEdit.Root.get();
       if (element) {
         element._removeCSSClass('ce-element--drop');
@@ -4036,6 +4039,7 @@
 
     function ListItem(attributes) {
       ListItem.__super__.constructor.call(this, 'li', attributes);
+      this._behaviours['indent'] = true;
     }
 
     ListItem.prototype.cssTypeName = function() {
@@ -4078,6 +4082,9 @@
 
     ListItem.prototype.indent = function() {
       var sibling;
+      if (!this.can('indent')) {
+        return;
+      }
       if (this.parent().children.indexOf(this) === 0) {
         return;
       }
@@ -4110,6 +4117,9 @@
 
     ListItem.prototype.unindent = function() {
       var child, grandParent, i, itemIndex, list, parent, parentIndex, selection, sibling, siblings, text, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1;
+      if (!this.can('indent')) {
+        return;
+      }
       parent = this.parent();
       grandParent = parent.parent();
       siblings = parent.children.slice(parent.children.indexOf(this) + 1, parent.children.length);
@@ -4264,6 +4274,13 @@
         this._domElement.removeAttribute('contenteditable');
       }
       return ContentEdit.Element.prototype.blur.call(this);
+    };
+
+    ListItemText.prototype.can = function(behaviour, allowed) {
+      if (allowed) {
+        throw new Error('Cannot set behaviour for ListItemText');
+      }
+      return this.parent().can(behaviour);
     };
 
     ListItemText.prototype.html = function(indent) {
@@ -4831,6 +4848,13 @@
       return ContentEdit.Element.prototype.blur.call(this);
     };
 
+    TableCellText.prototype.can = function(behaviour, allowed) {
+      if (allowed) {
+        throw new Error('Cannot set behaviour for ListItemText');
+      }
+      return this.parent().can(behaviour);
+    };
+
     TableCellText.prototype.html = function(indent) {
       var content;
       if (indent == null) {
@@ -4875,33 +4899,35 @@
       ev.preventDefault();
       cell = this.parent();
       row = cell.parent();
+      if (!(row.isEmpty() && row.can('remove'))) {
+        return;
+      }
       if (this.content.length() === 0 && row.children.indexOf(cell) === 0) {
-        if (row.isEmpty() && this.can('remove')) {
-          previous = this.previousContent();
-          if (previous) {
-            previous.focus();
-            selection = new ContentSelect.Range(previous.content.length(), previous.content.length());
-            selection.select(previous.domElement());
-          }
-          return row.parent().detach(row);
+        previous = this.previousContent();
+        if (previous) {
+          previous.focus();
+          selection = new ContentSelect.Range(previous.content.length(), previous.content.length());
+          selection.select(previous.domElement());
         }
+        return row.parent().detach(row);
       }
     };
 
     TableCellText.prototype._keyDelete = function(ev) {
       var lastChild, nextElement, row, selection;
       row = this.parent().parent();
-      if (row.isEmpty() && this.can('remove')) {
-        ev.preventDefault();
-        lastChild = row.children[row.children.length - 1];
-        nextElement = lastChild.tableCellText().nextContent();
-        if (nextElement) {
-          nextElement.focus();
-          selection = new ContentSelect.Range(0, 0);
-          selection.select(nextElement.domElement());
-        }
-        return row.parent().detach(row);
+      if (!(row.isEmpty() && row.can('remove'))) {
+        return;
       }
+      ev.preventDefault();
+      lastChild = row.children[row.children.length - 1];
+      nextElement = lastChild.tableCellText().nextContent();
+      if (nextElement) {
+        nextElement.focus();
+        selection = new ContentSelect.Range(0, 0);
+        selection.select(nextElement.domElement());
+      }
+      return row.parent().detach(row);
     };
 
     TableCellText.prototype._keyDown = function(ev) {
