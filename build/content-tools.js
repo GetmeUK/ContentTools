@@ -5129,11 +5129,9 @@
     };
 
     ComponentUI.prototype.addCSSClass = function(className) {
-      var toto;
       if (!this.isMounted()) {
         return;
       }
-      toto = 32;
       return ContentEdit.addCSSClass(this._domElement, className);
     };
 
