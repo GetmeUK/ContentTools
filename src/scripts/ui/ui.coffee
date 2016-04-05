@@ -59,7 +59,7 @@ class ContentTools.ComponentUI
         # Add a CSS class to the DOM element
         unless @isMounted()
             return
-
+        toto = 32
         ContentEdit.addCSSClass(@_domElement, className)
 
     detatch: (component) ->
