@@ -8445,7 +8445,7 @@
     };
 
     Link.apply = function(element, selection, callback) {
-      var allowScrolling, app, applied, characters, dialog, domElement, ends, from, measureSpan, modal, rect, selectTag, starts, to, transparent, _ref;
+      var allowScrolling, app, applied, characters, dialog, domElement, ends, from, isCSS1Compat, measureSpan, modal, rect, scrollX, scrollY, selectTag, starts, supportPageOffset, to, transparent, _ref;
       applied = false;
       if (element.type() === 'Image') {
         rect = element.domElement().getBoundingClientRect();
@@ -8487,7 +8487,11 @@
         return callback(applied);
       });
       dialog = new ContentTools.LinkDialog(this.getAttr('href', element, selection), this.getAttr('target', element, selection));
-      dialog.position([rect.left + (rect.width / 2) + window.scrollX, rect.top + (rect.height / 2) + window.scrollY]);
+      supportPageOffset = window.pageXOffset !== void 0;
+      isCSS1Compat = (document.compatMode || 4) === 4;
+      scrollX = supportPageOffset ? window.pageXOffset : isCSS1Compat ? document.documentElement.scrollLeft : document.body.scrollLeft;
+      scrollY = supportPageOffset ? window.pageYOffset : isCSS1Compat ? document.documentElement.scrollTop : document.body.scrollTop;
+      dialog.position([rect.left + (rect.width / 2) + scrollX, rect.top + (rect.height / 2) + scrollY]);
       dialog.addEventListener('save', function(ev) {
         var a, alignmentClassNames, className, detail, linkClasses, _i, _j, _len, _len1;
         detail = ev.detail();

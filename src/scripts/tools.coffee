@@ -278,9 +278,27 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             @getAttr('href', element, selection),
             @getAttr('target', element, selection)
             )
+        supportPageOffset = window.pageXOffset != undefined;
+        isCSS1Compat = ((document.compatMode || 4) == 4);
+
+        scrollX =
+        if supportPageOffset
+          window.pageXOffset
+        else if isCSS1Compat
+          document.documentElement.scrollLeft
+        else
+          document.body.scrollLeft
+
+        scrollY =
+        if supportPageOffset
+          window.pageYOffset
+        else if isCSS1Compat
+          document.documentElement.scrollTop
+        else document.body.scrollTop
+
         dialog.position([
-            rect.left + (rect.width / 2) + window.scrollX,
-            rect.top + (rect.height / 2) + window.scrollY
+            rect.left + (rect.width / 2) + scrollX,
+            rect.top + (rect.height / 2) + scrollY
             ])
 
         dialog.addEventListener 'save', (ev) ->
