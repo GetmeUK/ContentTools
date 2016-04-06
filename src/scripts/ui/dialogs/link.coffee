@@ -101,7 +101,8 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
         # Input
         @_domInput.addEventListener 'keypress', (ev) =>
             if ev.keyCode is 13
-                @save()
+              ev.preventDefault()
+              @save()
 
         # Toggle the target attribute for the link ('' or TARGET)
         @_domTargetButton.addEventListener 'click', (ev) =>

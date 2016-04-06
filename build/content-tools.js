@@ -6703,6 +6703,7 @@
       this._domInput.addEventListener('keypress', (function(_this) {
         return function(ev) {
           if (ev.keyCode === 13) {
+            ev.preventDefault();
             return _this.save();
           }
         };
