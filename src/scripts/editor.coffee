@@ -164,9 +164,11 @@ class _EditorApp extends ContentTools.ComponentUI
         # Monitor paste events so that we can pre-parse the content the user
         # wants to paste into the region.
         ContentEdit.Root.get().bind 'paste', (element, ev) =>
-            # check clipboardData for IE or others browsers
+
+            # Get the clipboardData
             clipboardData = null
-            # non IE browsers
+
+            # Non-IE browsers
             if ev.clipboardData
               clipboardData = ev.clipboardData.getData('text/plain')
 
