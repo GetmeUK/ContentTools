@@ -164,7 +164,17 @@ class _EditorApp extends ContentTools.ComponentUI
         # Monitor paste events so that we can pre-parse the content the user
         # wants to paste into the region.
         ContentEdit.Root.get().bind 'paste', (element, ev) =>
-            @paste(element, ev.clipboardData)
+            # check clipboardData for IE or others browsers
+            clipboardData = null
+            # non IE browsers
+            if ev.clipboardData
+              clipboardData = ev.clipboardData.getData('text/plain')
+
+            # IE browsers
+            if window.clipboardData
+              clipboardData = window.clipboardData.getData('TEXT')
+
+            @paste(element, clipboardData)
 
         # Manage the transition between regions
         ContentEdit.Root.get().bind 'next-region', (region) =>
@@ -244,9 +254,10 @@ class _EditorApp extends ContentTools.ComponentUI
 
     paste: (element, clipboardData) ->
         # Paste content into the given element
+        content = clipboardData
 
         # Extract the content of the clipboard
-        content = clipboardData.getData('text/plain')
+        # content = clipboardData.getData('text/plain')
 
         # Convert the content into a series of lines to be inserted
         lines = content.split('\n')
