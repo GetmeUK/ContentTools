@@ -63,7 +63,7 @@ class CloudinaryImageUploader
 
     _onFileReady: (ev) ->
         # Handle a file being selected by the user
-        file = ev.file
+        file = ev.detail().file
 
         # Set the dialog state to uploading
         @_dialog.progress(0)
