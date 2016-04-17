@@ -583,7 +583,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Blur any existing focused element
         if ContentEdit.Root.get().focused()
-            _allowEmptyRegions () =>
+            @_allowEmptyRegions () =>
                 ContentEdit.Root.get().focused().blur()
 
         return

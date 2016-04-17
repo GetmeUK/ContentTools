@@ -278,9 +278,13 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             @getAttr('href', element, selection),
             @getAttr('target', element, selection)
             )
+
+        # Get the scroll position required for the dialog
+        [scrollX, scrollY] = ContentTools.getScrollPosition()
+
         dialog.position([
-            rect.left + (rect.width / 2) + window.scrollX,
-            rect.top + (rect.height / 2) + window.scrollY
+            rect.left + (rect.width / 2) + scrollX,
+            rect.top + (rect.height / 2) + scrollY
             ])
 
         dialog.addEventListener 'save', (ev) ->

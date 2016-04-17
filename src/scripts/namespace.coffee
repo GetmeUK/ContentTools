@@ -177,3 +177,20 @@ window.ContentTools =
                 )
 
         return restricted
+
+    getScrollPosition: () ->
+        # Return the current scroll position in a cross-browser compatible way
+        supportsPageOffset = window.pageXOffset != undefined
+        isCSS1Compat = (document.compatMode || 4) == 4
+
+        if supportsPageOffset
+            return [window.pageXOffset, window.pageYOffset]
+
+        else if isCSS1Compat
+            return [
+                document.documentElement.scrollLeft,
+                document.documentElement.scrollTop
+                ]
+
+        else
+            return [document.body.scrollLeft, document.body.scrollTop]
