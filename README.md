@@ -56,7 +56,7 @@ Full documentation is available at http://getcontenttools.com/api/content-tools
 - Why do you? -- chat with me on gitter (I may then post it as an issue)
 - When will you? -- chat with me on gitter (I may then post it as an issue)
 - You suck and I hate you -- contact us privately at pm@piersmorgan.me!
-- You're awesome -- please find a megaphone and suitably high rooftop
+- You're awesome -- please find a megaphone and suitably high rooftop (but seriously any help spreading the word about ContentTools is much appreciated)
 
 > Stolen almost in it's entirety from this [post](http://meta.stackexchange.com/questions/3966/is-it-okay-to-use-stack-overflow-as-the-support-forum-for-a-product-or-project) on meta.stackexchange.com
 
