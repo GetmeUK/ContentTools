@@ -3539,12 +3539,8 @@
     };
 
     Text.prototype._atEnd = function(selection) {
-      var atEnd;
-      atEnd = selection.get()[0] === this.content.length();
-      if (selection.get()[0] === this.content.length() - 1 && this.content.characters[this.content.characters.length - 1].isTag('br')) {
-        atEnd = true;
-      }
-      return atEnd;
+      console.log(selection.get(), this.content.length());
+      return selection.get()[0] >= this.content.length();
     };
 
     Text.prototype._flagIfEmpty = function() {
@@ -3624,6 +3620,13 @@
       return 'Preformatted';
     };
 
+    PreText.prototype.blur = function() {
+      if (this.isMounted()) {
+        this._domElement.innerHTML = this.content.html();
+      }
+      return PreText.__super__.blur.call(this);
+    };
+
     PreText.prototype.html = function(indent) {
       var content;
       if (indent == null) {
@@ -3634,7 +3637,6 @@
         content.optimize();
         this._lastCached = Date.now();
         this._cached = content.html();
-        this._cached = this._cached.replace(/\u200B\Z/g, '');
       }
       return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("" + this._cached + "</" + this._tagName + ">");
     };
@@ -3642,22 +3644,34 @@
     PreText.prototype.updateInnerHTML = function() {
       var html;
       html = this.content.html();
-      html += '\u200B';
       this._domElement.innerHTML = html;
+      this._ensureEndZWS();
       ContentSelect.Range.prepareElement(this._domElement);
       return this._flagIfEmpty();
     };
 
     PreText.prototype._onKeyUp = function(ev) {
       var html, newSnaphot, snapshot;
+      this._ensureEndZWS();
       snapshot = this.content.html();
       html = this._domElement.innerHTML;
+      html = html.replace(/\u200B$/g, '');
       this.content = new HTMLString.String(html, this.content.preserveWhitespace());
       newSnaphot = this.content.html();
       if (snapshot !== newSnaphot) {
         this.taint();
       }
       return this._flagIfEmpty();
+    };
+
+    PreText.prototype._keyBack = function(ev) {
+      var selection;
+      selection = ContentSelect.Range.query(this._domElement);
+      if (selection.get()[0] <= this.content.length()) {
+        return PreText.__super__._keyBack.call(this, ev);
+      }
+      selection.set(this.content.length(), this.content.length());
+      return selection.select(this._domElement);
     };
 
     PreText.prototype._keyReturn = function(ev) {
@@ -3681,6 +3695,18 @@
       selection.set(cursor, cursor);
       selection.select(this._domElement);
       return this.taint();
+    };
+
+    PreText.prototype._ensureEndZWS = function() {
+      if (!this._domElement.lastChild) {
+        return;
+      }
+      if (this._domElement.innerHTML[this._domElement.innerHTML.length - 1] === '\u200B') {
+        return;
+      }
+      this.storeState();
+      this._domElement.lastChild.textContent += '\u200B';
+      return this.restoreState();
     };
 
     PreText.droppers = {
@@ -3870,8 +3896,8 @@
       if (!src) {
         src = 'No video source set';
       }
-      if (src.length > ContentEdit.HELPER_CHAR_LIMIT) {
-        src = text.substr(0, ContentEdit.HELPER_CHAR_LIMIT);
+      if (src.length > 80) {
+        src = src.substr(0, 80) + '...';
       }
       return src;
     };
@@ -5039,6 +5065,7 @@
   })(ContentEdit.Text);
 
 }).call(this);
+
 (function() {
   var AttributeUI, CropMarksUI, StyleUI, _EditorApp,
     __hasProp = {}.hasOwnProperty,
@@ -5152,7 +5179,6 @@
 
   ContentTools.ComponentUI = (function() {
     function ComponentUI() {
-      this._eventBinderDOM = document.createElement('div');
       this._bindings = {};
       this._parent = null;
       this._children = [];
@@ -7573,6 +7599,7 @@
       this._ignition = null;
       this._inspector = null;
       this._toolbox = null;
+      this._emptyRegionsAllowed = false;
     }
 
     _EditorApp.prototype.ctrlDown = function() {
@@ -7882,13 +7909,18 @@
     };
 
     _EditorApp.prototype.revertToSnapshot = function(snapshot, restoreEditable) {
-      var domRegion, i, name, region, _i, _len, _ref, _ref1;
+      var child, domRegion, i, name, region, _i, _j, _len, _len1, _ref, _ref1, _ref2;
       if (restoreEditable == null) {
         restoreEditable = true;
       }
       _ref = this._regions;
       for (name in _ref) {
         region = _ref[name];
+        _ref1 = region.children;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          child = _ref1[_i];
+          child.unmount();
+        }
         region.domElement().innerHTML = snapshot.regions[name];
       }
       if (restoreEditable) {
@@ -7896,9 +7928,9 @@
           ContentEdit.Root.get().focused().blur();
         }
         this._regions = {};
-        _ref1 = this._domRegions;
-        for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
-          domRegion = _ref1[i];
+        _ref2 = this._domRegions;
+        for (i = _j = 0, _len1 = _ref2.length; _j < _len1; i = ++_j) {
+          domRegion = _ref2[i];
           name = domRegion.getAttribute(this._namingProp);
           if (!name) {
             name = i;
@@ -7912,7 +7944,7 @@
     };
 
     _EditorApp.prototype.save = function(passive) {
-      var child, html, modifiedRegions, name, region, root, _ref;
+      var child, html, modifiedRegions, name, region, root, _i, _len, _ref, _ref1;
       if (!this.dispatchEvent(this.createEvent('save', {
         passive: passive
       }))) {
@@ -7938,6 +7970,11 @@
           }
         }
         if (!passive) {
+          _ref1 = region.children;
+          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+            child = _ref1[_i];
+            child.unmount();
+          }
           region.domElement().innerHTML = html;
         }
         if (region.lastModified() === this._regionsLastModified[name]) {
@@ -8003,15 +8040,19 @@
           return;
         }
       }
-      if (ContentEdit.Root.get().focused()) {
-        ContentEdit.Root.get().focused().blur();
-      }
       this.history.stopWatching();
       this.history = null;
       this._toolbox.hide();
       this._inspector.hide();
       this._regions = {};
       this._state = 'ready';
+      if (ContentEdit.Root.get().focused()) {
+        _allowEmptyRegions((function(_this) {
+          return function() {
+            return ContentEdit.Root.get().focused().blur();
+          };
+        })(this));
+      }
     };
 
     _EditorApp.prototype._addDOMEventListeners = function() {
@@ -8066,8 +8107,17 @@
       })(this));
     };
 
+    _EditorApp.prototype._allowEmptyRegions = function(callback) {
+      this._emptyRegionsAllowed = true;
+      callback();
+      return this._emptyRegionsAllowed = false;
+    };
+
     _EditorApp.prototype._preventEmptyRegions = function() {
       var child, hasEditableChildren, lastModified, name, placeholder, region, _i, _len, _ref, _ref1, _results;
+      if (this._emptyRegionsAllowed) {
+        return;
+      }
       _ref = this._regions;
       _results = [];
       for (name in _ref) {

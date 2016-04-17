@@ -3539,12 +3539,8 @@
     };
 
     Text.prototype._atEnd = function(selection) {
-      var atEnd;
-      atEnd = selection.get()[0] === this.content.length();
-      if (selection.get()[0] === this.content.length() - 1 && this.content.characters[this.content.characters.length - 1].isTag('br')) {
-        atEnd = true;
-      }
-      return atEnd;
+      console.log(selection.get(), this.content.length());
+      return selection.get()[0] >= this.content.length();
     };
 
     Text.prototype._flagIfEmpty = function() {
@@ -3624,6 +3620,13 @@
       return 'Preformatted';
     };
 
+    PreText.prototype.blur = function() {
+      if (this.isMounted()) {
+        this._domElement.innerHTML = this.content.html();
+      }
+      return PreText.__super__.blur.call(this);
+    };
+
     PreText.prototype.html = function(indent) {
       var content;
       if (indent == null) {
@@ -3634,7 +3637,6 @@
         content.optimize();
         this._lastCached = Date.now();
         this._cached = content.html();
-        this._cached = this._cached.replace(/\u200B\Z/g, '');
       }
       return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("" + this._cached + "</" + this._tagName + ">");
     };
@@ -3642,22 +3644,34 @@
     PreText.prototype.updateInnerHTML = function() {
       var html;
       html = this.content.html();
-      html += '\u200B';
       this._domElement.innerHTML = html;
+      this._ensureEndZWS();
       ContentSelect.Range.prepareElement(this._domElement);
       return this._flagIfEmpty();
     };
 
     PreText.prototype._onKeyUp = function(ev) {
       var html, newSnaphot, snapshot;
+      this._ensureEndZWS();
       snapshot = this.content.html();
       html = this._domElement.innerHTML;
+      html = html.replace(/\u200B$/g, '');
       this.content = new HTMLString.String(html, this.content.preserveWhitespace());
       newSnaphot = this.content.html();
       if (snapshot !== newSnaphot) {
         this.taint();
       }
       return this._flagIfEmpty();
+    };
+
+    PreText.prototype._keyBack = function(ev) {
+      var selection;
+      selection = ContentSelect.Range.query(this._domElement);
+      if (selection.get()[0] <= this.content.length()) {
+        return PreText.__super__._keyBack.call(this, ev);
+      }
+      selection.set(this.content.length(), this.content.length());
+      return selection.select(this._domElement);
     };
 
     PreText.prototype._keyReturn = function(ev) {
@@ -3681,6 +3695,18 @@
       selection.set(cursor, cursor);
       selection.select(this._domElement);
       return this.taint();
+    };
+
+    PreText.prototype._ensureEndZWS = function() {
+      if (!this._domElement.lastChild) {
+        return;
+      }
+      if (this._domElement.innerHTML[this._domElement.innerHTML.length - 1] === '\u200B') {
+        return;
+      }
+      this.storeState();
+      this._domElement.lastChild.textContent += '\u200B';
+      return this.restoreState();
     };
 
     PreText.droppers = {
@@ -3870,8 +3896,8 @@
       if (!src) {
         src = 'No video source set';
       }
-      if (src.length > ContentEdit.HELPER_CHAR_LIMIT) {
-        src = text.substr(0, ContentEdit.HELPER_CHAR_LIMIT);
+      if (src.length > 80) {
+        src = src.substr(0, 80) + '...';
       }
       return src;
     };

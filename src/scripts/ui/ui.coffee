@@ -5,11 +5,6 @@ class ContentTools.ComponentUI
 
     constructor: () ->
 
-        # Events are supported using the native DOM event system. We create a
-        # DOM element that's never attached to the DOM but allows us to plugin
-        # to the native event system.
-        @_eventBinderDOM = document.createElement('div')
-
         # Event bindings for the component
         @_bindings = {}
 

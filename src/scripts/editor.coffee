@@ -28,6 +28,10 @@ class _EditorApp extends ContentTools.ComponentUI
         @_inspector = null
         @_toolbox = null
 
+        # Flag used to indicate that for a temporary period the editor should
+        # allow empty regions to exist.
+        @_emptyRegionsAllowed = false
+
     # Read-only properties
 
     ctrlDown: () ->
@@ -409,6 +413,11 @@ class _EditorApp extends ContentTools.ComponentUI
         for name, region of @_regions
             # Apply the changes made to the DOM (affectively reseting the DOM to
             # a non-editable state).
+
+            # Unmount all children
+            for child in region.children
+                child.unmount()
+
             region.domElement().innerHTML = snapshot.regions[name]
 
         # Check to see if we need to restore the regions to an editable state
@@ -463,6 +472,10 @@ class _EditorApp extends ContentTools.ComponentUI
             # Apply the changes made to the DOM (affectively resetting the DOM
             # to a non-editable state).
             unless passive
+                # Unmount all children
+                for child in region.children
+                    child.unmount()
+
                 region.domElement().innerHTML = html
 
             # Check the region has been modified, if not we don't include it in
@@ -554,10 +567,6 @@ class _EditorApp extends ContentTools.ComponentUI
             if not @revert()
                 return
 
-        # Blur any existing focused element
-        if ContentEdit.Root.get().focused()
-            ContentEdit.Root.get().focused().blur()
-
         # Clear history
         @history.stopWatching()
         @history = null
@@ -571,6 +580,11 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Set the application state to ready to edit
         @_state = 'ready'
+
+        # Blur any existing focused element
+        if ContentEdit.Root.get().focused()
+            _allowEmptyRegions () =>
+                ContentEdit.Root.get().focused().blur()
 
         return
 
@@ -628,9 +642,18 @@ class _EditorApp extends ContentTools.ComponentUI
         window.addEventListener 'unload', (ev) =>
             @destroy()
 
+    _allowEmptyRegions: (callback) ->
+        # Execute a function while allowing empty regions (e.g disabling the
+        # default `_preventEmptyRegions` behaviour).
+        @_emptyRegionsAllowed = true
+        callback()
+        @_emptyRegionsAllowed = false
+
     _preventEmptyRegions: () ->
         # Ensure no region is empty by inserting a placeholder <p> tag if
         # required.
+        if @_emptyRegionsAllowed
+            return
 
         # Check for any region that is now empty
         for name, region of @_regions
