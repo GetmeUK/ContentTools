@@ -47,6 +47,19 @@ Alternatively you can use `grunt jasmine` to run the tests from the command line
 ## Documentation
 Full documentation is available at http://getcontenttools.com/api/content-tools
 
+## Where to post...
+
+- How do I? -- StackOverflow
+- I got this error, why? -- StackOverflow
+- I got this error and I'm sure it's a bug -- post an issue
+- I have an idea/request -- post an issue
+- Why do you? -- chat with me on gitter (I may then post it as an issue)
+- When will you? -- chat with me on gitter (I may then post it as an issue)
+- You suck and I hate you -- contact us privately at pm@piersmorgan.me!
+- You're awesome -- please find a megaphone and suitably high rooftop
+
+> Stolen almost in it's entirety from this [post](http://meta.stackexchange.com/questions/3966/is-it-okay-to-use-stack-overflow-as-the-support-forum-for-a-product-or-project) on meta.stackexchange.com
+
 ## Browser support
 The current aim is for all the libraries to support IE9+, Chrome and Firefox. Test suites are complete for all the libraries except ContentTools and I'm using Jasmine to check that the tests pass in those browsers.
 
