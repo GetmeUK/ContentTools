@@ -7725,12 +7725,12 @@
       this._inspector = new ContentTools.InspectorUI();
       this.attach(this._inspector);
       this._state = 'ready';
-      ContentEdit.Root.get().bind('detach', (function(_this) {
+      this._handleDetach = (function(_this) {
         return function(element) {
           return _this._preventEmptyRegions();
         };
-      })(this));
-      ContentEdit.Root.get().bind('paste', (function(_this) {
+      })(this);
+      this._handleClipboardPaste = (function(_this) {
         return function(element, ev) {
           var clipboardData;
           clipboardData = null;
@@ -7742,8 +7742,8 @@
           }
           return _this.paste(element, clipboardData);
         };
-      })(this));
-      ContentEdit.Root.get().bind('next-region', (function(_this) {
+      })(this);
+      this._handleNextRegionTransition = (function(_this) {
         return function(region) {
           var child, element, index, regions, _i, _len, _ref;
           regions = _this.orderedRegions();
@@ -7768,8 +7768,8 @@
           }
           return ContentEdit.Root.get().trigger('next-region', region);
         };
-      })(this));
-      return ContentEdit.Root.get().bind('previous-region', (function(_this) {
+      })(this);
+      this._handlePreviousRegionTransition = (function(_this) {
         return function(region) {
           var child, descendants, element, index, length, regions, _i, _len;
           regions = _this.orderedRegions();
@@ -7796,10 +7796,18 @@
           }
           return ContentEdit.Root.get().trigger('previous-region', region);
         };
-      })(this));
+      })(this);
+      ContentEdit.Root.get().bind('detach', this._handleDetach);
+      ContentEdit.Root.get().bind('paste', this._handleClipboardPaste);
+      ContentEdit.Root.get().bind('next-region', this._handleNextRegionTransition);
+      return ContentEdit.Root.get().bind('previous-region', this._handlePreviousRegionTransition);
     };
 
     _EditorApp.prototype.destroy = function() {
+      ContentEdit.Root.get().unbind('detach', this._handleDetach);
+      ContentEdit.Root.get().unbind('paste', this._handleClipboardPaste);
+      ContentEdit.Root.get().unbind('next-region', this._handleNextRegionTransition);
+      ContentEdit.Root.get().unbind('previous-region', this._handlePreviousRegionTransition);
       return this.unmount();
     };
 

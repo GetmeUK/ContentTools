@@ -242,12 +242,27 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Manage the transition between regions
         ContentEdit.Root.get().bind('next-region', @_handleNextRegionTransition)
-        ContentEdit.Root.get().bind('previous-region', @_handlePreviousRegionTransition)
-
-
+        ContentEdit.Root.get().bind(
+            'previous-region',
+            @_handlePreviousRegionTransition
+            )
 
     destroy: () ->
         # Destroy the editor application
+
+        # Remove any events bound to the ContentEdit Root
+        ContentEdit.Root.get().unbind('detach', @_handleDetach)
+        ContentEdit.Root.get().unbind('paste', @_handleClipboardPaste)
+        ContentEdit.Root.get().unbind(
+            'next-region',
+            @_handleNextRegionTransition
+            )
+        ContentEdit.Root.get().unbind(
+            'previous-region',
+            @_handlePreviousRegionTransition
+            )
+
+        # Unmount the editor
         @unmount()
 
     highlightRegions: (highlight) ->
@@ -389,11 +404,6 @@ class _EditorApp extends ContentTools.ComponentUI
         @_ignition = null
         @_inspector = null
         @_toolbox = null
-
-        ContentEdit.Root.get().unbind('detach', @_handleDetach)
-        ContentEdit.Root.get().unbind('paste', @_handleClipboardPaste)
-        ContentEdit.Root.get().unbind('next-region', @_handleNextRegionTransition)
-        ContentEdit.Root.get().unbind('previous-region', @_handlePreviousRegionTransition)
 
     # Page state methods
 
