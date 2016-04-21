@@ -161,14 +161,10 @@ class _EditorApp extends ContentTools.ComponentUI
         # Set as ready to edit
         @_state = 'ready'
 
-        # Check when elements are detached that the parent region is not empty
-        ContentEdit.Root.get().bind 'detach', (element) =>
+        @_handleDetach = (element) =>
             @_preventEmptyRegions()
 
-        # Monitor paste events so that we can pre-parse the content the user
-        # wants to paste into the region.
-        ContentEdit.Root.get().bind 'paste', (element, ev) =>
-
+        @_handleClipboardPaste = (element, ev) =>
             # Get the clipboardData
             clipboardData = null
 
@@ -182,9 +178,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
             @paste(element, clipboardData)
 
-        # Manage the transition between regions
-        ContentEdit.Root.get().bind 'next-region', (region) =>
-
+        @_handleNextRegionTransition = (region) =>
             # Is there a next region?
             regions = @orderedRegions()
             index = regions.indexOf(region)
@@ -210,8 +204,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
             ContentEdit.Root.get().trigger('next-region', region)
 
-        ContentEdit.Root.get().bind 'previous-region', (region) =>
-
+        @_handlePreviousRegionTransition = (region) =>
             # Is there a previous region?
             regions = @orderedRegions()
             index = regions.indexOf(region)
@@ -239,6 +232,19 @@ class _EditorApp extends ContentTools.ComponentUI
                 return
 
             ContentEdit.Root.get().trigger('previous-region', region)
+
+        # Check when elements are detached that the parent region is not empty
+        ContentEdit.Root.get().bind('detach', @_handleDetach)
+
+        # Monitor paste events so that we can pre-parse the content the user
+        # wants to paste into the region.
+        ContentEdit.Root.get().bind('paste', @_handleClipboardPaste)
+
+        # Manage the transition between regions
+        ContentEdit.Root.get().bind('next-region', @_handleNextRegionTransition)
+        ContentEdit.Root.get().bind('previous-region', @_handlePreviousRegionTransition)
+
+
 
     destroy: () ->
         # Destroy the editor application
@@ -383,6 +389,11 @@ class _EditorApp extends ContentTools.ComponentUI
         @_ignition = null
         @_inspector = null
         @_toolbox = null
+
+        ContentEdit.Root.get().unbind('detach', @_handleDetach)
+        ContentEdit.Root.get().unbind('paste', @_handleClipboardPaste)
+        ContentEdit.Root.get().unbind('next-region', @_handleNextRegionTransition)
+        ContentEdit.Root.get().unbind('previous-region', @_handlePreviousRegionTransition)
 
     # Page state methods
 
