@@ -1564,26 +1564,36 @@
   });
 
   describe('ContentTools.StylePalette.add()', function() {
+    afterEach(function() {
+      return ContentTools.StylePalette._styles = [];
+    });
     return it('should return a `ContentTools.Style` instance', function() {
-      var style;
-      style = new ContentTools.Style('test', 'test', ['test']);
+      var p, style;
+      style = new ContentTools.Style('test', 'test', ['p']);
       ContentTools.StylePalette.add(style);
-      return expect(ContentTools.StylePalette.styles('test')).toEqual([style]);
+      p = new ContentEdit.Text('p', {}, 'foo');
+      return expect(ContentTools.StylePalette.styles(p)).toEqual([style]);
     });
   });
 
   describe('ContentTools.StylePalette.styles()', function() {
+    afterEach(function() {
+      return ContentTools.StylePalette._styles = [];
+    });
     return it('should return a list of `ContentTools.Style` instances by tag name', function() {
-      var test1, test2, test3;
+      var h1, h2, p, test1, test2, test3;
       test1 = new ContentTools.Style('Test 1', 'test-1', ['p']);
       test2 = new ContentTools.Style('Test 2', 'test-2', ['h1', 'p']);
       test3 = new ContentTools.Style('Test 3', 'test-3', ['h1', 'h2']);
       ContentTools.StylePalette.add(test1);
       ContentTools.StylePalette.add(test2);
       ContentTools.StylePalette.add(test3);
-      expect(ContentTools.StylePalette.styles('p')).toEqual([test1, test2]);
-      expect(ContentTools.StylePalette.styles('h1')).toEqual([test2, test3]);
-      return expect(ContentTools.StylePalette.styles('h2')).toEqual([test3]);
+      p = new ContentEdit.Text('p', {}, 'foo');
+      h1 = new ContentEdit.Text('h1', {}, 'foo');
+      h2 = new ContentEdit.Text('h2', {}, 'foo');
+      expect(ContentTools.StylePalette.styles(p)).toEqual([test1, test2]);
+      expect(ContentTools.StylePalette.styles(h1)).toEqual([test2, test3]);
+      return expect(ContentTools.StylePalette.styles(h2)).toEqual([test3]);
     });
   });
 

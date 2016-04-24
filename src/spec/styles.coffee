@@ -2,13 +2,20 @@
 
 describe 'ContentTools.StylePalette.add()', () ->
 
+    afterEach ->
+        ContentTools.StylePalette._styles = []
+
     it 'should return a `ContentTools.Style` instance', () ->
-        style = new ContentTools.Style('test', 'test', ['test'])
+        style = new ContentTools.Style('test', 'test', ['p'])
         ContentTools.StylePalette.add(style)
-        expect(ContentTools.StylePalette.styles('test')).toEqual [style]
+        p = new ContentEdit.Text('p', {}, 'foo')
+        expect(ContentTools.StylePalette.styles(p)).toEqual [style]
 
 
 describe 'ContentTools.StylePalette.styles()', () ->
+
+    afterEach ->
+        ContentTools.StylePalette._styles = []
 
     it 'should return a list of `ContentTools.Style` instances by tag
             name', () ->
@@ -21,9 +28,13 @@ describe 'ContentTools.StylePalette.styles()', () ->
         ContentTools.StylePalette.add(test2)
         ContentTools.StylePalette.add(test3)
 
-        expect(ContentTools.StylePalette.styles('p')).toEqual [test1, test2]
-        expect(ContentTools.StylePalette.styles('h1')).toEqual [test2, test3]
-        expect(ContentTools.StylePalette.styles('h2')).toEqual [test3]
+        p = new ContentEdit.Text('p', {}, 'foo')
+        h1 = new ContentEdit.Text('h1', {}, 'foo')
+        h2 = new ContentEdit.Text('h2', {}, 'foo')
+
+        expect(ContentTools.StylePalette.styles(p)).toEqual [test1, test2]
+        expect(ContentTools.StylePalette.styles(h1)).toEqual [test2, test3]
+        expect(ContentTools.StylePalette.styles(h2)).toEqual [test3]
 
 
 # Styles
