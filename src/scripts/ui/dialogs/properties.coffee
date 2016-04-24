@@ -112,7 +112,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
         @_domView.appendChild(@_domStyles)
 
         # Add the styles in the style palette for this element
-        for style in ContentTools.StylePalette.styles(@element.tagName())
+        for style in ContentTools.StylePalette.styles(@element)
             styleUI = new StyleUI(
                 style,
                 @element.hasCSSClass(style.cssClass())

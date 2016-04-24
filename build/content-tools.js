@@ -6936,7 +6936,7 @@
       this._domStyles = this.constructor.createDiv(['ct-properties-dialog__styles']);
       this._domStyles.setAttribute('data-ct-empty', ContentEdit._('No styles available for this tag'));
       this._domView.appendChild(this._domStyles);
-      _ref = ContentTools.StylePalette.styles(this.element.tagName());
+      _ref = ContentTools.StylePalette.styles(this.element);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         style = _ref[_i];
         styleUI = new StyleUI(style, this.element.hasCSSClass(style.cssClass()));
@@ -8350,7 +8350,9 @@
       return this._styles = this._styles.concat(styles);
     };
 
-    StylePalette.styles = function(tagName) {
+    StylePalette.styles = function(element) {
+      var tagName;
+      tagName = element.tagName();
       if (tagName === void 0) {
         return this._styles.slice();
       }
