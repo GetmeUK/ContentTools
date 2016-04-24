@@ -17,8 +17,8 @@ class ContentTools.StylePalette
         # tag name).
         tagName = element.tagName()
 
-        # If no tag name is specified return a copy of the stlyes list
-        if tagName is undefined
+        # If no element is specified return a copy of the stlyes list
+        if element is undefined
             return @_styles.slice()
 
         # Filter the styles

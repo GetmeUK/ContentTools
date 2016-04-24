@@ -8417,7 +8417,7 @@
     StylePalette.styles = function(element) {
       var tagName;
       tagName = element.tagName();
-      if (tagName === void 0) {
+      if (element === void 0) {
         return this._styles.slice();
       }
       return this._styles.filter(function(style) {
