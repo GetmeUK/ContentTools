@@ -2114,6 +2114,10 @@
       return this._domElement;
     };
 
+    Element.prototype.isFixed = function() {
+      return this.parent() && this.parent().type() === 'Fixture';
+    };
+
     Element.prototype.isFocused = function() {
       return ContentEdit.Root.get().focused() === this;
     };
@@ -2171,7 +2175,7 @@
 
     Element.prototype.can = function(behaviour, allowed) {
       if (allowed === void 0) {
-        return this._behaviours[behaviour];
+        return (!this.isFixed()) && this._behaviours[behaviour];
       }
       return this._behaviours[behaviour] = allowed;
     };
@@ -2277,7 +2281,12 @@
       if (sibling) {
         this.parent().domElement().insertBefore(this._domElement, sibling.domElement());
       } else {
-        this.parent().domElement().appendChild(this._domElement);
+        if (this.isFixed()) {
+          this.parent().domElement().parentNode.replaceChild(this._domElement, this.parent().domElement());
+          this.parent()._domElement = this._domElement;
+        } else {
+          this.parent().domElement().appendChild(this._domElement);
+        }
       }
       this._addDOMEventListeners();
       this._addCSSClass('ce-element');
@@ -2341,6 +2350,9 @@
     };
 
     Element.prototype.unmount = function() {
+      if (this.isFixed()) {
+        return;
+      }
       this._removeDOMEventListeners();
       if (this._domElement.parentNode) {
         this._domElement.parentNode.removeChild(this._domElement);
@@ -2923,6 +2935,59 @@
     };
 
     return Region;
+
+  })(ContentEdit.NodeCollection);
+
+  ContentEdit.Fixture = (function(_super) {
+    __extends(Fixture, _super);
+
+    function Fixture(domElement) {
+      var cls, element, tagNames;
+      Fixture.__super__.constructor.call(this);
+      this._domElement = domElement;
+      tagNames = ContentEdit.TagNames.get();
+      if (this._domElement.getAttribute("data-ce-tag")) {
+        cls = tagNames.match(this._domElement.getAttribute("data-ce-tag"));
+      } else {
+        cls = tagNames.match(this._domElement.tagName);
+      }
+      element = cls.fromDOMElement(this._domElement);
+      this.children = [element];
+      element._parent = this;
+      element.mount();
+      ContentEdit.Root.get().trigger('ready', this);
+    }
+
+    Fixture.prototype.domElement = function() {
+      return this._domElement;
+    };
+
+    Fixture.prototype.isMounted = function() {
+      return true;
+    };
+
+    Fixture.prototype.type = function() {
+      return 'Fixture';
+    };
+
+    Fixture.prototype.html = function(indent) {
+      var c;
+      if (indent == null) {
+        indent = '';
+      }
+      return ((function() {
+        var _i, _len, _ref, _results;
+        _ref = this.children;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          c = _ref[_i];
+          _results.push(c.html(indent));
+        }
+        return _results;
+      }).call(this)).join('\n').trim();
+    };
+
+    return Fixture;
 
   })(ContentEdit.NodeCollection);
 
@@ -3539,7 +3604,6 @@
     };
 
     Text.prototype._atEnd = function(selection) {
-      console.log(selection.get(), this.content.length());
       return selection.get()[0] >= this.content.length();
     };
 
