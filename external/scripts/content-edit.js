@@ -3590,7 +3590,7 @@
         return selection.select(next.domElement());
       } else {
         return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
-          return node.type() === 'Region';
+          return node.type() === 'Fixture' || node.type() === 'Region';
         }));
       }
     };
@@ -5036,7 +5036,7 @@
           return next.focus();
         } else {
           return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
-            return node.type() === 'Region';
+            return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
       } else {
@@ -5107,7 +5107,7 @@
           return previous.focus();
         } else {
           return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
-            return node === 'Region';
+            return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
       } else {

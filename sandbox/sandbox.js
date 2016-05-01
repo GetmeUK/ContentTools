@@ -142,7 +142,7 @@
     ContentTools.IMAGE_UPLOADER = ImageUploader.createImageUploader;
     ContentTools.StylePalette.add([new ContentTools.Style('By-line', 'article__by-line', ['p']), new ContentTools.Style('Caption', 'article__caption', ['p']), new ContentTools.Style('Example', 'example', ['pre']), new ContentTools.Style('Example + Good', 'example--good', ['pre']), new ContentTools.Style('Example + Bad', 'example--bad', ['pre'])]);
     editor = ContentTools.EditorApp.get();
-    editor.init('.editable', 'data-name');
+    editor.init('.editable, .fixture', 'data-name');
     editor.addEventListener('saved', function(ev) {
       var saved;
       console.log(ev.detail().regions);

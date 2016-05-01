@@ -535,7 +535,11 @@ class _EditorApp extends ContentTools.ComponentUI
             name = domRegion.getAttribute(@_namingProp)
             if not name
                 name = i
-            @_regions[name] = new ContentEdit.Region(domRegion)
+            if domRegion.classList.contains('fixture')
+                @_regions[name] = new ContentEdit.Fixture(domRegion)
+            else
+                @_regions[name] = new ContentEdit.Region(domRegion)
+
             @_orderedRegions.push(name)
 
             # Store the date at which the region was last modified so we can

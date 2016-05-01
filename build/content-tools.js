@@ -3363,7 +3363,11 @@
         this._lastCached = Date.now();
         this._cached = content.html();
       }
-      return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">\n") + ("" + indent + ContentEdit.INDENT + this._cached + "\n") + ("" + indent + "</" + this._tagName + ">");
+      if (this.isFixed()) {
+        return "" + indent + ContentEdit.INDENT + this._cached;
+      } else {
+        return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">\n") + ("" + indent + ContentEdit.INDENT + this._cached + "\n") + ("" + indent + "</" + this._tagName + ">");
+      }
     };
 
     Text.prototype.mount = function() {
@@ -3590,7 +3594,7 @@
         return selection.select(next.domElement());
       } else {
         return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
-          return node.type() === 'Region';
+          return node.type() === 'Fixture' || node.type() === 'Region';
         }));
       }
     };
@@ -5036,7 +5040,7 @@
           return next.focus();
         } else {
           return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
-            return node.type() === 'Region';
+            return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
       } else {
@@ -5107,7 +5111,7 @@
           return previous.focus();
         } else {
           return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
-            return node === 'Region';
+            return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
       } else {
@@ -5144,7 +5148,7 @@
     DEFAULT_VIDEO_HEIGHT: 300,
     DEFAULT_VIDEO_WIDTH: 400,
     HIGHLIGHT_HOLD_DURATION: 2000,
-    INSPECTOR_IGNORED_ELEMENTS: ['ListItemText', 'Region', 'TableCellText'],
+    INSPECTOR_IGNORED_ELEMENTS: ['Fixture', 'ListItemText', 'Region', 'TableCellText'],
     IMAGE_UPLOADER: null,
     MIN_CROP: 10,
     RESTRICTED_ATTRIBUTES: {
@@ -8092,7 +8096,11 @@
         if (!name) {
           name = i;
         }
-        this._regions[name] = new ContentEdit.Region(domRegion);
+        if (domRegion.classList.contains('fixture')) {
+          this._regions[name] = new ContentEdit.Fixture(domRegion);
+        } else {
+          this._regions[name] = new ContentEdit.Region(domRegion);
+        }
         this._orderedRegions.push(name);
         this._regionsLastModified[name] = this._regions[name].lastModified();
       }

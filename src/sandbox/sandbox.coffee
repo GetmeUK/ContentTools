@@ -18,7 +18,7 @@ window.onload = () ->
         ])
 
     editor = ContentTools.EditorApp.get()
-    editor.init('.editable', 'data-name')
+    editor.init('.editable, .fixture', 'data-name')
 
     editor.addEventListener 'saved', (ev) ->
 
