@@ -46,7 +46,7 @@ Alternatively you can use `grunt jasmine` to run the tests from the command line
 
 ## ContentTools via jsdelivr
 
-ContentTools is available via the jsdelivr CDN project, to reference a file from the ContentTools build directory use the following URL format:
+ContentTools is available via the [jsdelivr open source CDN](http://www.jsdelivr.com/), to reference a file from the ContentTools build directory use the following URL format:
 
 `http://cdn.jsdelivr.net/contenttools/{verision}/{file}`
 
@@ -81,4 +81,4 @@ The current aim is for all the libraries to support IE9+, Chrome and Firefox. Te
 There will be some visual differences for ContentTools in IE9 as I use CSS animations for some of the UI feedback.
 
 ## Helpful organizations
-ContentTools is developed using a number of tools & services provided for free by nice folks at organizations committed to supporting open-source projects including [BrowserStack](http://www.browserstack.com), [GitHub](https://github.com) and [Travis CI](https://travis-ci.org).
+ContentTools is developed using a number of tools & services provided for free by nice folks at organizations committed to supporting open-source projects including [BrowserStack](http://www.browserstack.com), [GitHub](https://github.com) and [jsdelivr](http://www.jsdelivr.com/), [Travis CI](https://travis-ci.org).
