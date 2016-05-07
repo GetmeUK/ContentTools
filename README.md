@@ -44,6 +44,21 @@ Then open `ContentTools/SpecRunner.html` in a browser to run the tests.
 
 Alternatively you can use `grunt jasmine` to run the tests from the command line.
 
+## ContentTools via jsdelivr
+
+ContentTools is available via the jsdelivr CDN project, to reference a file from the ContentTools build directory use the following URL format:
+
+`http://cdn.jsdelivr.net/contenttools/{verision}/{file}`
+
+For example to access the current primary JavaScript file the URL would be:
+
+`http://cdn.jsdelivr.net/contenttools/1.2.4/content-tools.min.js`
+
+As the project's CSS uses relative file paths you will need to either role your own version of CSS from the SASS files (recommended) or [override references to fonts/images within your local CSS](https://gist.github.com/anthonyjb/a6aec8ecfbfe6f875d5c6691687ba43d).
+
+> I will be generating a CDN specific version of the CSS in the next release.
+
+
 ## Documentation
 Full documentation is available at http://getcontenttools.com/api/content-tools
 
