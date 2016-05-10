@@ -12,12 +12,27 @@ class _EditorApp extends ContentTools.ComponentUI
         # The state of the app
         @_state = 'dormant'
 
-        # A map of editable regions (`ContentEdit.Region`) the editor will
-        # manage.
-        @_regions = null
+        # The property used to store a region/fixtures name
+        @_namingProp = null
+
+        # The test to use to determine if region is a fixture (by default we
+        # look for the data-fixture attribute).
+        @_fixtureTest = (domElement) ->
+            return domElement.hasAttribute('data-fixture')
+
+        # The query (or set of DOM elements) that define the editable
+        # regions/fixtures with the page.
+        @_regionQuery = null
+
+        # A list of DOM elements representing regions
+        @_domRegions = null
+
+        # A map of editable regions (`ContentEdit.Region/Fixture`) the editor
+        # will manage.
+        @_regions = {}
 
         # A list of the mapped regions used to determine their order
-        @_orderedRegions = null
+        @_orderedRegions = []
 
         # The last modified dates for the root node and regions
         @_rootLastModified = null
@@ -88,22 +103,18 @@ class _EditorApp extends ContentTools.ComponentUI
         # the ignition).
         return @_ignition.busy(busy)
 
-    init: (queryOrDOMElements, namingProp='id') ->
+    init: (queryOrDOMElements, namingProp='id', fixtureTest=null) ->
         # Initialize the editor application
 
-        # The property used to extract a name/key for a region
+        # Set the naming property
         @_namingProp = namingProp
 
-        # Assign the DOM regions
-        if queryOrDOMElements.length > 0 and
-                queryOrDOMElements[0].nodeType is Node.ELEMENT_NODE
-            # If a list has been provided then assume it contains a list of DOM
-            # elements each of which is a region.
-            @_domRegions = queryOrDOMElements
-        else
-            # If a CSS query has been specified then use that to select the
-            # regions in the DOM.
-            @_domRegions = document.querySelectorAll(queryOrDOMElements)
+        # If defined set the function used to test for fixtures
+        if fixtureTest
+            @_fixtureTest = fixtureTest
+
+        # Sync the page regions
+        @syncRegions(queryOrDOMElements)
 
         # If there aren't any editiable regions return early leaving the app
         # dormant.
@@ -297,12 +308,26 @@ class _EditorApp extends ContentTools.ComponentUI
         if not lines
             return
 
-        # If the content is more than one paragraph or if the selected element
-        # doesn't support text create new elements for each line of content.
+        # Determine whether the new content should be pasted into the existing
+        # element or should spawn new elements for each line of content.
         encodeHTML = HTMLString.String.encode
-
+        spawn = true
         type = element.type()
-        if (lines.length > 1 or not element.content) and type != 'PreText'
+
+        # Are their multiple lines to add?
+        if lines.length == 1
+            spawn = false
+
+        # Is this a pre-text element which supports multiline content?
+        if type == 'PreText'
+            spawn = false
+
+        # Does the element itself allow content to be spawned from it?
+        if not element.can('spawn')
+            spawn = false
+
+        if spawn
+            # Paste the content as multiple elements
 
             # Find the insertion point in the document
             if type == 'ListItemText'
@@ -345,9 +370,7 @@ class _EditorApp extends ContentTools.ComponentUI
             lastItem.selection(new ContentSelect.Range(lineLength, lineLength))
 
         else
-            # If the element supports content and we only have one line of
-            # content then we insert the pasted text within the element's
-            # existing content.
+            # Paste the content within the existing element
 
             # Convert the content to a HTMLString
             content = encodeHTML(content)
@@ -450,12 +473,7 @@ class _EditorApp extends ContentTools.ComponentUI
             # Reset the regions map
             @_regions = {}
 
-            # Convert each assigned node to an editable region
-            for domRegion, i in @_domRegions
-                name = domRegion.getAttribute(@_namingProp)
-                if not name
-                    name = i
-                @_regions[name] = new ContentEdit.Region(domRegion)
+            @syncRegions()
 
             # Update history with the new regions
             @history.replaceRegions(@_regions)
@@ -529,18 +547,8 @@ class _EditorApp extends ContentTools.ComponentUI
         @busy(true)
 
         # Convert each assigned node to a region
-        @_regions = {}
-        @_orderedRegions = []
-        for domRegion, i in @_domRegions
-            name = domRegion.getAttribute(@_namingProp)
-            if not name
-                name = i
-            @_regions[name] = new ContentEdit.Region(domRegion)
-            @_orderedRegions.push(name)
-
-            # Store the date at which the region was last modified so we can
-            # check for changes on save.
-            @_regionsLastModified[name] = @_regions[name].lastModified()
+        @syncRegions()
+        @_initRegions()
 
         # Ensure no region is empty
         @_preventEmptyRegions()
@@ -608,6 +616,26 @@ class _EditorApp extends ContentTools.ComponentUI
                 ContentEdit.Root.get().focused().blur()
 
         return
+
+    syncRegions: (regionQuery) ->
+        # Sync the editor with the page in order to map out the regions/fixtures
+        # that can be edited.
+
+        # If a region query has been provided then set it
+        if regionQuery != undefined
+            @_regionQuery = regionQuery
+
+        # Find the DOM elements that will be managed as regions/fixtures
+        if @_regionQuery.length > 0 and
+                @_regionQuery[0].nodeType is Node.ELEMENT_NODE
+            @_domRegions = @_regionQuery
+        else
+            @_domRegions = document.querySelectorAll(@_regionQuery)
+
+        # If the editor is currently in the 'editing' state then live sync
+        if @_state is 'editing'
+            @_initRegions()
+
 
     # Private methods
 
@@ -706,6 +734,56 @@ class _EditorApp extends ContentTools.ComponentUI
         # Highlight events
         document.removeEventListener('keydown', @_handleHighlightOn)
         document.removeEventListener('keyup', @_handleHighlightOff)
+
+    _initRegions: () ->
+        # Initialize DOM regions within the page
+
+        found = {}
+        for domRegion, i in @_domRegions
+
+            # Find a name for the region
+            name = domRegion.getAttribute(@_namingProp)
+
+            # If we can't find a name assign the region a name based on its
+            # position on the page.
+            if not name
+                name = i
+
+            # Remember that we added a region/fixture with this name, those that
+            # aren't found are removed.
+            found[name] = true
+
+            # Check if the region/fixture is already initialized, in which case
+            # we're done.
+            if @_regions[name] and @_regions[name].domElement() == domRegion
+                continue
+
+            # Initialize the new region/fixture
+            if @_fixtureTest(domRegion)
+                @_regions[name] = new ContentEdit.Fixture(domRegion)
+            else
+                @_regions[name] = new ContentEdit.Region(domRegion)
+
+            # Update the order
+            @_orderedRegions.push(name)
+
+            # Store the date at which the region was last modified so we can
+            # check for changes on save.
+            @_regionsLastModified[name] = @_regions[name].lastModified()
+
+        # Remove any regions no longer part of the page
+        for name, region of @_regions
+
+            # If the region exists
+            if found[name]
+                continue
+
+            # Remove the region
+            delete @_regions[name]
+            delete @_regionsLastModified[name]
+            index = @_orderedRegions.indexOf(name)
+            if index > -1
+                @_orderedRegions.splice(index, 1)
 
 
 class ContentTools.EditorApp

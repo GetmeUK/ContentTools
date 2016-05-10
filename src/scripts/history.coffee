@@ -155,7 +155,7 @@ class ContentTools.History
 
             # Determine the selected region
             region = element.closest (node) ->
-                return node.type() is 'Region'
+                return node.type() is 'Region' or node.type() is 'Fixture'
 
             # Check a region can be found (this catches cases where the focused
             # element isn't attached to the region.

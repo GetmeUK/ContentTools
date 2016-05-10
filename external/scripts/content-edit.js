@@ -2350,10 +2350,13 @@
     };
 
     Element.prototype.unmount = function() {
+      this._removeDOMEventListeners();
       if (this.isFixed()) {
+        this._removeCSSClass('ce-element');
+        this._removeCSSClass("ce-element--type-" + (this.cssTypeName()));
+        this._removeCSSClass('ce-element--focused');
         return;
       }
-      this._removeDOMEventListeners();
       if (this._domElement.parentNode) {
         this._domElement.parentNode.removeChild(this._domElement);
       }
@@ -2362,70 +2365,80 @@
     };
 
     Element.prototype._addDOMEventListeners = function() {
-      this._domElement.addEventListener('focus', (function(_this) {
-        return function(ev) {
-          return ev.preventDefault();
-        };
-      })(this));
-      this._domElement.addEventListener('dragstart', (function(_this) {
-        return function(ev) {
-          return ev.preventDefault();
-        };
-      })(this));
-      this._domElement.addEventListener('keydown', (function(_this) {
-        return function(ev) {
-          return _this._onKeyDown(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('keyup', (function(_this) {
-        return function(ev) {
-          return _this._onKeyUp(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('mousedown', (function(_this) {
-        return function(ev) {
-          if (ev.button === 0) {
-            return _this._onMouseDown(ev);
-          }
-        };
-      })(this));
-      this._domElement.addEventListener('mousemove', (function(_this) {
-        return function(ev) {
-          return _this._onMouseMove(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('mouseover', (function(_this) {
-        return function(ev) {
-          return _this._onMouseOver(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('mouseout', (function(_this) {
-        return function(ev) {
-          return _this._onMouseOut(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('mouseup', (function(_this) {
-        return function(ev) {
-          if (ev.button === 0) {
-            return _this._onMouseUp(ev);
-          }
-        };
-      })(this));
-      this._domElement.addEventListener('paste', (function(_this) {
-        return function(ev) {
-          return _this._onPaste(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('dragover', (function(_this) {
-        return function(ev) {
-          return ev.preventDefault();
-        };
-      })(this));
-      return this._domElement.addEventListener('drop', (function(_this) {
-        return function(ev) {
-          return _this._onNativeDrop(ev);
-        };
-      })(this));
+      var eventHandler, eventName, _ref, _results;
+      this._domEventHandlers = {
+        'dragstart': (function(_this) {
+          return function(ev) {
+            return ev.preventDefault();
+          };
+        })(this),
+        'focus': (function(_this) {
+          return function(ev) {
+            return ev.preventDefault();
+          };
+        })(this),
+        'keydown': (function(_this) {
+          return function(ev) {
+            return _this._onKeyDown(ev);
+          };
+        })(this),
+        'keyup': (function(_this) {
+          return function(ev) {
+            return _this._onKeyUp(ev);
+          };
+        })(this),
+        'mousedown': (function(_this) {
+          return function(ev) {
+            if (ev.button === 0) {
+              return _this._onMouseDown(ev);
+            }
+          };
+        })(this),
+        'mousemove': (function(_this) {
+          return function(ev) {
+            return _this._onMouseMove(ev);
+          };
+        })(this),
+        'mouseover': (function(_this) {
+          return function(ev) {
+            return _this._onMouseOver(ev);
+          };
+        })(this),
+        'mouseout': (function(_this) {
+          return function(ev) {
+            return _this._onMouseOut(ev);
+          };
+        })(this),
+        'mouseup': (function(_this) {
+          return function(ev) {
+            if (ev.button === 0) {
+              return _this._onMouseUp(ev);
+            }
+          };
+        })(this),
+        'dragover': (function(_this) {
+          return function(ev) {
+            return ev.preventDefault();
+          };
+        })(this),
+        'drop': (function(_this) {
+          return function(ev) {
+            return _this._onNativeDrop(ev);
+          };
+        })(this),
+        'paste': (function(_this) {
+          return function(ev) {
+            return _this._onPaste(ev);
+          };
+        })(this)
+      };
+      _ref = this._domEventHandlers;
+      _results = [];
+      for (eventName in _ref) {
+        eventHandler = _ref[eventName];
+        _results.push(this._domElement.addEventListener(eventName, eventHandler));
+      }
+      return _results;
     };
 
     Element.prototype._onKeyDown = function(ev) {};
@@ -2500,7 +2513,16 @@
       return root._dropTarget = this;
     };
 
-    Element.prototype._removeDOMEventListeners = function() {};
+    Element.prototype._removeDOMEventListeners = function() {
+      var eventHandler, eventName, _ref, _results;
+      _ref = this._domEventHandlers;
+      _results = [];
+      for (eventName in _ref) {
+        eventHandler = _ref[eventName];
+        _results.push(this._domElement.removeEventListener(eventName, eventHandler));
+      }
+      return _results;
+    };
 
     Element.prototype._addCSSClass = function(className) {
       if (!this.isMounted()) {
@@ -2674,7 +2696,11 @@
         }
         return _results;
       }).call(this);
-      return ("" + indent + "<" + (this.tagName()) + (this._attributesToString()) + ">\n") + ("" + (children.join('\n')) + "\n") + ("" + indent + "</" + (this.tagName()) + ">");
+      if (this.isFixed()) {
+        return "" + (children.join('\n')) + "\n";
+      } else {
+        return ("" + indent + "<" + (this.tagName()) + (this._attributesToString()) + ">\n") + ("" + (children.join('\n')) + "\n") + ("" + indent + "</" + (this.tagName()) + ">");
+      }
     };
 
     ElementCollection.prototype.mount = function() {
@@ -3363,7 +3389,11 @@
         this._lastCached = Date.now();
         this._cached = content.html();
       }
-      return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">\n") + ("" + indent + ContentEdit.INDENT + this._cached + "\n") + ("" + indent + "</" + this._tagName + ">");
+      if (this.isFixed()) {
+        return this._cached;
+      } else {
+        return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">\n") + ("" + indent + ContentEdit.INDENT + this._cached + "\n") + ("" + indent + "</" + this._tagName + ">");
+      }
     };
 
     Text.prototype.mount = function() {
@@ -3411,6 +3441,11 @@
         return;
       }
       return this._savedSelection = ContentSelect.Range.query(this._domElement);
+    };
+
+    Text.prototype.unmount = function() {
+      this._domElement.removeAttribute('contenteditable');
+      return Text.__super__.unmount.call(this);
     };
 
     Text.prototype.updateInnerHTML = function() {
@@ -3539,7 +3574,6 @@
       if (this.content.isWhitespace()) {
         return;
       }
-      ContentSelect.Range.query(this._domElement);
       selection = ContentSelect.Range.query(this._domElement);
       tip = this.content.substring(0, selection.get()[0]);
       tail = this.content.substring(selection.get()[1]);
@@ -3590,7 +3624,7 @@
         return selection.select(next.domElement());
       } else {
         return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
-          return node.type() === 'Region';
+          return node.type() === 'Fixture' || node.type() === 'Region';
         }));
       }
     };
@@ -3862,6 +3896,18 @@
       return Image.__super__.mount.call(this);
     };
 
+    Image.prototype.unmount = function() {
+      var domElement, wrapper;
+      if (this.isFixed()) {
+        wrapper = document.createElement('div');
+        wrapper.innerHTML = this.html();
+        domElement = wrapper.querySelector('a, img');
+        this._domElement.parentNode.replaceChild(domElement, this._domElement);
+        this._domElement = domElement;
+      }
+      return Image.__super__.unmount.call(this);
+    };
+
     Image.droppers = {
       'Image': ContentEdit.Element._dropBoth,
       'PreText': ContentEdit.Element._dropBoth,
@@ -4013,6 +4059,18 @@
       this._domElement.setAttribute('style', style);
       this._domElement.setAttribute('data-ce-title', this._title());
       return Video.__super__.mount.call(this);
+    };
+
+    Video.prototype.unmount = function() {
+      var domElement, wrapper;
+      if (this.isFixed()) {
+        wrapper = document.createElement('div');
+        wrapper.innerHTML = this.html();
+        domElement = wrapper.querySelector('iframe');
+        this._domElement.parentNode.replaceChild(domElement, this._domElement);
+        this._domElement = domElement;
+      }
+      return Video.__super__.unmount.call(this);
     };
 
     Video.droppers = {
@@ -5036,7 +5094,7 @@
           return next.focus();
         } else {
           return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
-            return node.type() === 'Region';
+            return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
       } else {
@@ -5107,7 +5165,7 @@
           return previous.focus();
         } else {
           return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
-            return node === 'Region';
+            return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
       } else {

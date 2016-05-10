@@ -56,8 +56,6 @@ For example to access the current primary JavaScript file the URL would be:
 
 As the project's CSS uses relative file paths you will need to either role your own version of CSS from the SASS files (recommended) or [override references to fonts/images within your local CSS](https://gist.github.com/anthonyjb/a6aec8ecfbfe6f875d5c6691687ba43d).
 
-> I will be generating a CDN specific version of the CSS in the next release.
-
 
 ## Documentation
 Full documentation is available at http://getcontenttools.com/api/content-tools

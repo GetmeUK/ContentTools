@@ -54,6 +54,7 @@ window.ContentTools =
     # A list of element class names ignored by the inspector, typically because
     # attributes cannot be safely set against them.
     INSPECTOR_IGNORED_ELEMENTS: [
+        'Fixture',
         'ListItemText',
         'Region',
         'TableCellText'

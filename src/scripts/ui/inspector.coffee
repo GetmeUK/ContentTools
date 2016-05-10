@@ -77,6 +77,9 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
                     element.type()) != -1
                 continue
 
+            if element.isFixed()
+                continue
+
             # Convert each element to a UI tag
             tag = new ContentTools.TagUI(element)
             @_tagUIs.push(tag)

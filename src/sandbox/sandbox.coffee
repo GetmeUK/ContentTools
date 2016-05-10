@@ -18,7 +18,7 @@ window.onload = () ->
         ])
 
     editor = ContentTools.EditorApp.get()
-    editor.init('.editable', 'data-name')
+    editor.init('[data-editable], [data-fixture]', 'data-name')
 
     editor.addEventListener 'saved', (ev) ->
 
@@ -40,6 +40,19 @@ window.onload = () ->
             new ContentTools.FlashUI('ok')
 
         setTimeout(saved, 2000)
+
+    # Handle tools available to fixtures
+    FIXTURE_TOOLS = [['undo', 'redo', 'remove']]
+    ContentEdit.Root.get().bind 'focus', (element) ->
+        # Determine what tools should be available to the user
+        if element.isFixed()
+            tools = FIXTURE_TOOLS
+        else
+            tools = ContentTools.DEFAULT_TOOLS
+
+        # If the tools have changed update the toolboox
+        if editor.toolbox().tools() != tools
+            editor.toolbox().tools(tools)
 
     # Translation example
     req = new XMLHttpRequest()
