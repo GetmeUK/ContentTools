@@ -12,3 +12,6 @@ Fixtures
   for ContentEdit element behaviours.
 - Further to this we need to define some examples of customizing the toolbox
   based on a fixture/element with special rules.
+- We need to determine how a fixture will be flagged to the editor on init (this
+  needs to be sticky). Might be worth considering a method to allow the regions/
+  fixtures to be reselected.
