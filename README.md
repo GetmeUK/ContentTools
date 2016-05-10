@@ -44,6 +44,18 @@ Then open `ContentTools/SpecRunner.html` in a browser to run the tests.
 
 Alternatively you can use `grunt jasmine` to run the tests from the command line.
 
+## ContentTools via jsdelivr
+
+ContentTools is available via the [jsdelivr open source CDN](http://www.jsdelivr.com/), to reference a file from the ContentTools build directory use the following URL format:
+
+`http://cdn.jsdelivr.net/contenttools/{verision}/{file}`
+
+For example to access the current primary JavaScript file the URL would be:
+
+`http://cdn.jsdelivr.net/contenttools/1.2.4/content-tools.min.js`
+
+As the project's CSS uses relative file paths you will need to either role your own version of CSS from the SASS files (recommended) or [override references to fonts/images within your local CSS](https://gist.github.com/anthonyjb/a6aec8ecfbfe6f875d5c6691687ba43d).
+
 ## Documentation
 Full documentation is available at http://getcontenttools.com/api/content-tools
 
@@ -66,4 +78,4 @@ The current aim is for all the libraries to support IE9+, Chrome and Firefox. Te
 There will be some visual differences for ContentTools in IE9 as I use CSS animations for some of the UI feedback.
 
 ## Helpful organizations
-ContentTools is developed using a number of tools & services provided for free by nice folks at organizations committed to supporting open-source projects including [BrowserStack](http://www.browserstack.com), [GitHub](https://github.com) and [Travis CI](https://travis-ci.org).
+ContentTools is developed using a number of tools & services provided for free by nice folks at organizations committed to supporting open-source projects including [BrowserStack](http://www.browserstack.com), [GitHub](https://github.com) and [jsdelivr](http://www.jsdelivr.com/), [Travis CI](https://travis-ci.org).

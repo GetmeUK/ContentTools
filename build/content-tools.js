@@ -2350,10 +2350,13 @@
     };
 
     Element.prototype.unmount = function() {
+      this._removeDOMEventListeners();
       if (this.isFixed()) {
+        this._removeCSSClass('ce-element');
+        this._removeCSSClass("ce-element--type-" + (this.cssTypeName()));
+        this._removeCSSClass('ce-element--focused');
         return;
       }
-      this._removeDOMEventListeners();
       if (this._domElement.parentNode) {
         this._domElement.parentNode.removeChild(this._domElement);
       }
@@ -2362,70 +2365,80 @@
     };
 
     Element.prototype._addDOMEventListeners = function() {
-      this._domElement.addEventListener('focus', (function(_this) {
-        return function(ev) {
-          return ev.preventDefault();
-        };
-      })(this));
-      this._domElement.addEventListener('dragstart', (function(_this) {
-        return function(ev) {
-          return ev.preventDefault();
-        };
-      })(this));
-      this._domElement.addEventListener('keydown', (function(_this) {
-        return function(ev) {
-          return _this._onKeyDown(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('keyup', (function(_this) {
-        return function(ev) {
-          return _this._onKeyUp(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('mousedown', (function(_this) {
-        return function(ev) {
-          if (ev.button === 0) {
-            return _this._onMouseDown(ev);
-          }
-        };
-      })(this));
-      this._domElement.addEventListener('mousemove', (function(_this) {
-        return function(ev) {
-          return _this._onMouseMove(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('mouseover', (function(_this) {
-        return function(ev) {
-          return _this._onMouseOver(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('mouseout', (function(_this) {
-        return function(ev) {
-          return _this._onMouseOut(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('mouseup', (function(_this) {
-        return function(ev) {
-          if (ev.button === 0) {
-            return _this._onMouseUp(ev);
-          }
-        };
-      })(this));
-      this._domElement.addEventListener('paste', (function(_this) {
-        return function(ev) {
-          return _this._onPaste(ev);
-        };
-      })(this));
-      this._domElement.addEventListener('dragover', (function(_this) {
-        return function(ev) {
-          return ev.preventDefault();
-        };
-      })(this));
-      return this._domElement.addEventListener('drop', (function(_this) {
-        return function(ev) {
-          return _this._onNativeDrop(ev);
-        };
-      })(this));
+      var eventHandler, eventName, _ref, _results;
+      this._domEventHandlers = {
+        'dragstart': (function(_this) {
+          return function(ev) {
+            return ev.preventDefault();
+          };
+        })(this),
+        'focus': (function(_this) {
+          return function(ev) {
+            return ev.preventDefault();
+          };
+        })(this),
+        'keydown': (function(_this) {
+          return function(ev) {
+            return _this._onKeyDown(ev);
+          };
+        })(this),
+        'keyup': (function(_this) {
+          return function(ev) {
+            return _this._onKeyUp(ev);
+          };
+        })(this),
+        'mousedown': (function(_this) {
+          return function(ev) {
+            if (ev.button === 0) {
+              return _this._onMouseDown(ev);
+            }
+          };
+        })(this),
+        'mousemove': (function(_this) {
+          return function(ev) {
+            return _this._onMouseMove(ev);
+          };
+        })(this),
+        'mouseover': (function(_this) {
+          return function(ev) {
+            return _this._onMouseOver(ev);
+          };
+        })(this),
+        'mouseout': (function(_this) {
+          return function(ev) {
+            return _this._onMouseOut(ev);
+          };
+        })(this),
+        'mouseup': (function(_this) {
+          return function(ev) {
+            if (ev.button === 0) {
+              return _this._onMouseUp(ev);
+            }
+          };
+        })(this),
+        'dragover': (function(_this) {
+          return function(ev) {
+            return ev.preventDefault();
+          };
+        })(this),
+        'drop': (function(_this) {
+          return function(ev) {
+            return _this._onNativeDrop(ev);
+          };
+        })(this),
+        'paste': (function(_this) {
+          return function(ev) {
+            return _this._onPaste(ev);
+          };
+        })(this)
+      };
+      _ref = this._domEventHandlers;
+      _results = [];
+      for (eventName in _ref) {
+        eventHandler = _ref[eventName];
+        _results.push(this._domElement.addEventListener(eventName, eventHandler));
+      }
+      return _results;
     };
 
     Element.prototype._onKeyDown = function(ev) {};
@@ -2500,7 +2513,16 @@
       return root._dropTarget = this;
     };
 
-    Element.prototype._removeDOMEventListeners = function() {};
+    Element.prototype._removeDOMEventListeners = function() {
+      var eventHandler, eventName, _ref, _results;
+      _ref = this._domEventHandlers;
+      _results = [];
+      for (eventName in _ref) {
+        eventHandler = _ref[eventName];
+        _results.push(this._domElement.removeEventListener(eventName, eventHandler));
+      }
+      return _results;
+    };
 
     Element.prototype._addCSSClass = function(className) {
       if (!this.isMounted()) {
@@ -2674,7 +2696,11 @@
         }
         return _results;
       }).call(this);
-      return ("" + indent + "<" + (this.tagName()) + (this._attributesToString()) + ">\n") + ("" + (children.join('\n')) + "\n") + ("" + indent + "</" + (this.tagName()) + ">");
+      if (this.isFixed()) {
+        return "" + (children.join('\n')) + "\n";
+      } else {
+        return ("" + indent + "<" + (this.tagName()) + (this._attributesToString()) + ">\n") + ("" + (children.join('\n')) + "\n") + ("" + indent + "</" + (this.tagName()) + ">");
+      }
     };
 
     ElementCollection.prototype.mount = function() {
@@ -3364,7 +3390,7 @@
         this._cached = content.html();
       }
       if (this.isFixed()) {
-        return "" + indent + ContentEdit.INDENT + this._cached;
+        return this._cached;
       } else {
         return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">\n") + ("" + indent + ContentEdit.INDENT + this._cached + "\n") + ("" + indent + "</" + this._tagName + ">");
       }
@@ -3415,6 +3441,11 @@
         return;
       }
       return this._savedSelection = ContentSelect.Range.query(this._domElement);
+    };
+
+    Text.prototype.unmount = function() {
+      this._domElement.removeAttribute('contenteditable');
+      return Text.__super__.unmount.call(this);
     };
 
     Text.prototype.updateInnerHTML = function() {
@@ -3543,7 +3574,6 @@
       if (this.content.isWhitespace()) {
         return;
       }
-      ContentSelect.Range.query(this._domElement);
       selection = ContentSelect.Range.query(this._domElement);
       tip = this.content.substring(0, selection.get()[0]);
       tail = this.content.substring(selection.get()[1]);
@@ -3866,6 +3896,18 @@
       return Image.__super__.mount.call(this);
     };
 
+    Image.prototype.unmount = function() {
+      var domElement, wrapper;
+      if (this.isFixed()) {
+        wrapper = document.createElement('div');
+        wrapper.innerHTML = this.html();
+        domElement = wrapper.querySelector('a, img');
+        this._domElement.parentNode.replaceChild(domElement, this._domElement);
+        this._domElement = domElement;
+      }
+      return Image.__super__.unmount.call(this);
+    };
+
     Image.droppers = {
       'Image': ContentEdit.Element._dropBoth,
       'PreText': ContentEdit.Element._dropBoth,
@@ -4017,6 +4059,18 @@
       this._domElement.setAttribute('style', style);
       this._domElement.setAttribute('data-ce-title', this._title());
       return Video.__super__.mount.call(this);
+    };
+
+    Video.prototype.unmount = function() {
+      var domElement, wrapper;
+      if (this.isFixed()) {
+        wrapper = document.createElement('div');
+        wrapper.innerHTML = this.html();
+        domElement = wrapper.querySelector('iframe');
+        this._domElement.parentNode.replaceChild(domElement, this._domElement);
+        this._domElement = domElement;
+      }
+      return Video.__super__.unmount.call(this);
     };
 
     Video.droppers = {
@@ -5728,6 +5782,9 @@
       for (_j = 0, _len1 = elements.length; _j < _len1; _j++) {
         element = elements[_j];
         if (ContentTools.INSPECTOR_IGNORED_ELEMENTS.indexOf(element.type()) !== -1) {
+          continue;
+        }
+        if (element.isFixed()) {
           continue;
         }
         tag = new ContentTools.TagUI(element);
@@ -7672,8 +7729,14 @@
       _EditorApp.__super__.constructor.call(this);
       this.history = null;
       this._state = 'dormant';
-      this._regions = null;
-      this._orderedRegions = null;
+      this._namingProp = null;
+      this._fixtureTest = function(domElement) {
+        return domElement.hasAttribute('data-fixture');
+      };
+      this._regionQuery = null;
+      this._domRegions = null;
+      this._regions = {};
+      this._orderedRegions = [];
       this._rootLastModified = null;
       this._regionsLastModified = {};
       this._ignition = null;
@@ -7744,16 +7807,18 @@
       return this._ignition.busy(busy);
     };
 
-    _EditorApp.prototype.init = function(queryOrDOMElements, namingProp) {
+    _EditorApp.prototype.init = function(queryOrDOMElements, namingProp, fixtureTest) {
       if (namingProp == null) {
         namingProp = 'id';
       }
-      this._namingProp = namingProp;
-      if (queryOrDOMElements.length > 0 && queryOrDOMElements[0].nodeType === Node.ELEMENT_NODE) {
-        this._domRegions = queryOrDOMElements;
-      } else {
-        this._domRegions = document.querySelectorAll(queryOrDOMElements);
+      if (fixtureTest == null) {
+        fixtureTest = null;
       }
+      this._namingProp = namingProp;
+      if (fixtureTest) {
+        this._fixtureTest = fixtureTest;
+      }
+      this.syncRegions(queryOrDOMElements);
       if (this._domRegions.length === 0) {
         return;
       }
@@ -7901,7 +7966,7 @@
     };
 
     _EditorApp.prototype.paste = function(element, clipboardData) {
-      var character, content, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, replaced, selection, tags, tail, tip, type, _i, _len;
+      var character, content, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, replaced, selection, spawn, tags, tail, tip, type, _i, _len;
       content = clipboardData;
       lines = content.split('\n');
       lines = lines.filter(function(line) {
@@ -7911,8 +7976,18 @@
         return;
       }
       encodeHTML = HTMLString.String.encode;
+      spawn = true;
       type = element.type();
-      if ((lines.length > 1 || !element.content) && type !== 'PreText') {
+      if (lines.length === 1) {
+        spawn = false;
+      }
+      if (type === 'PreText') {
+        spawn = false;
+      }
+      if (!element.can('spawn')) {
+        spawn = false;
+      }
+      if (spawn) {
         if (type === 'ListItemText') {
           insertNode = element.parent();
           insertIn = element.parent().parent();
@@ -7997,7 +8072,7 @@
     };
 
     _EditorApp.prototype.revertToSnapshot = function(snapshot, restoreEditable) {
-      var child, domRegion, i, name, region, _i, _j, _len, _len1, _ref, _ref1, _ref2;
+      var child, name, region, _i, _len, _ref, _ref1;
       if (restoreEditable == null) {
         restoreEditable = true;
       }
@@ -8016,15 +8091,7 @@
           ContentEdit.Root.get().focused().blur();
         }
         this._regions = {};
-        _ref2 = this._domRegions;
-        for (i = _j = 0, _len1 = _ref2.length; _j < _len1; i = ++_j) {
-          domRegion = _ref2[i];
-          name = domRegion.getAttribute(this._namingProp);
-          if (!name) {
-            name = i;
-          }
-          this._regions[name] = new ContentEdit.Region(domRegion);
-        }
+        this.syncRegions();
         this.history.replaceRegions(this._regions);
         this.history.restoreSelection(snapshot);
         return this._inspector.updateTags();
@@ -8082,28 +8149,12 @@
     };
 
     _EditorApp.prototype.start = function() {
-      var domRegion, i, name, _i, _len, _ref;
       if (!this.dispatchEvent(this.createEvent('start'))) {
         return;
       }
       this.busy(true);
-      this._regions = {};
-      this._orderedRegions = [];
-      _ref = this._domRegions;
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        domRegion = _ref[i];
-        name = domRegion.getAttribute(this._namingProp);
-        if (!name) {
-          name = i;
-        }
-        if (domRegion.classList.contains('fixture')) {
-          this._regions[name] = new ContentEdit.Fixture(domRegion);
-        } else {
-          this._regions[name] = new ContentEdit.Region(domRegion);
-        }
-        this._orderedRegions.push(name);
-        this._regionsLastModified[name] = this._regions[name].lastModified();
-      }
+      this.syncRegions();
+      this._initRegions();
       this._preventEmptyRegions();
       this._rootLastModified = ContentEdit.Root.get().lastModified();
       this.history = new ContentTools.History(this._regions);
@@ -8144,6 +8195,20 @@
             return ContentEdit.Root.get().focused().blur();
           };
         })(this));
+      }
+    };
+
+    _EditorApp.prototype.syncRegions = function(regionQuery) {
+      if (regionQuery !== void 0) {
+        this._regionQuery = regionQuery;
+      }
+      if (this._regionQuery.length > 0 && this._regionQuery[0].nodeType === Node.ELEMENT_NODE) {
+        this._domRegions = this._regionQuery;
+      } else {
+        this._domRegions = document.querySelectorAll(this._regionQuery);
+      }
+      if (this._state === 'editing') {
+        return this._initRegions();
       }
     };
 
@@ -8237,6 +8302,47 @@
     _EditorApp.prototype._removeDOMEventListeners = function() {
       document.removeEventListener('keydown', this._handleHighlightOn);
       return document.removeEventListener('keyup', this._handleHighlightOff);
+    };
+
+    _EditorApp.prototype._initRegions = function() {
+      var domRegion, found, i, index, name, region, _i, _len, _ref, _ref1, _results;
+      found = {};
+      _ref = this._domRegions;
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        domRegion = _ref[i];
+        name = domRegion.getAttribute(this._namingProp);
+        if (!name) {
+          name = i;
+        }
+        found[name] = true;
+        if (this._regions[name] && this._regions[name].domElement() === domRegion) {
+          continue;
+        }
+        if (this._fixtureTest(domRegion)) {
+          this._regions[name] = new ContentEdit.Fixture(domRegion);
+        } else {
+          this._regions[name] = new ContentEdit.Region(domRegion);
+        }
+        this._orderedRegions.push(name);
+        this._regionsLastModified[name] = this._regions[name].lastModified();
+      }
+      _ref1 = this._regions;
+      _results = [];
+      for (name in _ref1) {
+        region = _ref1[name];
+        if (found[name]) {
+          continue;
+        }
+        delete this._regions[name];
+        delete this._regionsLastModified[name];
+        index = this._orderedRegions.indexOf(name);
+        if (index > -1) {
+          _results.push(this._orderedRegions.splice(index, 1));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     return _EditorApp;
@@ -8384,7 +8490,7 @@
       if (element) {
         snapshot.selected = {};
         region = element.closest(function(node) {
-          return node.type() === 'Region';
+          return node.type() === 'Region' || node.type() === 'Fixture';
         });
         if (!region) {
           return;
@@ -8787,6 +8893,9 @@
     Heading.tagName = 'h1';
 
     Heading.canApply = function(element, selection) {
+      if (element.isFixed()) {
+        return false;
+      }
       return element.content !== void 0 && ['Text', 'PreText'].indexOf(element.type()) !== -1;
     };
 
@@ -8814,6 +8923,7 @@
         textElement.focus();
         textElement.selection(selection);
       } else {
+        element.attr('class', '');
         if (element.tagName() === this.tagName) {
           element.tagName('p');
         } else {
@@ -8863,6 +8973,9 @@
     Paragraph.tagName = 'p';
 
     Paragraph.canApply = function(element, selection) {
+      if (element.isFixed()) {
+        return false;
+      }
       return element !== void 0;
     };
 
@@ -9035,6 +9148,9 @@
 
     UnorderedList.canApply = function(element, selection) {
       var _ref;
+      if (element.isFixed()) {
+        return false;
+      }
       return element.content !== void 0 && ((_ref = element.parent().type()) === 'Region' || _ref === 'ListItem');
     };
 
@@ -9100,6 +9216,9 @@
     Table.icon = 'table';
 
     Table.canApply = function(element, selection) {
+      if (element.isFixed()) {
+        return false;
+      }
       return element !== void 0;
     };
 
@@ -9355,7 +9474,7 @@
     Image.icon = 'image';
 
     Image.canApply = function(element, selection) {
-      return true;
+      return !element.isFixed();
     };
 
     Image.apply = function(element, selection, callback) {
@@ -9422,7 +9541,7 @@
     Video.icon = 'video';
 
     Video.canApply = function(element, selection) {
-      return true;
+      return !element.isFixed();
     };
 
     Video.apply = function(element, selection, callback) {
@@ -9559,7 +9678,7 @@
     Remove.icon = 'remove';
 
     Remove.canApply = function(element, selection) {
-      return true;
+      return !element.isFixed();
     };
 
     Remove.apply = function(element, selection, callback) {

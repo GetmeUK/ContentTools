@@ -1,17 +1,7 @@
 Fixtures
 --------
 
-- What content will be returned in the modified dictionary because you'll often
-  only want the inner contents - I think this is a sensible default to employ
-  but we also need to consider options such as json output.
-- How will re-reinstate a fixture, if we use the inner contents only then we
-  need a way to revert the DOM element to it's state pre-editing (classes and
-  potentially specialist data-ce-... tags). This could be built into the element
-  classes on unmount.
 - We need to implement changes to tools so that they respect the `can` method
   for ContentEdit element behaviours.
 - Further to this we need to define some examples of customizing the toolbox
   based on a fixture/element with special rules.
-- We need to determine how a fixture will be flagged to the editor on init (this
-  needs to be sticky). Might be worth considering a method to allow the regions/
-  fixtures to be reselected.

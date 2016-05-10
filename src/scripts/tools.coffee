@@ -371,6 +371,9 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
         # Return true if the tool can be applied to the current
         # element/selection.
 
+        if element.isFixed()
+            return false
+
         return element.content != undefined and
                 ['Text', 'PreText'].indexOf(element.type()) != -1
 
@@ -410,6 +413,9 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
         else
             # Change the text elements tag name
 
+            # Remove any CSS classes from the element
+            element.attr('class', '')
+
             # If the element already has the same tag name as the tool will
             # apply revert the element to a paragraph.
             if element.tagName() == @tagName
@@ -446,6 +452,10 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
+
+        if element.isFixed()
+            return false
+
         return element != undefined
 
     @apply: (element, selection, callback) ->
@@ -607,6 +617,10 @@ class ContentTools.Tools.UnorderedList extends ContentTools.Tool
     @listTag = 'ul'
 
     @canApply: (element, selection) ->
+
+        if element.isFixed()
+            return false
+
         # Return true if the tool can be applied to the current
         # element/selection.
         return element.content != undefined and
@@ -671,6 +685,10 @@ class ContentTools.Tools.Table extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
+
+        if element.isFixed()
+            return false
+
         return element != undefined
 
     @apply: (element, selection, callback) ->
@@ -929,7 +947,7 @@ class ContentTools.Tools.Image extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        return true
+        return not element.isFixed()
 
     @apply: (element, selection, callback) ->
 
@@ -1006,7 +1024,7 @@ class ContentTools.Tools.Video extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        return true
+        return not element.isFixed()
 
     @apply: (element, selection, callback) ->
 
@@ -1137,7 +1155,7 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        return true
+        return not element.isFixed()
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element

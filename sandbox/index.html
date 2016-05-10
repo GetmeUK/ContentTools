@@ -10,11 +10,21 @@
         <article class="article">
             <section class="article__content"  >
 
-                <h1 class="fixture" data-name="article-title">
+                <h1 data-fixture data-name="article-title">
                     5 rules for naming variables
                 </h1>
 
-                <div class="editable" data-name="article">
+                    <ul data-fixture data-name="article-title2">
+                        <li>
+                            Code complete 2 <i>(by Steve McConnell)</i>
+                        </li>
+                        <li>
+                            The Art of Computer Programming: Volumes 1-4a
+                            <i>(by Donald E. Knuth)</i>
+                        </li>
+                    </ul>
+
+                <div data-editable data-name="article">
                     <p class="article__by-line">
                         by <b>Anthony Blackshaw</b> · 18th January 2015
                     </p>
@@ -37,12 +47,10 @@
                     </p>
 
                     <p>
-                        <br><br>
                         The names we devise for folders, files, variables,
                         functions, classes and any other user definable construct
                         will (for the most part) determine how easily someone else
                         can read and understand what we have written.
-                        <br><br>
                     </p>
                     <p>
                         To avoid repetition in the remainder of this section we use
