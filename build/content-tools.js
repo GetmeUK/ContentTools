@@ -7808,6 +7808,10 @@
       return this._ignition.busy(busy);
     };
 
+    _EditorApp.prototype.createPlaceholderElement = function(region) {
+      return new ContentEdit.Text('h1', {}, '');
+    };
+
     _EditorApp.prototype.init = function(queryOrDOMElements, namingProp, fixtureTest) {
       if (namingProp == null) {
         namingProp = 'id';
@@ -8293,7 +8297,7 @@
         if (hasEditableChildren) {
           continue;
         }
-        placeholder = new ContentEdit.Text('p', {}, '');
+        placeholder = this.createPlaceholderElement(region);
         region.attach(placeholder);
         _results.push(region._modified = lastModified);
       }

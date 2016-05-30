@@ -103,6 +103,11 @@ class _EditorApp extends ContentTools.ComponentUI
         # the ignition).
         return @_ignition.busy(busy)
 
+    createPlaceholderElement: (region) ->
+        # Return a placeholder element for the region (used to populate an empty
+        # region).
+        return new ContentEdit.Text('h1', {}, '')
+
     init: (queryOrDOMElements, namingProp='id', fixtureTest=null) ->
         # Initialize the editor application
 
@@ -721,7 +726,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Insert a placeholder text element to prevent the region from
             # becoming empty.
-            placeholder = new ContentEdit.Text('p', {}, '')
+            placeholder = @createPlaceholderElement(region)
             region.attach(placeholder)
 
             # HACK: This action will mark the region as modified which it
