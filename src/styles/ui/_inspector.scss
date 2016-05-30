@@ -9,8 +9,8 @@
 .ct-widget {
 
     &.ct-inspector {
-        background: rgba( $in-page-background, 0.2);
-        border-top: 1px solid rgba(lighten( $in-page-background, 10%), 0.1);
+        background: rgba($in-page-background, 0.2);
+        border-top: 1px solid rgba(lighten($in-page-background, 10%), 0.1);
         bottom: 0;
         height: 32px;
         left: 0;
