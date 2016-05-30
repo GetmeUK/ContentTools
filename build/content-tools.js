@@ -2697,7 +2697,7 @@
         return _results;
       }).call(this);
       if (this.isFixed()) {
-        return "" + (children.join('\n')) + "\n";
+        return children.join('\n');
       } else {
         return ("" + indent + "<" + (this.tagName()) + (this._attributesToString()) + ">\n") + ("" + (children.join('\n')) + "\n") + ("" + indent + "</" + (this.tagName()) + ">");
       }
@@ -3590,6 +3590,7 @@
         insertAt += 1;
         selection = new ContentSelect.Range(insertAt, insertAt);
         selection.select(this.domElement());
+        this.taint();
         return;
       }
       if (!this.can('spawn')) {
