@@ -118,14 +118,6 @@ class _EditorApp extends ContentTools.ComponentUI
         if fixtureTest
             @_fixtureTest = fixtureTest
 
-        # Sync the page regions
-        @syncRegions(queryOrDOMElements)
-
-        # If there aren't any editiable regions return early leaving the app
-        # dormant.
-        if @_domRegions.length == 0
-            return
-
         # Mount the element to the DOM
         @mount()
 
@@ -133,38 +125,35 @@ class _EditorApp extends ContentTools.ComponentUI
         @_ignition = new ContentTools.IgnitionUI()
         @attach(@_ignition)
 
-        if @_domRegions.length
-            @_ignition.show()
+        # Set up events to allow the ignition switch to manage the editor
+        # state.
+        @_ignition.addEventListener 'edit', (ev) =>
+            ev.preventDefault()
 
-            # Set up events to allow the ignition switch to manage the editor
-            # state.
-            @_ignition.addEventListener 'edit', (ev) =>
-                ev.preventDefault()
+            # Start the editor and set the ignition switch to `editing`
+            @start()
+            @_ignition.state('editing')
 
-                # Start the editor and set the ignition switch to `editing`
-                @start()
+        @_ignition.addEventListener 'confirm', (ev) =>
+            ev.preventDefault()
+
+            # Stop the editor and request that changes are saved
+            @_ignition.state('ready')
+            @stop(true)
+
+        @_ignition.addEventListener 'cancel', (ev) =>
+            ev.preventDefault()
+
+            # Stop the editor and request that changes are reverted
+            @stop(false)
+
+            # Update the state of the ignition switch based on the outcome
+            # of the stop action (e.g whether the revert was actioned or
+            # cancelled).
+            if this.isEditing()
                 @_ignition.state('editing')
-
-            @_ignition.addEventListener 'confirm', (ev) =>
-                ev.preventDefault()
-
-                # Stop the editor and request that changes are saved
+            else
                 @_ignition.state('ready')
-                @stop(true)
-
-            @_ignition.addEventListener 'cancel', (ev) =>
-                ev.preventDefault()
-
-                # Stop the editor and request that changes are reverted
-                @stop(false)
-
-                # Update the state of the ignition switch based on the outcome
-                # of the stop action (e.g whether the revert was actioned or
-                # cancelled).
-                if this.isEditing()
-                    @_ignition.state('editing')
-                else
-                    @_ignition.state('ready')
 
         # Toolbox
         @_toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS)
@@ -262,6 +251,9 @@ class _EditorApp extends ContentTools.ComponentUI
             'previous-region',
             @_handlePreviousRegionTransition
             )
+
+        # Sync the page regions
+        @syncRegions(queryOrDOMElements)
 
     destroy: () ->
         # Destroy the editor application
@@ -641,6 +633,10 @@ class _EditorApp extends ContentTools.ComponentUI
         if @_state is 'editing'
             @_initRegions()
 
+        if @_domRegions.length
+            @_ignition.show()
+        else
+            @_ignition.hide()
 
     # Private methods
 

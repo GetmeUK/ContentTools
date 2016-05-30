@@ -7823,41 +7823,34 @@
       if (fixtureTest) {
         this._fixtureTest = fixtureTest;
       }
-      this.syncRegions(queryOrDOMElements);
-      if (this._domRegions.length === 0) {
-        return;
-      }
       this.mount();
       this._ignition = new ContentTools.IgnitionUI();
       this.attach(this._ignition);
-      if (this._domRegions.length) {
-        this._ignition.show();
-        this._ignition.addEventListener('edit', (function(_this) {
-          return function(ev) {
-            ev.preventDefault();
-            _this.start();
+      this._ignition.addEventListener('edit', (function(_this) {
+        return function(ev) {
+          ev.preventDefault();
+          _this.start();
+          return _this._ignition.state('editing');
+        };
+      })(this));
+      this._ignition.addEventListener('confirm', (function(_this) {
+        return function(ev) {
+          ev.preventDefault();
+          _this._ignition.state('ready');
+          return _this.stop(true);
+        };
+      })(this));
+      this._ignition.addEventListener('cancel', (function(_this) {
+        return function(ev) {
+          ev.preventDefault();
+          _this.stop(false);
+          if (_this.isEditing()) {
             return _this._ignition.state('editing');
-          };
-        })(this));
-        this._ignition.addEventListener('confirm', (function(_this) {
-          return function(ev) {
-            ev.preventDefault();
-            _this._ignition.state('ready');
-            return _this.stop(true);
-          };
-        })(this));
-        this._ignition.addEventListener('cancel', (function(_this) {
-          return function(ev) {
-            ev.preventDefault();
-            _this.stop(false);
-            if (_this.isEditing()) {
-              return _this._ignition.state('editing');
-            } else {
-              return _this._ignition.state('ready');
-            }
-          };
-        })(this));
-      }
+          } else {
+            return _this._ignition.state('ready');
+          }
+        };
+      })(this));
       this._toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS);
       this.attach(this._toolbox);
       this._inspector = new ContentTools.InspectorUI();
@@ -7938,7 +7931,8 @@
       ContentEdit.Root.get().bind('detach', this._handleDetach);
       ContentEdit.Root.get().bind('paste', this._handleClipboardPaste);
       ContentEdit.Root.get().bind('next-region', this._handleNextRegionTransition);
-      return ContentEdit.Root.get().bind('previous-region', this._handlePreviousRegionTransition);
+      ContentEdit.Root.get().bind('previous-region', this._handlePreviousRegionTransition);
+      return this.syncRegions(queryOrDOMElements);
     };
 
     _EditorApp.prototype.destroy = function() {
@@ -8213,7 +8207,12 @@
         this._domRegions = document.querySelectorAll(this._regionQuery);
       }
       if (this._state === 'editing') {
-        return this._initRegions();
+        this._initRegions();
+      }
+      if (this._domRegions.length) {
+        return this._ignition.show();
+      } else {
+        return this._ignition.hide();
       }
     };
 
