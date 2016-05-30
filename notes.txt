@@ -1,7 +1,0 @@
-Fixtures
---------
-
-- We need to implement changes to tools so that they respect the `can` method
-  for ContentEdit element behaviours.
-- Further to this we need to define some examples of customizing the toolbox
-  based on a fixture/element with special rules.

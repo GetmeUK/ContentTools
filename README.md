@@ -15,6 +15,12 @@
 bower install --save ContentTools
 ```
 
+**Using npm**
+
+```
+npm install --save ContentTools
+```
+
 ## Building
 To build the library you'll need to use Grunt. First install the required node modules ([grunt-cli](http://gruntjs.com/getting-started) must be installed):
 ```
