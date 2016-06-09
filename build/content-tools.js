@@ -6146,7 +6146,8 @@
           if (ev.keyCode === 46) {
             element = ContentEdit.Root.get().focused();
             if (element && !element.content) {
-              ContentTools.Tools.Remove.apply(element, null, function() {});
+              ev.preventDefault();
+              return ContentTools.Tools.Remove.apply(element, null, function() {});
             }
           }
           version = navigator.appVersion;

@@ -234,7 +234,12 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
             if ev.keyCode is 46
                 element = ContentEdit.Root.get().focused()
                 if element and not element.content
-                    ContentTools.Tools.Remove.apply(element, null, () ->)
+
+                    # Cancel the event
+                    ev.preventDefault()
+
+                    # Remove the element
+                    return ContentTools.Tools.Remove.apply(element, null, () ->)
 
             # Undo/Redo key support
             #
