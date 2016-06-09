@@ -1,4 +1,4 @@
-window.ContentTools =
+ContentTools =
 
     # Secondary namespace to store a common set of tools
     Tools: {}
@@ -195,3 +195,14 @@ window.ContentTools =
 
         else
             return [document.body.scrollLeft, document.body.scrollTop]
+
+
+# Export the namespace
+
+# Browser (via window)
+if typeof window != 'undefined'
+    window.ContentTools = ContentTools
+
+# Node/Browserify
+if typeof module != 'undefined' and module.exports
+    exports = module.exports = ContentTools

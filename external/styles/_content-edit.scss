@@ -154,8 +154,16 @@ $highlight-color: #f39c12 !default;
      */
     &--empty {
         &:after {
+            content: '...';
             display: inline-block;
-            content: '\00a0';
+            font-style: italic;
+            opacity: 0.5;
+        }
+    }
+
+    &--empty[data-ce-placeholder] {
+        &:after {
+            content: attr(data-ce-placeholder);
         }
     }
 
@@ -384,17 +392,6 @@ $highlight-color: #f39c12 !default;
         float: right;
     }
 }
-
-
-/**
- * Show a placeholder for empty table cells.
- */
-.ce-element--type-table-cell-text:empty:before {
-    content: '...';
-    font-style: italic;
-    opacity: 0.5;
-}
-
 
 /**
  * Special class applied to a temporary element which is inserted into a parent
