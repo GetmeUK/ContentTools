@@ -7731,6 +7731,7 @@
       _EditorApp.__super__.constructor.call(this);
       this.history = null;
       this._state = 'dormant';
+      this._busy = false;
       this._namingProp = null;
       this._fixtureTest = function(domElement) {
         return domElement.hasAttribute('data-fixture');
@@ -7806,52 +7807,63 @@
     };
 
     _EditorApp.prototype.busy = function(busy) {
-      return this._ignition.busy(busy);
+      if (busy === void 0) {
+        this._busy = busy;
+      }
+      this._busy = busy;
+      if (this._ignition) {
+        return this._ignition.busy(busy);
+      }
     };
 
     _EditorApp.prototype.createPlaceholderElement = function(region) {
       return new ContentEdit.Text('p', {}, '');
     };
 
-    _EditorApp.prototype.init = function(queryOrDOMElements, namingProp, fixtureTest) {
+    _EditorApp.prototype.init = function(queryOrDOMElements, namingProp, fixtureTest, withIgnition) {
       if (namingProp == null) {
         namingProp = 'id';
       }
       if (fixtureTest == null) {
         fixtureTest = null;
       }
+      if (withIgnition == null) {
+        withIgnition = true;
+      }
       this._namingProp = namingProp;
       if (fixtureTest) {
         this._fixtureTest = fixtureTest;
       }
       this.mount();
-      this._ignition = new ContentTools.IgnitionUI();
-      this.attach(this._ignition);
-      this._ignition.addEventListener('edit', (function(_this) {
-        return function(ev) {
-          ev.preventDefault();
-          _this.start();
-          return _this._ignition.state('editing');
-        };
-      })(this));
-      this._ignition.addEventListener('confirm', (function(_this) {
-        return function(ev) {
-          ev.preventDefault();
-          _this._ignition.state('ready');
-          return _this.stop(true);
-        };
-      })(this));
-      this._ignition.addEventListener('cancel', (function(_this) {
-        return function(ev) {
-          ev.preventDefault();
-          _this.stop(false);
-          if (_this.isEditing()) {
+      if (withIgnition) {
+        this._ignition = new ContentTools.IgnitionUI();
+        this.attach(this._ignition);
+        this._ignition.addEventListener('edit', (function(_this) {
+          return function(ev) {
+            ev.preventDefault();
+            _this.start();
             return _this._ignition.state('editing');
-          } else {
-            return _this._ignition.state('ready');
-          }
-        };
-      })(this));
+          };
+        })(this));
+        this._ignition.addEventListener('confirm', (function(_this) {
+          return function(ev) {
+            ev.preventDefault();
+            _this._ignition.state('ready');
+            return _this.stop(true);
+          };
+        })(this));
+        this._ignition.addEventListener('cancel', (function(_this) {
+          return function(ev) {
+            ev.preventDefault();
+            _this.stop(false);
+            if (_this.isEditing()) {
+              return _this._ignition.state('editing');
+            } else {
+              return _this._ignition.state('ready');
+            }
+          };
+        })(this));
+      }
       this._toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS);
       this.attach(this._toolbox);
       this._inspector = new ContentTools.InspectorUI();
@@ -8210,10 +8222,12 @@
       if (this._state === 'editing') {
         this._initRegions();
       }
-      if (this._domRegions.length) {
-        return this._ignition.show();
-      } else {
-        return this._ignition.hide();
+      if (this._ignition) {
+        if (this._domRegions.length) {
+          return this._ignition.show();
+        } else {
+          return this._ignition.hide();
+        }
       }
     };
 

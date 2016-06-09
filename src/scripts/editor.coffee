@@ -12,6 +12,10 @@ class _EditorApp extends ContentTools.ComponentUI
         # The state of the app
         @_state = 'dormant'
 
+        # Flags indicating if the editor has been set to busy (typically whilst
+        # the application waits for a response from a remote server).
+        @_busy = false
+
         # The property used to store a region/fixtures name
         @_namingProp = null
 
@@ -99,16 +103,31 @@ class _EditorApp extends ContentTools.ComponentUI
     # Methods
 
     busy: (busy) ->
-        # Get/set the state of the editor (the state is actually held against
-        # the ignition).
-        return @_ignition.busy(busy)
+        # Get/set the busy flag for the editor
+
+        # Return the busy flag
+        if busy == undefined
+            @_busy = busy
+
+        # Set the busy flag
+        @_busy = busy
+
+        # If the ignition exists set the busy flag for it also
+        if @_ignition
+            @_ignition.busy(busy)
 
     createPlaceholderElement: (region) ->
         # Return a placeholder element for the region (used to populate an empty
         # region).
         return new ContentEdit.Text('p', {}, '')
 
-    init: (queryOrDOMElements, namingProp='id', fixtureTest=null) ->
+    init: (
+            queryOrDOMElements,
+            namingProp='id',
+            fixtureTest=null,
+            withIgnition=true
+            ) ->
+
         # Initialize the editor application
 
         # Set the naming property
@@ -122,38 +141,39 @@ class _EditorApp extends ContentTools.ComponentUI
         @mount()
 
         # Set up the ignition switch for page editing
-        @_ignition = new ContentTools.IgnitionUI()
-        @attach(@_ignition)
+        if withIgnition
+            @_ignition = new ContentTools.IgnitionUI()
+            @attach(@_ignition)
 
-        # Set up events to allow the ignition switch to manage the editor
-        # state.
-        @_ignition.addEventListener 'edit', (ev) =>
-            ev.preventDefault()
+            # Set up events to allow the ignition switch to manage the editor
+            # state.
+            @_ignition.addEventListener 'edit', (ev) =>
+                ev.preventDefault()
 
-            # Start the editor and set the ignition switch to `editing`
-            @start()
-            @_ignition.state('editing')
-
-        @_ignition.addEventListener 'confirm', (ev) =>
-            ev.preventDefault()
-
-            # Stop the editor and request that changes are saved
-            @_ignition.state('ready')
-            @stop(true)
-
-        @_ignition.addEventListener 'cancel', (ev) =>
-            ev.preventDefault()
-
-            # Stop the editor and request that changes are reverted
-            @stop(false)
-
-            # Update the state of the ignition switch based on the outcome
-            # of the stop action (e.g whether the revert was actioned or
-            # cancelled).
-            if this.isEditing()
+                # Start the editor and set the ignition switch to `editing`
+                @start()
                 @_ignition.state('editing')
-            else
+
+            @_ignition.addEventListener 'confirm', (ev) =>
+                ev.preventDefault()
+
+                # Stop the editor and request that changes are saved
                 @_ignition.state('ready')
+                @stop(true)
+
+            @_ignition.addEventListener 'cancel', (ev) =>
+                ev.preventDefault()
+
+                # Stop the editor and request that changes are reverted
+                @stop(false)
+
+                # Update the state of the ignition switch based on the outcome
+                # of the stop action (e.g whether the revert was actioned or
+                # cancelled).
+                if this.isEditing()
+                    @_ignition.state('editing')
+                else
+                    @_ignition.state('ready')
 
         # Toolbox
         @_toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS)
@@ -633,10 +653,11 @@ class _EditorApp extends ContentTools.ComponentUI
         if @_state is 'editing'
             @_initRegions()
 
-        if @_domRegions.length
-            @_ignition.show()
-        else
-            @_ignition.hide()
+        if @_ignition
+            if @_domRegions.length
+                @_ignition.show()
+            else
+                @_ignition.hide()
 
     # Private methods
 
