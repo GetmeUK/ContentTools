@@ -6142,12 +6142,17 @@
       this._updateToolsTimeout = setInterval(this._updateTools, 100);
       this._handleKeyDown = (function(_this) {
         return function(ev) {
-          var element, os, redo, undo, version;
-          if (ev.keyCode === 46) {
-            element = ContentEdit.Root.get().focused();
-            if (element && !element.content) {
+          var Paragraph, element, os, redo, undo, version;
+          element = ContentEdit.Root.get().focused();
+          if (element && !element.content) {
+            if (ev.keyCode === 46) {
               ev.preventDefault();
               return ContentTools.Tools.Remove.apply(element, null, function() {});
+            }
+            if (ev.keyCode === 13) {
+              ev.preventDefault();
+              Paragraph = ContentTools.Tools.Paragraph;
+              return Paragraph.apply(element, null, function() {});
             }
           }
           version = navigator.appVersion;
@@ -6218,7 +6223,6 @@
         this._domGrip.removeEventListener('mousedown', this._onStartDragging);
       }
       window.removeEventListener('keydown', this._handleKeyDown);
-      window.removeEventListener('resize', this._handleResize);
       window.removeEventListener('resize', this._handleResize);
       return clearInterval(this._updateToolsTimeout);
     };
