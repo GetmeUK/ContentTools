@@ -649,7 +649,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # In addition we monitor the Crtl/Meta and Shift key statuses so that
         # they can be tested independently of a ui event.
         @_handleHighlightOn = (ev) =>
-            if ev.keyCode in [17, 224] # Ctrl/Cmd
+            if ev.keyCode in [17, 224, 91, 93] # Ctrl/Cmd
                 @_ctrlDown = true
                 return
 
