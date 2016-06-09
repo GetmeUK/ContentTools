@@ -7810,7 +7810,7 @@
     };
 
     _EditorApp.prototype.createPlaceholderElement = function(region) {
-      return new ContentEdit.Text('h1', {}, '');
+      return new ContentEdit.Text('p', {}, '');
     };
 
     _EditorApp.prototype.init = function(queryOrDOMElements, namingProp, fixtureTest) {

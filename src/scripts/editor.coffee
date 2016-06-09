@@ -106,7 +106,7 @@ class _EditorApp extends ContentTools.ComponentUI
     createPlaceholderElement: (region) ->
         # Return a placeholder element for the region (used to populate an empty
         # region).
-        return new ContentEdit.Text('h1', {}, '')
+        return new ContentEdit.Text('p', {}, '')
 
     init: (queryOrDOMElements, namingProp='id', fixtureTest=null) ->
         # Initialize the editor application
