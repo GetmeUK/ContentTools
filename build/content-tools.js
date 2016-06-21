@@ -6554,6 +6554,11 @@
 
     DialogUI.prototype.mount = function() {
       var dialogCSSClasses, domBody, domHeader;
+      if (!!window.MSInputMethodContext && !!document.documentMode) {
+        if (document.activeElement) {
+          document.activeElement.blur();
+        }
+      }
       dialogCSSClasses = ['ct-widget', 'ct-dialog'];
       if (this._busy) {
         dialogCSSClasses.push('ct-dialog--busy');
