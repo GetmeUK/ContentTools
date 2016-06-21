@@ -1,5 +1,7 @@
 module.exports = (grunt) ->
 
+    require('es6-promise').polyfill()
+
     # Project configuration
     grunt.initConfig({
 
@@ -79,7 +81,6 @@ module.exports = (grunt) ->
             options:
                 banner: '/*! <%= pkg.name %> v<%= pkg.version %> by <%= pkg.author.name %> <<%= pkg.author.email %>> (<%= pkg.author.url %>) */'
                 sourcemap: 'none'
-                style: 'compressed'
 
             build:
                 files:
@@ -89,6 +90,15 @@ module.exports = (grunt) ->
             sandbox:
                 files:
                     'sandbox/sandbox.css': 'src/sandbox/sandbox.scss'
+
+        cssnano:
+            options:
+                sourcemap: false
+
+            build:
+                files:
+                    'build/content-tools.min.css':
+                        'build/content-tools.min.css'
 
         uglify:
             options:
@@ -145,11 +155,13 @@ module.exports = (grunt) ->
     grunt.loadNpmTasks 'grunt-contrib-sass'
     grunt.loadNpmTasks 'grunt-contrib-uglify'
     grunt.loadNpmTasks 'grunt-contrib-watch'
+    grunt.loadNpmTasks 'grunt-cssnano'
 
     # Tasks
     grunt.registerTask 'build', [
         'coffee:build'
         'sass:build'
+        'cssnano:build'
         'concat:build'
         'uglify:build'
         'clean:build'
