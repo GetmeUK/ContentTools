@@ -8289,10 +8289,13 @@
               return;
             }
             _this._shiftDown = true;
-            return _this._highlightTimeout = setTimeout(function() {
+            _this._highlightTimeout = setTimeout(function() {
               return _this.highlightRegions(true);
             }, ContentTools.HIGHLIGHT_HOLD_DURATION);
+            return;
           }
+          clearTimeout(_this._highlightTimeout);
+          return _this.highlightRegions(false);
         };
       })(this);
       this._handleHighlightOff = (function(_this) {
@@ -8312,8 +8315,17 @@
           }
         };
       })(this);
+      this._handleVisibility = (function(_this) {
+        return function(ev) {
+          if (!document.hasFocus()) {
+            clearTimeout(_this._highlightTimeout);
+            return _this.highlightRegions(false);
+          }
+        };
+      })(this);
       document.addEventListener('keydown', this._handleHighlightOn);
       document.addEventListener('keyup', this._handleHighlightOff);
+      document.addEventListener('visibilitychange', this._handleVisibility);
       window.onbeforeunload = (function(_this) {
         return function(ev) {
           if (_this._state === 'editing') {

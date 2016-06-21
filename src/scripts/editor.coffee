@@ -685,6 +685,11 @@ class _EditorApp extends ContentTools.ComponentUI
                     () => @highlightRegions(true),
                     ContentTools.HIGHLIGHT_HOLD_DURATION
                     )
+                return
+
+            # Remove the highlight if any other key is pressed
+            clearTimeout(@_highlightTimeout)
+            @highlightRegions(false)
 
         @_handleHighlightOff = (ev) =>
             # Ignore repeated key press events
@@ -699,8 +704,16 @@ class _EditorApp extends ContentTools.ComponentUI
                     @_highlightTimeout = null
                 @highlightRegions(false)
 
+        @_handleVisibility = (ev) =>
+            # If the document is hidden at any time remove the region
+            # highlighting.
+            if not document.hasFocus()
+                clearTimeout(@_highlightTimeout)
+                @highlightRegions(false)
+
         document.addEventListener('keydown', @_handleHighlightOn)
         document.addEventListener('keyup', @_handleHighlightOff)
+        document.addEventListener('visibilitychange', @_handleVisibility)
 
         # When unloading the page we check to see if the user is currently
         # editing and if so ask them to confirm the action.
