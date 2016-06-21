@@ -24,6 +24,11 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
             ])
         @_domElement.appendChild(@_domTags)
 
+        # Counter
+        @_domCounter = @constructor.createDiv(['ct-inspector__counter'])
+        @_domElement.appendChild(@_domCounter)
+        @updateCounter()
+
         # Add interaction handlers
         @_addDOMEventListeners()
 
@@ -49,6 +54,75 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         ContentEdit.Root.get().unbind('blur', @_handleFocusChange)
         ContentEdit.Root.get().unbind('focus', @_handleFocusChange)
         ContentEdit.Root.get().unbind('mount', @_handleFocusChange)
+
+    updateCounter: () ->
+        # Update the counter displaying the number of words in the editable
+        # regions and the line/column for the cursor if within a preformatted
+        # text block.
+
+        # The method used to count words is from
+        # Countable - https://sacha.me/Countable/ and
+        # https://github.com/RadLikeWhoa/Countable/.
+        #
+        # The formatting of the counts to thousands is from StackOverflow:
+        # http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+
+        unless @isMounted()
+            return
+
+        # Word count
+        completeText = ''
+        for region in ContentTools.EditorApp.get().orderedRegions()
+
+            # If one of the regions returned is undefined we ignore it, this can
+            # happen if the regions are modified during an update but the
+            # effects are harmless.
+            unless region
+                continue
+
+            completeText += region.domElement().textContent
+
+        completeText = completeText.trim()
+
+        # Strip tags
+        completeText = completeText.replace(/<\/?[a-z][^>]*>/gi, '')
+
+        # Strip zero-width spaces
+        completeText = completeText.replace(/[\u200B]+/, '')
+
+        # Strip other irrelevant characters
+        completeText = completeText.replace(/['";:,.?¿\-!¡]+/g, '')
+
+        # Count the words
+        word_count = (completeText.match(/\S+/g) or []).length
+
+        # Format the count to use commas for thousands
+        word_count = word_count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+        # We only display line/column if the currently focused element is a
+        # preformatted text block.
+        element = ContentEdit.Root.get().focused()
+        unless element and
+                element.type() == 'PreText' and
+                element.selection().isCollapsed()
+            @_domCounter.textContent = word_count
+            return
+
+        # Line/Column
+        line = 0
+        column = 0
+
+        # Find the selected line, column
+        sub = element.content.substring(0, element.selection().get()[0])
+        lines = sub.text().split('\n')
+        line = lines.length
+        column = lines[lines.length - 1].length
+
+        # Format the line and column
+        line = line.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        column = column.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+        @_domCounter.textContent = "#{word_count} / #{line}:#{column}"
 
     updateTags: () ->
         # Update the tags based on the current selection
@@ -84,6 +158,21 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
             tag = new ContentTools.TagUI(element)
             @_tagUIs.push(tag)
             tag.mount(@_domTags)
+
+    _addDOMEventListeners: () ->
+        # Add DOM event listeners for the widget
+
+        # Update the counter every 4 times a second
+        @_updateCounterInterval = setInterval(
+            () => @updateCounter(),
+            250
+            )
+
+    _removeDOMEventListeners: () ->
+        # Add DOM event listeners for the widget
+
+        # Clear the counter update
+        clearInterval(@_updateCounterInterval)
 
 
 class ContentTools.TagUI extends ContentTools.AnchoredComponentUI

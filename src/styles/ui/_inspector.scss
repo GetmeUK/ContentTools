@@ -31,6 +31,7 @@
     .ct-inspector {
         &__tags {
             @include clearfix;
+            width: calc(100% - 128px);
 
             &:before {
                 color: $icon-color;
@@ -44,6 +45,18 @@
                 @include type-icons;
                 width: 24px;
             }
+        }
+
+        &__counter {
+            border-left: 1px solid rgba(0, 0, 0, 0.1);
+            height: 24px;
+            line-height: 24px;
+            margin-right: 16px;
+            position: absolute;
+            right: 0;
+            text-align: right;
+            top: 3px;
+            width: 128px;
         }
     }
 

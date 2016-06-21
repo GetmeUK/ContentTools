@@ -224,7 +224,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 for name, toolUI of @_toolUIs
                     toolUI.update(element, selection)
 
-        @_updateToolsTimeout = setInterval(@_updateTools, 100)
+        @_updateToolsInterval = setInterval(@_updateTools, 100)
 
         # Capture top-level key events so that we can override common key
         # behaviour.
@@ -341,7 +341,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
         window.removeEventListener('resize', @_handleResize)
 
         # Remove timer for updating tools
-        clearInterval(@_updateToolsTimeout)
+        clearInterval(@_updateToolsInterval)
 
     # Dragging methods
 

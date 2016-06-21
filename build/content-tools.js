@@ -5786,6 +5786,9 @@
       this.parent().domElement().appendChild(this._domElement);
       this._domTags = this.constructor.createDiv(['ct-inspector__tags', 'ct-tags']);
       this._domElement.appendChild(this._domTags);
+      this._domCounter = this.constructor.createDiv(['ct-inspector__counter']);
+      this._domElement.appendChild(this._domCounter);
+      this.updateCounter();
       this._addDOMEventListeners();
       this._handleFocusChange = (function(_this) {
         return function() {
@@ -5803,6 +5806,42 @@
       ContentEdit.Root.get().unbind('blur', this._handleFocusChange);
       ContentEdit.Root.get().unbind('focus', this._handleFocusChange);
       return ContentEdit.Root.get().unbind('mount', this._handleFocusChange);
+    };
+
+    InspectorUI.prototype.updateCounter = function() {
+      var column, completeText, element, line, lines, region, sub, word_count, _i, _len, _ref;
+      if (!this.isMounted()) {
+        return;
+      }
+      completeText = '';
+      _ref = ContentTools.EditorApp.get().orderedRegions();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        region = _ref[_i];
+        if (!region) {
+          continue;
+        }
+        completeText += region.domElement().textContent;
+      }
+      completeText = completeText.trim();
+      completeText = completeText.replace(/<\/?[a-z][^>]*>/gi, '');
+      completeText = completeText.replace(/[\u200B]+/, '');
+      completeText = completeText.replace(/['";:,.?¿\-!¡]+/g, '');
+      word_count = (completeText.match(/\S+/g) || []).length;
+      word_count = word_count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      element = ContentEdit.Root.get().focused();
+      if (!(element && element.type() === 'PreText' && element.selection().isCollapsed())) {
+        this._domCounter.textContent = word_count;
+        return;
+      }
+      line = 0;
+      column = 0;
+      sub = element.content.substring(0, element.selection().get()[0]);
+      lines = sub.text().split('\n');
+      line = lines.length;
+      column = lines[lines.length - 1].length;
+      line = line.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      column = column.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return this._domCounter.textContent = "" + word_count + " / " + line + ":" + column;
     };
 
     InspectorUI.prototype.updateTags = function() {
@@ -5834,6 +5873,18 @@
         _results.push(tag.mount(this._domTags));
       }
       return _results;
+    };
+
+    InspectorUI.prototype._addDOMEventListeners = function() {
+      return this._updateCounterInterval = setInterval((function(_this) {
+        return function() {
+          return _this.updateCounter();
+        };
+      })(this), 250);
+    };
+
+    InspectorUI.prototype._removeDOMEventListeners = function() {
+      return clearInterval(this._updateCounterInterval);
     };
 
     return InspectorUI;
@@ -6180,7 +6231,7 @@
           }
         };
       })(this);
-      this._updateToolsTimeout = setInterval(this._updateTools, 100);
+      this._updateToolsInterval = setInterval(this._updateTools, 100);
       this._handleKeyDown = (function(_this) {
         return function(ev) {
           var Paragraph, element, os, redo, undo, version;
@@ -6265,7 +6316,7 @@
       }
       window.removeEventListener('keydown', this._handleKeyDown);
       window.removeEventListener('resize', this._handleResize);
-      return clearInterval(this._updateToolsTimeout);
+      return clearInterval(this._updateToolsInterval);
     };
 
     ToolboxUI.prototype._onDrag = function(ev) {
