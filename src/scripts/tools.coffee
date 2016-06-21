@@ -309,9 +309,12 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                 if detail.href
                     element.a = {
                         href: detail.href,
-                        target: if detail.target then detail.target else ''
                         class: if element.a then element.a['class'] else ''
                     }
+
+                    if detail.target
+                        element.a.target = detail.target
+
                     for className in alignmentClassNames
                         if element.hasCSSClass(className)
                             element.removeCSSClass(className)

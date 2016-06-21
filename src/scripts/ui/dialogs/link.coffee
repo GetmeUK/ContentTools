@@ -59,10 +59,9 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
             @dispatchEvent(@createEvent('save'))
             return
 
-        detail = {
-            href: @_domInput.value.trim(),
-            target: @_target if @_target
-        }
+        detail = {href: @_domInput.value.trim()}
+        if @_target
+            detail.target = @_target
 
         @dispatchEvent(@createEvent('save', detail))
 

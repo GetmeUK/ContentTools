@@ -6966,9 +6966,11 @@
         return;
       }
       detail = {
-        href: this._domInput.value.trim(),
-        target: this._target ? this._target : void 0
+        href: this._domInput.value.trim()
       };
+      if (this._target) {
+        detail.target = this._target;
+      }
       return this.dispatchEvent(this.createEvent('save', detail));
     };
 
@@ -8904,9 +8906,11 @@
           if (detail.href) {
             element.a = {
               href: detail.href,
-              target: detail.target ? detail.target : '',
               "class": element.a ? element.a['class'] : ''
             };
+            if (detail.target) {
+              element.a.target = detail.target;
+            }
             for (_i = 0, _len = alignmentClassNames.length; _i < _len; _i++) {
               className = alignmentClassNames[_i];
               if (element.hasCSSClass(className)) {
