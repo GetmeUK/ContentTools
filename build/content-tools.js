@@ -8441,6 +8441,7 @@
     _EditorApp.prototype._initRegions = function() {
       var domRegion, found, i, index, name, region, _i, _len, _ref, _ref1, _results;
       found = {};
+      this._orderedRegions = [];
       _ref = this._domRegions;
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         domRegion = _ref[i];
@@ -8449,6 +8450,7 @@
           name = i;
         }
         found[name] = true;
+        this._orderedRegions.push(name);
         if (this._regions[name] && this._regions[name].domElement() === domRegion) {
           continue;
         }
@@ -8457,7 +8459,6 @@
         } else {
           this._regions[name] = new ContentEdit.Region(domRegion);
         }
-        this._orderedRegions.push(name);
         this._regionsLastModified[name] = this._regions[name].lastModified();
       }
       _ref1 = this._regions;

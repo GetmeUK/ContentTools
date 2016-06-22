@@ -774,6 +774,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # Initialize DOM regions within the page
 
         found = {}
+        @_orderedRegions = []
         for domRegion, i in @_domRegions
 
             # Find a name for the region
@@ -788,6 +789,9 @@ class _EditorApp extends ContentTools.ComponentUI
             # aren't found are removed.
             found[name] = true
 
+            # Update the order
+            @_orderedRegions.push(name)
+
             # Check if the region/fixture is already initialized, in which case
             # we're done.
             if @_regions[name] and @_regions[name].domElement() == domRegion
@@ -798,9 +802,6 @@ class _EditorApp extends ContentTools.ComponentUI
                 @_regions[name] = new ContentEdit.Fixture(domRegion)
             else
                 @_regions[name] = new ContentEdit.Region(domRegion)
-
-            # Update the order
-            @_orderedRegions.push(name)
 
             # Store the date at which the region was last modified so we can
             # check for changes on save.
