@@ -307,10 +307,10 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                     ]
 
                 if detail.href
-                    element.a = {
-                        href: detail.href,
-                        class: if element.a then element.a['class'] else ''
-                    }
+                    element.a = {href: detail.href}
+
+                    if element.a
+                        element.a.class = element.a['class']
 
                     if detail.target
                         element.a.target = detail.target
@@ -417,7 +417,7 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
             # Change the text elements tag name
 
             # Remove any CSS classes from the element
-            element.attr('class', '')
+            element.removeAttr('class')
 
             # If the element already has the same tag name as the tool will
             # apply revert the element to a paragraph.

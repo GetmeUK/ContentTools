@@ -8962,9 +8962,11 @@
           alignmentClassNames = ['align-center', 'align-left', 'align-right'];
           if (detail.href) {
             element.a = {
-              href: detail.href,
-              "class": element.a ? element.a['class'] : ''
+              href: detail.href
             };
+            if (element.a) {
+              element.a["class"] = element.a['class'];
+            }
             if (detail.target) {
               element.a.target = detail.target;
             }
@@ -9060,7 +9062,7 @@
         textElement.focus();
         textElement.selection(selection);
       } else {
-        element.attr('class', '');
+        element.removeAttr('class');
         if (element.tagName() === this.tagName) {
           element.tagName('p');
         } else {
