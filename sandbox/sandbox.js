@@ -153,13 +153,13 @@
       saved = (function(_this) {
         return function() {
           editor.busy(false);
-          return new ContentTools.FlashUI('ok');
+          return new ContentTools.FlashUI(editor, 'ok');
         };
       })(this);
       return setTimeout(saved, 2000);
     });
     FIXTURE_TOOLS = [['undo', 'redo', 'remove']];
-    ContentEdit.Root.get().bind('focus', function(element) {
+    editor.CEFactory.root.bind('focus', function(element) {
       var tools;
       if (element.isFixed()) {
         tools = FIXTURE_TOOLS;

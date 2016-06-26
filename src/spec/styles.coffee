@@ -1,4 +1,8 @@
 # StylePalette
+editor = ContentTools.EditorApp.get()
+editor.init()
+editor.start()
+CEFactory = editor.CEFactory
 
 describe 'ContentTools.StylePalette.add()', () ->
 
@@ -8,7 +12,7 @@ describe 'ContentTools.StylePalette.add()', () ->
     it 'should return a `ContentTools.Style` instance', () ->
         style = new ContentTools.Style('test', 'test', ['p'])
         ContentTools.StylePalette.add(style)
-        p = new ContentEdit.Text('p', {}, 'foo')
+        p = new CEFactory.Text('p', {}, 'foo')
         expect(ContentTools.StylePalette.styles(p)).toEqual [style]
 
 
@@ -28,9 +32,9 @@ describe 'ContentTools.StylePalette.styles()', () ->
         ContentTools.StylePalette.add(test2)
         ContentTools.StylePalette.add(test3)
 
-        p = new ContentEdit.Text('p', {}, 'foo')
-        h1 = new ContentEdit.Text('h1', {}, 'foo')
-        h2 = new ContentEdit.Text('h2', {}, 'foo')
+        p = new CEFactory.Text('p', {}, 'foo')
+        h1 = new CEFactory.Text('h1', {}, 'foo')
+        h2 = new CEFactory.Text('h2', {}, 'foo')
 
         expect(ContentTools.StylePalette.styles(p)).toEqual [test1, test2]
         expect(ContentTools.StylePalette.styles(h1)).toEqual [test2, test3]

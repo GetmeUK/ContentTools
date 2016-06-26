@@ -31,7 +31,7 @@ describe 'ContentTools.ToolboxUI', () ->
 
         it 'should return an instance of a ToolboxUI', () ->
 
-            toolbox = new ContentTools.ToolboxUI([])
+            toolbox = new ContentTools.ToolboxUI(editor, [])
             expect(toolbox instanceof ContentTools.ToolboxUI).toBe true
 
 
@@ -97,7 +97,7 @@ describe 'ContentTools.ToolboxUI', () ->
         it 'should mount the component', () ->
 
             # Start the editor so the document is editable
-            toolbox = new ContentTools.ToolboxUI([])
+            toolbox = new ContentTools.ToolboxUI(editor, [])
             editor.attach(toolbox)
             toolbox.mount()
 
@@ -108,7 +108,7 @@ describe 'ContentTools.ToolboxUI', () ->
 
             # Manually set a restore point
             window.localStorage.setItem('ct-toolbox-position', '7,7')
-            toolbox = new ContentTools.ToolboxUI([])
+            toolbox = new ContentTools.ToolboxUI(editor, [])
             editor.attach(toolbox)
             toolbox.mount()
 
@@ -120,7 +120,7 @@ describe 'ContentTools.ToolboxUI', () ->
 
             # Manually set a restore point outside of the viewport
             window.localStorage.setItem('ct-toolbox-position', '-7,-7')
-            toolbox = new ContentTools.ToolboxUI([])
+            toolbox = new ContentTools.ToolboxUI(editor, [])
             editor.attach(toolbox)
             toolbox.mount()
 
@@ -182,7 +182,7 @@ describe 'ContentTools.ToolboxUI', () ->
             element = region.children[1]
 
             # Spy on the `canApply` class method called if the short-cut is used
-            spyOn(ContentTools.Tools.Undo, 'canApply')
+            spyOn(toolbox._toolShelf.get("undo"), 'canApply')
 
             # Trigger the undo short-cut event
             keyDownEvent = document.createEvent('CustomEvent')
@@ -192,7 +192,7 @@ describe 'ContentTools.ToolboxUI', () ->
             window.dispatchEvent(keyDownEvent)
 
             # Check the undo short-cut was called
-            expect(ContentTools.Tools.Undo.canApply).toHaveBeenCalled()
+            expect(toolbox._toolShelf.get("undo").canApply).toHaveBeenCalled()
 
         it 'should allow a redo to be triggered with Ctrl-Shift-z key
                 short-cut', () ->
@@ -204,7 +204,7 @@ describe 'ContentTools.ToolboxUI', () ->
             element.focus()
 
             # Spy on the `canApply` class method called if the short-cut is used
-            spyOn(ContentTools.Tools.Redo, 'canApply')
+            spyOn(toolbox._toolShelf.get("redo"), 'canApply')
 
             # Trigger the redo short-cut event
             keyDownEvent = document.createEvent('CustomEvent')
@@ -215,7 +215,7 @@ describe 'ContentTools.ToolboxUI', () ->
             window.dispatchEvent(keyDownEvent)
 
             # Check the redo short-cut was called
-            expect(ContentTools.Tools.Redo.canApply).toHaveBeenCalled()
+            expect(toolbox._toolShelf.get("redo").canApply).toHaveBeenCalled()
 
 
 # ToolsUI
@@ -224,6 +224,7 @@ describe 'ContentTools.ToolboxUI', () ->
 
     div = null
     editor = null
+    toolShelf = null
 
     beforeEach ->
         # Create an editable region
@@ -236,6 +237,7 @@ describe 'ContentTools.ToolboxUI', () ->
         # Initialize the editor
         editor = ContentTools.EditorApp.get()
         editor.init('.editable')
+        toolShelf = new ContentTools.ToolShelf(editor)
 
     afterEach ->
         # Shutdown the editor
@@ -249,7 +251,7 @@ describe 'ContentTools.ToolboxUI', () ->
 
         it 'should return an instance of a ToolUI', () ->
 
-            tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'))
+            tool = new ContentTools.ToolUI(editor, toolShelf.get('bold'))
             expect(tool instanceof ContentTools.ToolUI).toBe true
 
 
@@ -257,7 +259,7 @@ describe 'ContentTools.ToolboxUI', () ->
 
         it 'should set/get the disabled state for the tool', () ->
 
-            tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'))
+            tool = new ContentTools.ToolUI(editor, toolShelf.get('bold'))
 
             # Check that the default ignition disabled state to be true
             expect(tool.disabled()).toBe false
@@ -272,8 +274,9 @@ describe 'ContentTools.ToolboxUI', () ->
         it 'should apply the tool associated with the component', () ->
 
             tool = new ContentTools.ToolUI(
-                ContentTools.ToolShelf.fetch('heading'))
-            region = new ContentEdit.Region(
+                editor,
+                toolShelf.get('heading'))
+            region = new editor.CEFactory.Region(
                 document.querySelectorAll('.editable')[0])
             element = region.children[0]
 
@@ -289,7 +292,7 @@ describe 'ContentTools.ToolboxUI', () ->
         it 'should mount the component', () ->
 
             # Start the editor so the document is editable
-            tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'))
+            tool = new ContentTools.ToolUI(editor, toolShelf.get('bold'))
             editor.attach(tool)
             tool.mount(editor.domElement())
 
@@ -302,8 +305,9 @@ describe 'ContentTools.ToolboxUI', () ->
                 element and content selection', () ->
 
             tool = new ContentTools.ToolUI(
-                ContentTools.ToolShelf.fetch('heading'))
-            region = new ContentEdit.Region(
+                editor,
+                toolShelf.get('heading'))
+            region = new editor.CEFactory.Region(
                 document.querySelectorAll('.editable')[0])
             element = region.children[0]
 

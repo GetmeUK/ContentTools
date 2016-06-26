@@ -35,7 +35,7 @@ describe 'ContentTools.InspectorUI', () ->
 
         it 'should return an instance of a InspectorUI', () ->
 
-            inspector = new ContentTools.InspectorUI()
+            inspector = new ContentTools.InspectorUI(editor)
             expect(inspector instanceof ContentTools.InspectorUI).toBe true
 
 
@@ -43,7 +43,7 @@ describe 'ContentTools.InspectorUI', () ->
 
         it 'should mount the component', () ->
 
-            inspector = new ContentTools.InspectorUI()
+            inspector = new ContentTools.InspectorUI(editor)
             editor.attach(inspector)
             inspector.mount()
             expect(inspector.isMounted()).toBe true
@@ -53,7 +53,7 @@ describe 'ContentTools.InspectorUI', () ->
 
         it 'should unmount the component', () ->
 
-            inspector = new ContentTools.InspectorUI()
+            inspector = new ContentTools.InspectorUI(editor)
             editor.attach(inspector)
             inspector.mount()
             inspector.unmount()
@@ -127,7 +127,7 @@ describe 'ContentTools.TagUI', () ->
 
         it 'should return an instance of a TagUI', () ->
 
-            tag = new ContentTools.TagUI()
+            tag = new ContentTools.TagUI(editor)
             expect(tag instanceof ContentTools.TagUI).toBe true
 
 
@@ -142,7 +142,7 @@ describe 'ContentTools.TagUI', () ->
             elements = region.children
 
             # Manually mout the element on to the inspector bar
-            tag = new ContentTools.TagUI(elements[0])
+            tag = new ContentTools.TagUI(editor, elements[0])
             tag.mount(inspector._domTags)
             expect(tag.isMounted()).toBe true
 

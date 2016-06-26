@@ -1631,11 +1631,11 @@
 }).call(this);
 
 (function() {
-  var ContentEdit, exports, _Root, _TagNames, _mergers,
+  var ContentEdit, Element, ElementCollection, Fixture, Image, List, ListItem, ListItemText, Node, NodeCollection, PreText, Region, ResizableElement, Root, Static, Table, TableCell, TableCellText, TableRow, TableSection, Text, Video, exports, _mergers,
     __slice = [].slice,
-    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   ContentEdit = {
@@ -1759,49 +1759,93 @@
     exports = module.exports = ContentEdit;
   }
 
-  _TagNames = (function() {
-    function _TagNames() {
-      this._tagNames = {};
-    }
+  ContentEdit.Factory = (function() {
+    Factory._classes = {};
 
-    _TagNames.prototype.register = function() {
-      var cls, tagName, tagNames, _i, _len, _results;
-      cls = arguments[0], tagNames = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    Factory._tags = {};
+
+    Factory._id = 0;
+
+    Factory.register = function() {
+      var classInstance, className, tagName, tagNames, _i, _len, _results;
+      classInstance = arguments[0], className = arguments[1], tagNames = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      this._classes[className] = classInstance;
       _results = [];
       for (_i = 0, _len = tagNames.length; _i < _len; _i++) {
         tagName = tagNames[_i];
-        _results.push(this._tagNames[tagName.toLowerCase()] = cls);
+        _results.push(this._tags[tagName.toLowerCase()] = className);
       }
       return _results;
     };
 
-    _TagNames.prototype.match = function(tagName) {
-      if (this._tagNames[tagName.toLowerCase()]) {
-        return this._tagNames[tagName.toLowerCase()];
+    Factory["class"] = function(className) {
+      if (!this._classes[className]) {
+        console.error("Expected class names: " + (Object.keys(this._classes).join(', ')));
+        throw new Error("Unexpect class name: " + className);
       }
-      return ContentEdit.Static;
+      return this._classes[className];
     };
 
-    return _TagNames;
+    Factory.classNameByTag = function(tagName) {
+      tagName = tagName.toLowerCase();
+      if (!this._tags[tagName]) {
+        console.error("Expected tag names: " + (Object.keys(this._tags).join(', ')));
+        throw new Error("Unexpect tag name: " + tagName);
+      }
+      return this._tags[tagName];
+    };
+
+    Factory.classByTag = function(tagName) {
+      return this["class"](this.classNameByTag(tagName));
+    };
+
+    Factory.nextId = function() {
+      this._id += 1;
+      return this._id;
+    };
+
+    function Factory() {
+      var Root, classInstance, className, _ref;
+      Root = ContentEdit.Factory["class"]('Root');
+      this.id = ContentEdit.Factory.nextId();
+      this.root = new Root();
+      _ref = ContentEdit.Factory._classes;
+      for (className in _ref) {
+        classInstance = _ref[className];
+        this[className] = (function(classInstance, factory) {
+          var Wrapper;
+          Wrapper = (function(_super) {
+            __extends(Wrapper, _super);
+
+            function Wrapper() {
+              var args;
+              args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+              this._factory = factory;
+              classInstance.prototype.constructor.apply(this, args);
+            }
+
+            return Wrapper;
+
+          })(classInstance);
+          Wrapper._factory = factory;
+          return Wrapper;
+        })(classInstance, this);
+      }
+    }
+
+    Factory.prototype.classByTag = function(tagName) {
+      var className;
+      className = ContentEdit.Factory.classNameByTag(tagName);
+      return this[className];
+    };
+
+    return Factory;
 
   })();
 
-  ContentEdit.TagNames = (function() {
-    var instance;
+  Node = (function() {
+    ContentEdit.Factory.register(Node, 'Node');
 
-    function TagNames() {}
-
-    instance = null;
-
-    TagNames.get = function() {
-      return instance != null ? instance : instance = new _TagNames();
-    };
-
-    return TagNames;
-
-  })();
-
-  ContentEdit.Node = (function() {
     function Node() {
       this._bindings = {};
       this._parent = null;
@@ -1892,11 +1936,11 @@
 
     Node.prototype.commit = function() {
       this._modified = null;
-      return ContentEdit.Root.get().trigger('commit', this);
+      return this._factory.root.trigger('commit', this);
     };
 
     Node.prototype.taint = function() {
-      var now, parent, root, _i, _len, _ref;
+      var now, parent, _i, _len, _ref;
       now = Date.now();
       this._modified = now;
       _ref = this.parents();
@@ -1904,9 +1948,8 @@
         parent = _ref[_i];
         parent._modified = now;
       }
-      root = ContentEdit.Root.get();
-      root._modified = now;
-      return root.trigger('taint', this);
+      this._factory.root._modified = now;
+      return this._factory.root.trigger('taint', this);
     };
 
     Node.prototype.closest = function(testFunc) {
@@ -2038,8 +2081,10 @@
 
   })();
 
-  ContentEdit.NodeCollection = (function(_super) {
+  NodeCollection = (function(_super) {
     __extends(NodeCollection, _super);
+
+    ContentEdit.Factory.register(NodeCollection, 'NodeCollection');
 
     function NodeCollection() {
       NodeCollection.__super__.constructor.call(this);
@@ -2082,7 +2127,7 @@
         node.mount();
       }
       this.taint();
-      return ContentEdit.Root.get().trigger('attach', this, node);
+      return this._factory.root.trigger('attach', this, node);
     };
 
     NodeCollection.prototype.commit = function() {
@@ -2093,7 +2138,7 @@
         descendant._modified = null;
       }
       this._modified = null;
-      return ContentEdit.Root.get().trigger('commit', this);
+      return this._factory.root.trigger('commit', this);
     };
 
     NodeCollection.prototype.detach = function(node) {
@@ -2108,15 +2153,17 @@
       this.children.splice(nodeIndex, 1);
       node._parent = null;
       this.taint();
-      return ContentEdit.Root.get().trigger('detach', this, node);
+      return this._factory.root.trigger('detach', this, node);
     };
 
     return NodeCollection;
 
-  })(ContentEdit.Node);
+  })(ContentEdit.Factory["class"]('Node'));
 
-  ContentEdit.Element = (function(_super) {
+  Element = (function(_super) {
     __extends(Element, _super);
+
+    ContentEdit.Factory.register(Element, 'Element');
 
     function Element(tagName, attributes) {
       Element.__super__.constructor.call(this);
@@ -2157,7 +2204,7 @@
     };
 
     Element.prototype.isFocused = function() {
-      return ContentEdit.Root.get().focused() === this;
+      return this._factory.root.focused() === this;
     };
 
     Element.prototype.isMounted = function() {
@@ -2202,12 +2249,10 @@
     };
 
     Element.prototype.blur = function() {
-      var root;
-      root = ContentEdit.Root.get();
       if (this.isFocused()) {
         this._removeCSSClass('ce-element--focused');
-        root._focused = null;
-        return root.trigger('blur', this);
+        this._factory.root._focused = null;
+        return this._factory.root.trigger('blur', this);
       }
     };
 
@@ -2230,53 +2275,47 @@
     };
 
     Element.prototype.drag = function(x, y) {
-      var root;
       if (!(this.isMounted() && this.can('drag'))) {
         return;
       }
-      root = ContentEdit.Root.get();
-      root.startDragging(this, x, y);
-      return root.trigger('drag', this);
+      this._factory.root.startDragging(this, x, y);
+      return this._factory.root.trigger('drag', this);
     };
 
     Element.prototype.drop = function(element, placement) {
-      var root;
       if (!this.can('drop')) {
         return;
       }
-      root = ContentEdit.Root.get();
       if (element) {
         element._removeCSSClass('ce-element--drop');
         element._removeCSSClass("ce-element--drop-" + placement[0]);
         element._removeCSSClass("ce-element--drop-" + placement[1]);
         if (this.constructor.droppers[element.type()]) {
           this.constructor.droppers[element.type()](this, element, placement);
-          root.trigger('drop', this, element, placement);
+          this._factory.root.trigger('drop', this, element, placement);
           return;
         } else if (element.constructor.droppers[this.type()]) {
           element.constructor.droppers[this.type()](this, element, placement);
-          root.trigger('drop', this, element, placement);
+          this._factory.root.trigger('drop', this, element, placement);
           return;
         }
       }
-      return root.trigger('drop', this, null, null);
+      return this._factory.root.trigger('drop', this, null, null);
     };
 
     Element.prototype.focus = function(supressDOMFocus) {
-      var root;
-      root = ContentEdit.Root.get();
       if (this.isFocused()) {
         return;
       }
-      if (root.focused()) {
-        root.focused().blur();
+      if (this._factory.root.focused()) {
+        this._factory.root.focused().blur();
       }
       this._addCSSClass('ce-element--focused');
-      root._focused = this;
+      this._factory.root._focused = this;
       if (this.isMounted() && !supressDOMFocus) {
         this.domElement().focus();
       }
-      return root.trigger('focus', this);
+      return this._factory.root.trigger('focus', this);
     };
 
     Element.prototype.hasCSSClass = function(className) {
@@ -2332,7 +2371,7 @@
       if (this.isFocused()) {
         this._addCSSClass('ce-element--focused');
       }
-      return ContentEdit.Root.get().trigger('mount', this);
+      return this._factory.root.trigger('mount', this);
     };
 
     Element.prototype.removeAttr = function(name) {
@@ -2399,7 +2438,7 @@
         this._domElement.parentNode.removeChild(this._domElement);
       }
       this._domElement = null;
-      return ContentEdit.Root.get().trigger('unmount', this);
+      return this._factory.root.trigger('unmount', this);
     };
 
     Element.prototype._addDOMEventListeners = function() {
@@ -2498,18 +2537,15 @@
     };
 
     Element.prototype._onMouseOut = function(ev) {
-      var dragging, root;
       this._removeCSSClass('ce-element--over');
-      root = ContentEdit.Root.get();
-      dragging = root.dragging();
-      if (dragging) {
+      if (this._factory.root.dragging()) {
         this._removeCSSClass('ce-element--drop');
         this._removeCSSClass('ce-element--drop-above');
         this._removeCSSClass('ce-element--drop-below');
         this._removeCSSClass('ce-element--drop-center');
         this._removeCSSClass('ce-element--drop-left');
         this._removeCSSClass('ce-element--drop-right');
-        return root._dropTarget = null;
+        return this._factory.root._dropTarget = null;
       }
     };
 
@@ -2518,27 +2554,26 @@
     Element.prototype._onNativeDrop = function(ev) {
       ev.preventDefault();
       ev.stopPropagation();
-      return ContentEdit.Root.get().trigger('native-drop', this, ev);
+      return this._factory.root.trigger('native-drop', this, ev);
     };
 
     Element.prototype._onPaste = function(ev) {
       ev.preventDefault();
       ev.stopPropagation();
-      return ContentEdit.Root.get().trigger('paste', this, ev);
+      return this._factory.root.trigger('paste', this, ev);
     };
 
     Element.prototype._onOver = function(ev) {
-      var dragging, root;
+      var dragging;
       this._addCSSClass('ce-element--over');
-      root = ContentEdit.Root.get();
-      dragging = root.dragging();
+      dragging = this._factory.root.dragging();
       if (!dragging) {
         return;
       }
       if (dragging === this) {
         return;
       }
-      if (root._dropTarget) {
+      if (this._factory.root._dropTarget) {
         return;
       }
       if (!this.can('drop')) {
@@ -2548,7 +2583,7 @@
         return;
       }
       this._addCSSClass('ce-element--drop');
-      return root._dropTarget = this;
+      return this._factory.root._dropTarget = this;
     };
 
     Element.prototype._removeDOMEventListeners = function() {
@@ -2674,16 +2709,18 @@
 
     return Element;
 
-  })(ContentEdit.Node);
+  })(ContentEdit.Factory["class"]('Node'));
 
-  ContentEdit.ElementCollection = (function(_super) {
+  ElementCollection = (function(_super) {
     __extends(ElementCollection, _super);
 
-    ElementCollection.extend(ContentEdit.NodeCollection);
+    ContentEdit.Factory.register(ElementCollection, 'ElementCollection');
+
+    ElementCollection.extend(ContentEdit.Factory["class"]('NodeCollection'));
 
     function ElementCollection(tagName, attributes) {
       ElementCollection.__super__.constructor.call(this, tagName, attributes);
-      ContentEdit.NodeCollection.prototype.constructor.call(this);
+      this._factory.NodeCollection.prototype.constructor.call(this);
     }
 
     ElementCollection.prototype.cssTypeName = function() {
@@ -2713,7 +2750,7 @@
     };
 
     ElementCollection.prototype.detach = function(element) {
-      ContentEdit.NodeCollection.prototype.detach.call(this, element);
+      this._factory.NodeCollection.prototype.detach.call(this, element);
       if (this.children.length === 0 && this.parent()) {
         return this.parent().detach(this);
       }
@@ -2775,10 +2812,12 @@
 
     return ElementCollection;
 
-  })(ContentEdit.Element);
+  })(ContentEdit.Factory["class"]('Element'));
 
-  ContentEdit.ResizableElement = (function(_super) {
+  ResizableElement = (function(_super) {
     __extends(ResizableElement, _super);
+
+    ContentEdit.Factory.register(ResizableElement, 'ResizableElement');
 
     function ResizableElement(tagName, attributes) {
       ResizableElement.__super__.constructor.call(this, tagName, attributes);
@@ -2823,7 +2862,7 @@
       if (!(this.isMounted() && this.can('resize'))) {
         return;
       }
-      return ContentEdit.Root.get().startResizing(this, corner, x, y, true);
+      return this._factory.root.startResizing(this, corner, x, y, true);
     };
 
     ResizableElement.prototype.size = function(newSize) {
@@ -2930,10 +2969,12 @@
 
     return ResizableElement;
 
-  })(ContentEdit.Element);
+  })(ContentEdit.Factory["class"]('Element'));
 
-  ContentEdit.Region = (function(_super) {
+  Region = (function(_super) {
     __extends(Region, _super);
+
+    ContentEdit.Factory.register(Region, 'Region');
 
     function Region(domElement) {
       Region.__super__.constructor.call(this);
@@ -2971,7 +3012,7 @@
     };
 
     Region.prototype.setContent = function(domElementOrHTML) {
-      var c, child, childNode, childNodes, cls, domElement, element, tagNames, wrapper, _i, _j, _len, _len1, _ref;
+      var c, child, childNode, childNodes, cls, domElement, element, wrapper, _i, _j, _len, _len1, _ref;
       domElement = domElementOrHTML;
       if (domElementOrHTML.childNodes === void 0) {
         wrapper = document.createElement('div');
@@ -2983,7 +3024,6 @@
         child = _ref[_i];
         this.detach(child);
       }
-      tagNames = ContentEdit.TagNames.get();
       childNodes = (function() {
         var _j, _len1, _ref1, _results;
         _ref1 = domElement.childNodes;
@@ -3000,9 +3040,9 @@
           continue;
         }
         if (childNode.getAttribute("data-ce-tag")) {
-          cls = tagNames.match(childNode.getAttribute("data-ce-tag"));
+          cls = this._factory.classByTag(childNode.getAttribute("data-ce-tag"));
         } else {
-          cls = tagNames.match(childNode.tagName);
+          cls = this._factory.classByTag(childNode.tagName);
         }
         element = cls.fromDOMElement(childNode);
         domElement.removeChild(childNode);
@@ -3010,31 +3050,32 @@
           this.attach(element);
         }
       }
-      return ContentEdit.Root.get().trigger('ready', this);
+      return this._factory.root.trigger('ready', this);
     };
 
     return Region;
 
-  })(ContentEdit.NodeCollection);
+  })(ContentEdit.Factory["class"]('NodeCollection'));
 
-  ContentEdit.Fixture = (function(_super) {
+  Fixture = (function(_super) {
     __extends(Fixture, _super);
 
+    ContentEdit.Factory.register(Fixture, 'Fixture');
+
     function Fixture(domElement) {
-      var cls, element, tagNames;
+      var cls, element;
       Fixture.__super__.constructor.call(this);
       this._domElement = domElement;
-      tagNames = ContentEdit.TagNames.get();
       if (this._domElement.getAttribute("data-ce-tag")) {
-        cls = tagNames.match(this._domElement.getAttribute("data-ce-tag"));
+        cls = this._factory.classByTag(this._domElement.getAttribute("data-ce-tag"));
       } else {
-        cls = tagNames.match(this._domElement.tagName);
+        cls = this._factory.classByTag(this._domElement.tagName);
       }
       element = cls.fromDOMElement(this._domElement);
       this.children = [element];
       element._parent = this;
       element.mount();
-      ContentEdit.Root.get().trigger('ready', this);
+      this._factory.root.trigger('ready', this);
     }
 
     Fixture.prototype.domElement = function() {
@@ -3068,17 +3109,19 @@
 
     return Fixture;
 
-  })(ContentEdit.NodeCollection);
+  })(ContentEdit.Factory["class"]('NodeCollection'));
 
-  _Root = (function(_super) {
-    __extends(_Root, _super);
+  Root = (function(_super) {
+    __extends(Root, _super);
 
-    function _Root() {
+    ContentEdit.Factory.register(Root, "Root");
+
+    function Root() {
       this._onStopResizing = __bind(this._onStopResizing, this);
       this._onResize = __bind(this._onResize, this);
       this._onStopDragging = __bind(this._onStopDragging, this);
       this._onDrag = __bind(this._onDrag, this);
-      _Root.__super__.constructor.call(this);
+      Root.__super__.constructor.call(this);
       this._focused = null;
       this._dragging = null;
       this._dropTarget = null;
@@ -3087,27 +3130,27 @@
       this._resizingInit = null;
     }
 
-    _Root.prototype.dragging = function() {
+    Root.prototype.dragging = function() {
       return this._dragging;
     };
 
-    _Root.prototype.dropTarget = function() {
+    Root.prototype.dropTarget = function() {
       return this._dropTarget;
     };
 
-    _Root.prototype.focused = function() {
+    Root.prototype.focused = function() {
       return this._focused;
     };
 
-    _Root.prototype.resizing = function() {
+    Root.prototype.resizing = function() {
       return this._resizing;
     };
 
-    _Root.prototype.type = function() {
+    Root.prototype.type = function() {
       return 'Root';
     };
 
-    _Root.prototype.cancelDragging = function() {
+    Root.prototype.cancelDragging = function() {
       if (!this._dragging) {
         return;
       }
@@ -3120,7 +3163,7 @@
       return ContentEdit.removeCSSClass(document.body, 'ce--dragging');
     };
 
-    _Root.prototype.startDragging = function(element, x, y) {
+    Root.prototype.startDragging = function(element, x, y) {
       if (this._dragging) {
         return;
       }
@@ -3135,7 +3178,7 @@
       return ContentEdit.addCSSClass(document.body, 'ce--dragging');
     };
 
-    _Root.prototype._getDropPlacement = function(x, y) {
+    Root.prototype._getDropPlacement = function(x, y) {
       var horz, rect, vert, _ref;
       if (!this._dropTarget) {
         return null;
@@ -3155,7 +3198,7 @@
       return [vert, horz];
     };
 
-    _Root.prototype._onDrag = function(ev) {
+    Root.prototype._onDrag = function(ev) {
       var placement, _ref, _ref1;
       ContentSelect.Range.unselectAll();
       this._draggingDOMElement.style.left = "" + ev.pageX + "px";
@@ -3176,14 +3219,14 @@
       }
     };
 
-    _Root.prototype._onStopDragging = function(ev) {
+    Root.prototype._onStopDragging = function(ev) {
       var placement;
       placement = this._getDropPlacement(ev.clientX, ev.clientY);
       this._dragging.drop(this._dropTarget, placement);
       return this.cancelDragging();
     };
 
-    _Root.prototype.startResizing = function(element, corner, x, y, fixed) {
+    Root.prototype.startResizing = function(element, corner, x, y, fixed) {
       var measureDom, parentDom;
       if (this._resizing) {
         return;
@@ -3207,7 +3250,7 @@
       return ContentEdit.addCSSClass(document.body, 'ce--resizing');
     };
 
-    _Root.prototype._onResize = function(ev) {
+    Root.prototype._onResize = function(ev) {
       var height, width, x, y;
       ContentSelect.Range.unselectAll();
       x = this._resizingInit.origin[0] - ev.clientX;
@@ -3228,7 +3271,7 @@
       return this._resizing.size([width, height]);
     };
 
-    _Root.prototype._onStopResizing = function(ev) {
+    Root.prototype._onStopResizing = function(ev) {
       document.removeEventListener('mousemove', this._onResize);
       document.removeEventListener('mouseup', this._onStopResizing);
       this._resizing._removeCSSClass('ce-element--resizing');
@@ -3238,27 +3281,14 @@
       return ContentEdit.removeCSSClass(document.body, 'ce--resizing');
     };
 
-    return _Root;
-
-  })(ContentEdit.Node);
-
-  ContentEdit.Root = (function() {
-    var instance;
-
-    function Root() {}
-
-    instance = null;
-
-    Root.get = function() {
-      return instance != null ? instance : instance = new _Root();
-    };
-
     return Root;
 
-  })();
+  })(ContentEdit.Factory["class"]("Node"));
 
-  ContentEdit.Static = (function(_super) {
+  Static = (function(_super) {
     __extends(Static, _super);
+
+    ContentEdit.Factory.register(Static, 'Static', 'static');
 
     function Static(tagName, attributes, content) {
       Static.__super__.constructor.call(this, tagName, attributes);
@@ -3342,7 +3372,7 @@
     };
 
     Static.droppers = {
-      'Static': ContentEdit.Element._dropVert
+      'Static': ContentEdit.Factory["class"]('Element')._dropVert
     };
 
     Static.fromDOMElement = function(domElement) {
@@ -3351,12 +3381,12 @@
 
     return Static;
 
-  })(ContentEdit.Element);
+  })(ContentEdit.Factory["class"]('Element'));
 
-  ContentEdit.TagNames.get().register(ContentEdit.Static, 'static');
-
-  ContentEdit.Text = (function(_super) {
+  Text = (function(_super) {
     __extends(Text, _super);
+
+    ContentEdit.Factory.register(Text, 'Text', 'address', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p');
 
     function Text(tagName, attributes, content) {
       Text.__super__.constructor.call(this, tagName, attributes);
@@ -3541,7 +3571,7 @@
           return _this.drag(ev.pageX, ev.pageY);
         };
       })(this), ContentEdit.DRAG_HOLD_DURATION);
-      if (this.content.length() === 0 && ContentEdit.Root.get().focused() === this) {
+      if (this.content.length() === 0 && this._factory.root.focused() === this) {
         ev.preventDefault();
         if (document.activeElement !== this._domElement) {
           this._domElement.focus();
@@ -3615,7 +3645,7 @@
         selection = new ContentSelect.Range(previous.content.length(), previous.content.length());
         return selection.select(previous.domElement());
       } else {
-        return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
+        return this._factory.root.trigger('previous-region', this.closest(function(node) {
           return node.type() === 'Fixture' || node.type() === 'Region';
         }));
       }
@@ -3677,7 +3707,7 @@
         selection = new ContentSelect.Range(0, 0);
         return selection.select(next.domElement());
       } else {
-        return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
+        return this._factory.root.trigger('next-region', this.closest(function(node) {
           return node.type() === 'Fixture' || node.type() === 'Region';
         }));
       }
@@ -3687,11 +3717,11 @@
       ev.preventDefault();
       if (this.isFixed()) {
         if (ev.shiftKey) {
-          return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
+          return this._factory.root.trigger('previous-region', this.closest(function(node) {
             return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         } else {
-          return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
+          return this._factory.root.trigger('next-region', this.closest(function(node) {
             return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
@@ -3726,8 +3756,8 @@
     };
 
     Text.droppers = {
-      'Static': ContentEdit.Element._dropVert,
-      'Text': ContentEdit.Element._dropVert
+      'Static': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Text': ContentEdit.Factory["class"]('Element')._dropVert
     };
 
     Text.mergers = {
@@ -3755,12 +3785,12 @@
 
     return Text;
 
-  })(ContentEdit.Element);
+  })(ContentEdit.Factory["class"]('Element'));
 
-  ContentEdit.TagNames.get().register(ContentEdit.Text, 'address', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p');
-
-  ContentEdit.PreText = (function(_super) {
+  PreText = (function(_super) {
     __extends(PreText, _super);
+
+    ContentEdit.Factory.register(PreText, 'PreText', 'pre');
 
     function PreText(tagName, attributes, content) {
       if (content instanceof HTMLString.String) {
@@ -3768,7 +3798,7 @@
       } else {
         this.content = new HTMLString.String(content, true);
       }
-      ContentEdit.Element.call(this, tagName, attributes);
+      ContentEdit.Factory["class"]('Element').call(this, tagName, attributes);
     }
 
     PreText.prototype.cssTypeName = function() {
@@ -3887,9 +3917,9 @@
     };
 
     PreText.droppers = {
-      'PreText': ContentEdit.Element._dropVert,
-      'Static': ContentEdit.Element._dropVert,
-      'Text': ContentEdit.Element._dropVert
+      'PreText': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Static': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Text': ContentEdit.Factory["class"]('Element')._dropVert
     };
 
     PreText.mergers = {};
@@ -3900,12 +3930,12 @@
 
     return PreText;
 
-  })(ContentEdit.Text);
+  })(ContentEdit.Factory["class"]('Text'));
 
-  ContentEdit.TagNames.get().register(ContentEdit.PreText, 'pre');
-
-  ContentEdit.Image = (function(_super) {
+  Image = (function(_super) {
     __extends(Image, _super);
+
+    ContentEdit.Factory.register(Image, 'Image', 'img');
 
     function Image(attributes, a) {
       var size;
@@ -3988,10 +4018,10 @@
     };
 
     Image.droppers = {
-      'Image': ContentEdit.Element._dropBoth,
-      'PreText': ContentEdit.Element._dropBoth,
-      'Static': ContentEdit.Element._dropBoth,
-      'Text': ContentEdit.Element._dropBoth
+      'Image': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'PreText': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'Static': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'Text': ContentEdit.Factory["class"]('Element')._dropBoth
     };
 
     Image.placements = ['above', 'below', 'left', 'right', 'center'];
@@ -4042,12 +4072,12 @@
 
     return Image;
 
-  })(ContentEdit.ResizableElement);
+  })(ContentEdit.Factory["class"]('ResizableElement'));
 
-  ContentEdit.TagNames.get().register(ContentEdit.Image, 'img');
-
-  ContentEdit.Video = (function(_super) {
+  Video = (function(_super) {
     __extends(Video, _super);
+
+    ContentEdit.Factory.register(Video, 'Video', 'iframe', 'video');
 
     function Video(tagName, attributes, sources) {
       var size;
@@ -4153,11 +4183,11 @@
     };
 
     Video.droppers = {
-      'Image': ContentEdit.Element._dropBoth,
-      'PreText': ContentEdit.Element._dropBoth,
-      'Static': ContentEdit.Element._dropBoth,
-      'Text': ContentEdit.Element._dropBoth,
-      'Video': ContentEdit.Element._dropBoth
+      'Image': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'PreText': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'Static': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'Text': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'Video': ContentEdit.Factory["class"]('Element')._dropBoth
     };
 
     Video.placements = ['above', 'below', 'left', 'right', 'center'];
@@ -4186,12 +4216,12 @@
 
     return Video;
 
-  })(ContentEdit.ResizableElement);
+  })(ContentEdit.Factory["class"]('ResizableElement'));
 
-  ContentEdit.TagNames.get().register(ContentEdit.Video, 'iframe', 'video');
-
-  ContentEdit.List = (function(_super) {
+  List = (function(_super) {
     __extends(List, _super);
+
+    ContentEdit.Factory.register(List, 'List', 'ol', 'ul');
 
     function List(tagName, attributes) {
       List.__super__.constructor.call(this, tagName, attributes);
@@ -4218,12 +4248,12 @@
     };
 
     List.droppers = {
-      'Image': ContentEdit.Element._dropBoth,
-      'List': ContentEdit.Element._dropVert,
-      'PreText': ContentEdit.Element._dropVert,
-      'Static': ContentEdit.Element._dropVert,
-      'Text': ContentEdit.Element._dropVert,
-      'Video': ContentEdit.Element._dropBoth
+      'Image': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'List': ContentEdit.Factory["class"]('Element')._dropVert,
+      'PreText': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Static': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Text': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Video': ContentEdit.Factory["class"]('Element')._dropBoth
     };
 
     List.fromDOMElement = function(domElement) {
@@ -4247,7 +4277,7 @@
         if (childNode.tagName.toLowerCase() !== 'li') {
           continue;
         }
-        list.attach(ContentEdit.ListItem.fromDOMElement(childNode));
+        list.attach(this._factory.ListItem.fromDOMElement(childNode));
       }
       if (list.children.length === 0) {
         return null;
@@ -4257,12 +4287,12 @@
 
     return List;
 
-  })(ContentEdit.ElementCollection);
+  })(ContentEdit.Factory["class"]('ElementCollection'));
 
-  ContentEdit.TagNames.get().register(ContentEdit.List, 'ol', 'ul');
-
-  ContentEdit.ListItem = (function(_super) {
+  ListItem = (function(_super) {
     __extends(ListItem, _super);
+
+    ContentEdit.Factory.register(ListItem, 'ListItem');
 
     function ListItem(attributes) {
       ListItem.__super__.constructor.call(this, 'li', attributes);
@@ -4317,7 +4347,7 @@
       }
       sibling = this.previousSibling();
       if (!sibling.list()) {
-        sibling.attach(new ContentEdit.List(sibling.parent().tagName()));
+        sibling.attach(new this._factory.List(sibling.parent().tagName()));
       }
       this.listItemText().storeState();
       this.parent().detach(this);
@@ -4355,7 +4385,7 @@
         parent.detach(this);
         grandParent.parent().attach(this, grandParent.parent().children.indexOf(grandParent) + 1);
         if (siblings.length && !this.list()) {
-          this.attach(new ContentEdit.List(parent.tagName()));
+          this.attach(new this._factory.List(parent.tagName()));
         }
         for (_i = 0, _len = siblings.length; _i < _len; _i++) {
           sibling = siblings[_i];
@@ -4364,7 +4394,7 @@
         }
         return this.listItemText().restoreState();
       } else {
-        text = new ContentEdit.Text('p', this.attr('class') ? {
+        text = new this._factory.Text('p', this.attr('class') ? {
           'class': this.attr('class')
         } : {}, this.listItemText().content);
         selection = null;
@@ -4377,7 +4407,7 @@
           list = null;
           if (parent.children.length === 1) {
             if (this.list()) {
-              list = new ContentEdit.List(parent.tagName());
+              list = new this._factory.List(parent.tagName());
             }
             grandParent.detach(parent);
           } else {
@@ -4408,7 +4438,7 @@
         } else {
           parent.detach(this);
           grandParent.attach(text, parentIndex + 1);
-          list = new ContentEdit.List(parent.tagName());
+          list = new this._factory.List(parent.tagName());
           grandParent.attach(list, parentIndex + 2);
           if (this.list()) {
             _ref1 = this.list().children.slice();
@@ -4461,10 +4491,10 @@
         }
       }
       content = content.replace(/^\s+|\s+$/g, '');
-      listItemText = new ContentEdit.ListItemText(content);
+      listItemText = new this._factory.ListItemText(content);
       listItem.attach(listItemText);
       if (listDOMElement) {
-        listElement = ContentEdit.List.fromDOMElement(listDOMElement);
+        listElement = this._factory.List.fromDOMElement(listDOMElement);
         listItem.attach(listElement);
       }
       return listItem;
@@ -4472,10 +4502,12 @@
 
     return ListItem;
 
-  })(ContentEdit.ElementCollection);
+  })(ContentEdit.Factory["class"]('ElementCollection'));
 
-  ContentEdit.ListItemText = (function(_super) {
+  ListItemText = (function(_super) {
     __extends(ListItemText, _super);
+
+    ContentEdit.Factory.register(ListItemText, 'ListItemText');
 
     function ListItemText(content) {
       ListItemText.__super__.constructor.call(this, 'div', {}, content);
@@ -4500,7 +4532,7 @@
         this._domElement.blur();
         this._domElement.removeAttribute('contenteditable');
       }
-      return ContentEdit.Element.prototype.blur.call(this);
+      return this._factory.Element.prototype.blur.call(this);
     };
 
     ListItemText.prototype.can = function(behaviour, allowed) {
@@ -4526,12 +4558,12 @@
 
     ListItemText.prototype._onMouseDown = function(ev) {
       var initDrag;
-      ContentEdit.Element.prototype._onMouseDown.call(this, ev);
+      this._factory.Element.prototype._onMouseDown.call(this, ev);
       initDrag = (function(_this) {
         return function() {
           var listRoot;
-          if (ContentEdit.Root.get().dragging() === _this) {
-            ContentEdit.Root.get().cancelDragging();
+          if (_this._factory.root.dragging() === _this) {
+            _this._factory.root.cancelDragging();
             listRoot = _this.closest(function(node) {
               return node.parent().type() === 'Region';
             });
@@ -4550,14 +4582,14 @@
       if (this._dragTimeout) {
         clearTimeout(this._dragTimeout);
       }
-      return ContentEdit.Element.prototype._onMouseMove.call(this, ev);
+      return this._factory.Element.prototype._onMouseMove.call(this, ev);
     };
 
     ListItemText.prototype._onMouseUp = function(ev) {
       if (this._dragTimeout) {
         clearTimeout(this._dragTimeout);
       }
-      return ContentEdit.Element.prototype._onMouseUp.call(this, ev);
+      return this._factory.Element.prototype._onMouseUp.call(this, ev);
     };
 
     ListItemText.prototype._keyTab = function(ev) {
@@ -4590,11 +4622,11 @@
       this.content = tip.trim();
       this.updateInnerHTML();
       grandParent = this.parent().parent();
-      listItem = new ContentEdit.ListItem(this.attr('class') ? {
+      listItem = new this._factory.ListItem(this.attr('class') ? {
         'class': this.attr('class')
       } : {});
       grandParent.attach(listItem, grandParent.children.indexOf(this.parent()) + 1);
-      listItem.attach(new ContentEdit.ListItemText(tail.trim()));
+      listItem.attach(new this._factory.ListItemText(tail.trim()));
       list = this.parent().list();
       if (list) {
         this.parent().detach(list);
@@ -4618,7 +4650,7 @@
         targetParent = target.parent();
         elementParent.remove();
         elementParent.detach(element);
-        listItem = new ContentEdit.ListItem(elementParent._attributes);
+        listItem = new element._factory.ListItem(elementParent._attributes);
         listItem.attach(element);
         if (targetParent.list() && placement[0] === 'below') {
           targetParent.list().attach(listItem, 0);
@@ -4636,10 +4668,10 @@
           targetParent = target.parent();
           element.parent().detach(element);
           cssClass = element.attr('class');
-          listItem = new ContentEdit.ListItem(cssClass ? {
+          listItem = new element._factory.ListItem(cssClass ? {
             'class': cssClass
           } : {});
-          listItem.attach(new ContentEdit.ListItemText(element.content));
+          listItem.attach(new element._factory.ListItemText(element.content));
           if (targetParent.list() && placement[0] === 'below') {
             targetParent.list().attach(listItem, 0);
             return;
@@ -4655,7 +4687,7 @@
           }
         } else {
           cssClass = element.attr('class');
-          text = new ContentEdit.Text('p', cssClass ? {
+          text = new element._factory.Text('p', cssClass ? {
             'class': cssClass
           } : {}, element.content);
           element.parent().remove();
@@ -4697,14 +4729,16 @@
 
     return ListItemText;
 
-  })(ContentEdit.Text);
+  })(ContentEdit.Factory["class"]('Text'));
 
-  _mergers = ContentEdit.ListItemText.mergers;
+  _mergers = ListItemText.mergers;
 
   _mergers['Text'] = _mergers['ListItemText'];
 
-  ContentEdit.Table = (function(_super) {
+  Table = (function(_super) {
     __extends(Table, _super);
+
+    ContentEdit.Factory.register(Table, 'Table', 'table');
 
     function Table(attributes) {
       Table.__super__.constructor.call(this, 'table', attributes);
@@ -4776,13 +4810,13 @@
     };
 
     Table.droppers = {
-      'Image': ContentEdit.Element._dropBoth,
-      'List': ContentEdit.Element._dropVert,
-      'PreText': ContentEdit.Element._dropVert,
-      'Static': ContentEdit.Element._dropVert,
-      'Table': ContentEdit.Element._dropVert,
-      'Text': ContentEdit.Element._dropVert,
-      'Video': ContentEdit.Element._dropBoth
+      'Image': ContentEdit.Factory["class"]('Element')._dropBoth,
+      'List': ContentEdit.Factory["class"]('Element')._dropVert,
+      'PreText': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Static': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Table': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Text': ContentEdit.Factory["class"]('Element')._dropVert,
+      'Video': ContentEdit.Factory["class"]('Element')._dropBoth
     };
 
     Table.fromDOMElement = function(domElement) {
@@ -4812,16 +4846,16 @@
           case 'tbody':
           case 'tfoot':
           case 'thead':
-            section = ContentEdit.TableSection.fromDOMElement(childNode);
+            section = this._factory.TableSection.fromDOMElement(childNode);
             table.attach(section);
             break;
           case 'tr':
-            orphanRows.push(ContentEdit.TableRow.fromDOMElement(childNode));
+            orphanRows.push(this._factory.TableRow.fromDOMElement(childNode));
         }
       }
       if (orphanRows.length > 0) {
         if (!table._getChild('tbody')) {
-          table.attach(new ContentEdit.TableSection('tbody'));
+          table.attach(new this._factory.TableSection('tbody'));
         }
         for (_j = 0, _len1 = orphanRows.length; _j < _len1; _j++) {
           row = orphanRows[_j];
@@ -4836,12 +4870,12 @@
 
     return Table;
 
-  })(ContentEdit.ElementCollection);
+  })(ContentEdit.Factory["class"]('ElementCollection'));
 
-  ContentEdit.TagNames.get().register(ContentEdit.Table, 'table');
-
-  ContentEdit.TableSection = (function(_super) {
+  TableSection = (function(_super) {
     __extends(TableSection, _super);
+
+    ContentEdit.Factory.register(TableSection, 'TableSection');
 
     function TableSection(tagName, attributes) {
       TableSection.__super__.constructor.call(this, tagName, attributes);
@@ -4881,17 +4915,19 @@
         if (childNode.tagName.toLowerCase() !== 'tr') {
           continue;
         }
-        section.attach(ContentEdit.TableRow.fromDOMElement(childNode));
+        section.attach(this._factory.TableRow.fromDOMElement(childNode));
       }
       return section;
     };
 
     return TableSection;
 
-  })(ContentEdit.ElementCollection);
+  })(ContentEdit.Factory["class"]('ElementCollection'));
 
-  ContentEdit.TableRow = (function(_super) {
+  TableRow = (function(_super) {
     __extends(TableRow, _super);
+
+    ContentEdit.Factory.register(TableRow, 'TableRow');
 
     function TableRow(attributes) {
       TableRow.__super__.constructor.call(this, 'tr', attributes);
@@ -4928,7 +4964,7 @@
     };
 
     TableRow.droppers = {
-      'TableRow': ContentEdit.Element._dropVert
+      'TableRow': ContentEdit.Factory["class"]('Element')._dropVert
     };
 
     TableRow.fromDOMElement = function(domElement) {
@@ -4953,17 +4989,19 @@
         if (!(tagName === 'td' || tagName === 'th')) {
           continue;
         }
-        row.attach(ContentEdit.TableCell.fromDOMElement(childNode));
+        row.attach(this._factory.TableCell.fromDOMElement(childNode));
       }
       return row;
     };
 
     return TableRow;
 
-  })(ContentEdit.ElementCollection);
+  })(ContentEdit.Factory["class"]('ElementCollection'));
 
-  ContentEdit.TableCell = (function(_super) {
+  TableCell = (function(_super) {
     __extends(TableCell, _super);
+
+    ContentEdit.Factory.register(TableCell, 'TableCell');
 
     function TableCell(tagName, attributes) {
       TableCell.__super__.constructor.call(this, tagName, attributes);
@@ -5009,17 +5047,19 @@
     TableCell.fromDOMElement = function(domElement) {
       var tableCell, tableCellText;
       tableCell = new this(domElement.tagName, this.getDOMElementAttributes(domElement));
-      tableCellText = new ContentEdit.TableCellText(domElement.innerHTML.replace(/^\s+|\s+$/g, ''));
+      tableCellText = new this._factory.TableCellText(domElement.innerHTML.replace(/^\s+|\s+$/g, ''));
       tableCell.attach(tableCellText);
       return tableCell;
     };
 
     return TableCell;
 
-  })(ContentEdit.ElementCollection);
+  })(ContentEdit.Factory["class"]('ElementCollection'));
 
-  ContentEdit.TableCellText = (function(_super) {
+  TableCellText = (function(_super) {
     __extends(TableCellText, _super);
+
+    ContentEdit.Factory.register(TableCellText, 'TableCellText');
 
     function TableCellText(content) {
       TableCellText.__super__.constructor.call(this, 'div', {}, content);
@@ -5073,7 +5113,7 @@
         this._domElement.blur();
         this._domElement.removeAttribute('contenteditable');
       }
-      return ContentEdit.Element.prototype.blur.call(this);
+      return this._factory.Element.prototype.blur.call(this);
     };
 
     TableCellText.prototype.can = function(behaviour, allowed) {
@@ -5099,13 +5139,13 @@
 
     TableCellText.prototype._onMouseDown = function(ev) {
       var initDrag;
-      ContentEdit.Element.prototype._onMouseDown.call(this, ev);
+      this._factory.Element.prototype._onMouseDown.call(this, ev);
       initDrag = (function(_this) {
         return function() {
           var cell, table;
           cell = _this.parent();
-          if (ContentEdit.Root.get().dragging() === cell.parent()) {
-            ContentEdit.Root.get().cancelDragging();
+          if (_this._factory.root.dragging() === cell.parent()) {
+            _this._factory.root.cancelDragging();
             table = cell.parent().parent().parent();
             return table.drag(ev.pageX, ev.pageY);
           } else {
@@ -5173,7 +5213,7 @@
         if (next) {
           return next.focus();
         } else {
-          return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
+          return this._factory.root.trigger('next-region', this.closest(function(node) {
             return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
@@ -5210,12 +5250,12 @@
         }
         grandParent = cell.parent().parent();
         if (grandParent.tagName() === 'tbody' && this._isLastInSection()) {
-          row = new ContentEdit.TableRow();
+          row = new this._factory.TableRow();
           _ref = cell.parent().children;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             child = _ref[_i];
-            newCell = new ContentEdit.TableCell(child.tagName(), child._attributes);
-            newCellText = new ContentEdit.TableCellText('');
+            newCell = new this._factory.TableCell(child.tagName(), child._attributes);
+            newCellText = new this._factory.TableCellText('');
             newCell.attach(newCellText);
             row.attach(newCell);
           }
@@ -5244,7 +5284,7 @@
         if (previous) {
           return previous.focus();
         } else {
-          return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
+          return this._factory.root.trigger('previous-region', this.closest(function(node) {
             return node.type() === 'Fixture' || node.type() === 'Region';
           }));
         }
@@ -5264,9 +5304,10 @@
 
     return TableCellText;
 
-  })(ContentEdit.Text);
+  })(ContentEdit.Factory["class"]('Text'));
 
 }).call(this);
+
 (function() {
   var AttributeUI, ContentTools, CropMarksUI, StyleUI, exports, _EditorApp,
     __hasProp = {}.hasOwnProperty,
@@ -5674,7 +5715,8 @@
   ContentTools.FlashUI = (function(_super) {
     __extends(FlashUI, _super);
 
-    function FlashUI(modifier) {
+    function FlashUI(_editor, modifier) {
+      this._editor = _editor;
       FlashUI.__super__.constructor.call(this);
       this.mount(modifier);
     }
@@ -5682,7 +5724,7 @@
     FlashUI.prototype.mount = function(modifier) {
       var monitorForHidden;
       this._domElement = this.constructor.createDiv(['ct-flash', 'ct-flash--active', "ct-flash--" + modifier, 'ct-widget', 'ct-widget--active']);
-      FlashUI.__super__.mount.call(this, ContentTools.EditorApp.get().domElement());
+      FlashUI.__super__.mount.call(this, this._editor.domElement());
       monitorForHidden = (function(_this) {
         return function() {
           if (!window.getComputedStyle) {
@@ -5821,7 +5863,8 @@
   ContentTools.InspectorUI = (function(_super) {
     __extends(InspectorUI, _super);
 
-    function InspectorUI() {
+    function InspectorUI(_editor) {
+      this._editor = _editor;
       InspectorUI.__super__.constructor.call(this);
       this._tagUIs = [];
     }
@@ -5840,17 +5883,17 @@
           return _this.updateTags();
         };
       })(this);
-      ContentEdit.Root.get().bind('blur', this._handleFocusChange);
-      ContentEdit.Root.get().bind('focus', this._handleFocusChange);
-      return ContentEdit.Root.get().bind('mount', this._handleFocusChange);
+      this._editor.CEFactory.root.bind('blur', this._handleFocusChange);
+      this._editor.CEFactory.root.bind('focus', this._handleFocusChange);
+      return this._editor.CEFactory.root.bind('mount', this._handleFocusChange);
     };
 
     InspectorUI.prototype.unmount = function() {
       InspectorUI.__super__.unmount.call(this);
       this._domTags = null;
-      ContentEdit.Root.get().unbind('blur', this._handleFocusChange);
-      ContentEdit.Root.get().unbind('focus', this._handleFocusChange);
-      return ContentEdit.Root.get().unbind('mount', this._handleFocusChange);
+      this._editor.CEFactory.root.unbind('blur', this._handleFocusChange);
+      this._editor.CEFactory.root.unbind('focus', this._handleFocusChange);
+      return this._editor.CEFactory.root.unbind('mount', this._handleFocusChange);
     };
 
     InspectorUI.prototype.updateCounter = function() {
@@ -5873,7 +5916,7 @@
       completeText = completeText.replace(/['";:,.?¿\-!¡]+/g, '');
       word_count = (completeText.match(/\S+/g) || []).length;
       word_count = word_count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      element = ContentEdit.Root.get().focused();
+      element = this._editor.CEFactory.root.focused();
       if (!(element && element.type() === 'PreText' && element.selection().isCollapsed())) {
         this._domCounter.textContent = word_count;
         return;
@@ -5891,7 +5934,7 @@
 
     InspectorUI.prototype.updateTags = function() {
       var element, elements, tag, _i, _j, _len, _len1, _ref, _results;
-      element = ContentEdit.Root.get().focused();
+      element = this._editor.CEFactory.root.focused();
       _ref = this._tagUIs;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         tag = _ref[_i];
@@ -5913,7 +5956,7 @@
         if (element.isFixed()) {
           continue;
         }
-        tag = new ContentTools.TagUI(element);
+        tag = new ContentTools.TagUI(this._editor, element);
         this._tagUIs.push(tag);
         _results.push(tag.mount(this._domTags));
       }
@@ -5939,7 +5982,8 @@
   ContentTools.TagUI = (function(_super) {
     __extends(TagUI, _super);
 
-    function TagUI(element) {
+    function TagUI(_editor, element) {
+      this._editor = _editor;
       this.element = element;
       this._onMouseDown = __bind(this._onMouseDown, this);
       TagUI.__super__.constructor.call(this);
@@ -5959,12 +6003,11 @@
     };
 
     TagUI.prototype._onMouseDown = function(ev) {
-      var app, dialog, modal;
+      var dialog, modal;
       ev.preventDefault();
       if (this.element.storeState) {
         this.element.storeState();
       }
-      app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI();
       dialog = new ContentTools.PropertiesDialog(this.element);
       dialog.addEventListener('cancel', (function(_this) {
@@ -6046,8 +6089,8 @@
           }
         };
       })(this));
-      app.attach(modal);
-      app.attach(dialog);
+      this._editor.attach(modal);
+      this._editor.attach(dialog);
       modal.show();
       return dialog.show();
     };
@@ -6099,7 +6142,8 @@
   ContentTools.ToolboxUI = (function(_super) {
     __extends(ToolboxUI, _super);
 
-    function ToolboxUI(tools) {
+    function ToolboxUI(_editor, tools) {
+      this._editor = _editor;
       this._onStopDragging = __bind(this._onStopDragging, this);
       this._onStartDragging = __bind(this._onStartDragging, this);
       this._onDrag = __bind(this._onDrag, this);
@@ -6169,6 +6213,7 @@
       while (this._domToolGroups.lastChild) {
         this._domToolGroups.removeChild(this._domToolGroups.lastChild);
       }
+      this._toolShelf = new ContentTools.ToolShelf(this._editor);
       _ref1 = this._tools;
       _results = [];
       for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
@@ -6180,8 +6225,8 @@
           _results1 = [];
           for (_j = 0, _len1 = toolGroup.length; _j < _len1; _j++) {
             toolName = toolGroup[_j];
-            tool = ContentTools.ToolShelf.fetch(toolName);
-            this._toolUIs[toolName] = new ContentTools.ToolUI(tool);
+            tool = this._toolShelf.get(toolName);
+            this._toolUIs[toolName] = new ContentTools.ToolUI(this._editor, tool);
             this._toolUIs[toolName].mount(domToolGroup);
             this._toolUIs[toolName].disabled(true);
             _results1.push(this._toolUIs[toolName].addEventListener('applied', (function(_this) {
@@ -6198,7 +6243,7 @@
 
     ToolboxUI.prototype.updateTools = function() {
       var element, name, selection, toolUI, _ref, _results;
-      element = ContentEdit.Root.get().focused();
+      element = this._editor.CEFactory.root.focused();
       selection = null;
       if (element && element.selection) {
         selection = element.selection();
@@ -6234,10 +6279,9 @@
       window.addEventListener('resize', this._handleResize);
       this._updateTools = (function(_this) {
         return function() {
-          var app, element, name, selection, toolUI, update, _ref, _results;
-          app = ContentTools.EditorApp.get();
+          var element, name, selection, toolUI, update, _ref, _results;
           update = false;
-          element = ContentEdit.Root.get().focused();
+          element = _this._editor.CEFactory.root.focused();
           selection = null;
           if (element === _this._lastUpdateElement) {
             if (element && element.selection) {
@@ -6253,15 +6297,15 @@
           } else {
             update = true;
           }
-          if (app.history) {
-            if (_this._lastUpdateHistoryLength !== app.history.length()) {
+          if (_this._editor.history) {
+            if (_this._lastUpdateHistoryLength !== _this._editor.history.length()) {
               update = true;
             }
-            _this._lastUpdateHistoryLength = app.history.length();
-            if (_this._lastUpdateHistoryIndex !== app.history.index()) {
+            _this._lastUpdateHistoryLength = _this._editor.history.length();
+            if (_this._lastUpdateHistoryIndex !== _this._editor.history.index()) {
               update = true;
             }
-            _this._lastUpdateHistoryIndex = app.history.index();
+            _this._lastUpdateHistoryIndex = _this._editor.history.index();
           }
           _this._lastUpdateElement = element;
           _this._lastUpdateSelection = selection;
@@ -6279,17 +6323,16 @@
       this._updateToolsInterval = setInterval(this._updateTools, 100);
       this._handleKeyDown = (function(_this) {
         return function(ev) {
-          var Paragraph, element, os, redo, undo, version;
-          element = ContentEdit.Root.get().focused();
+          var element, os, redo, undo, version;
+          element = _this._editor.CEFactory.root.focused();
           if (element && !element.content) {
             if (ev.keyCode === 46) {
               ev.preventDefault();
-              return ContentTools.Tools.Remove.apply(element, null, function() {});
+              return _this._toolShelf.get("remove").apply(element, null, function() {});
             }
             if (ev.keyCode === 13) {
               ev.preventDefault();
-              Paragraph = ContentTools.Tools.Paragraph;
-              return Paragraph.apply(element, null, function() {});
+              return _this._toolShelf.get("paragraph").apply(element, null, function() {});
             }
           }
           version = navigator.appVersion;
@@ -6322,11 +6365,11 @@
                 undo = true;
               }
           }
-          if (undo && ContentTools.Tools.Undo.canApply(null, null)) {
-            ContentTools.Tools.Undo.apply(null, null, function() {});
+          if (undo && _this._toolShelf.get("undo").canApply(null, null)) {
+            _this._toolShelf.get("undo").apply(null, null, function() {});
           }
-          if (redo && ContentTools.Tools.Redo.canApply(null, null)) {
-            return ContentTools.Tools.Redo.apply(null, null, function() {});
+          if (redo && _this._toolShelf.get("redo").canApply(null, null)) {
+            return _this._toolShelf.get("redo").apply(null, null, function() {});
           }
         };
       })(this);
@@ -6408,7 +6451,8 @@
   ContentTools.ToolUI = (function(_super) {
     __extends(ToolUI, _super);
 
-    function ToolUI(tool) {
+    function ToolUI(_editor, tool) {
+      this._editor = _editor;
       this._onMouseUp = __bind(this._onMouseUp, this);
       this._onMouseLeave = __bind(this._onMouseLeave, this);
       this._onMouseDown = __bind(this._onMouseDown, this);
@@ -6509,7 +6553,7 @@
     ToolUI.prototype._onMouseUp = function(ev) {
       var element, selection;
       if (this._mouseDown) {
-        element = ContentEdit.Root.get().focused();
+        element = this._editor.CEFactory.root.focused();
         if (this.tool.requiresElement) {
           if (!(element && element.isMounted())) {
             return;
@@ -7894,6 +7938,7 @@
     function _EditorApp() {
       _EditorApp.__super__.constructor.call(this);
       this.history = null;
+      this.CEFactory = new ContentEdit.Factory();
       this._state = 'dormant';
       this._busy = false;
       this._namingProp = null;
@@ -7981,7 +8026,7 @@
     };
 
     _EditorApp.prototype.createPlaceholderElement = function(region) {
-      return new ContentEdit.Text('p', {}, '');
+      return new this.CEFactory.Text('p', {}, '');
     };
 
     _EditorApp.prototype.init = function(queryOrDOMElements, namingProp, fixtureTest, withIgnition) {
@@ -7998,7 +8043,7 @@
       if (fixtureTest) {
         this._fixtureTest = fixtureTest;
       }
-      this.mount();
+      this.mount(queryOrDOMElements);
       if (withIgnition) {
         this._ignition = new ContentTools.IgnitionUI();
         this.attach(this._ignition);
@@ -8028,9 +8073,9 @@
           };
         })(this));
       }
-      this._toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS);
+      this._toolbox = new ContentTools.ToolboxUI(this, ContentTools.DEFAULT_TOOLS);
       this.attach(this._toolbox);
-      this._inspector = new ContentTools.InspectorUI();
+      this._inspector = new ContentTools.InspectorUI(this);
       this.attach(this._inspector);
       this._state = 'ready';
       this._handleDetach = (function(_this) {
@@ -8074,7 +8119,7 @@
             element.selection(new ContentSelect.Range(0, 0));
             return;
           }
-          return ContentEdit.Root.get().trigger('next-region', region);
+          return _this.CEFactory.root.trigger('next-region', region);
         };
       })(this);
       this._handlePreviousRegionTransition = (function(_this) {
@@ -8102,21 +8147,21 @@
             element.selection(new ContentSelect.Range(length, length));
             return;
           }
-          return ContentEdit.Root.get().trigger('previous-region', region);
+          return _this.CEFactory.root.trigger('previous-region', region);
         };
       })(this);
-      ContentEdit.Root.get().bind('detach', this._handleDetach);
-      ContentEdit.Root.get().bind('paste', this._handleClipboardPaste);
-      ContentEdit.Root.get().bind('next-region', this._handleNextRegionTransition);
-      ContentEdit.Root.get().bind('previous-region', this._handlePreviousRegionTransition);
+      this.CEFactory.root.bind('detach', this._handleDetach);
+      this.CEFactory.root.bind('paste', this._handleClipboardPaste);
+      this.CEFactory.root.bind('next-region', this._handleNextRegionTransition);
+      this.CEFactory.root.bind('previous-region', this._handlePreviousRegionTransition);
       return this.syncRegions(queryOrDOMElements);
     };
 
     _EditorApp.prototype.destroy = function() {
-      ContentEdit.Root.get().unbind('detach', this._handleDetach);
-      ContentEdit.Root.get().unbind('paste', this._handleClipboardPaste);
-      ContentEdit.Root.get().unbind('next-region', this._handleNextRegionTransition);
-      ContentEdit.Root.get().unbind('previous-region', this._handlePreviousRegionTransition);
+      this.CEFactory.root.unbind('detach', this._handleDetach);
+      this.CEFactory.root.unbind('paste', this._handleClipboardPaste);
+      this.CEFactory.root.unbind('next-region', this._handleNextRegionTransition);
+      this.CEFactory.root.unbind('previous-region', this._handlePreviousRegionTransition);
       return this.unmount();
     };
 
@@ -8182,12 +8227,12 @@
           line = lines[i];
           line = encodeHTML(line);
           if (type === 'ListItemText') {
-            item = new ContentEdit.ListItem();
-            itemText = new ContentEdit.ListItemText(line);
+            item = new this.CEFactory.ListItem();
+            itemText = new this.CEFactory.ListItemText(line);
             item.attach(itemText);
             lastItem = itemText;
           } else {
-            item = new ContentEdit.Text('p', {}, line);
+            item = new this.CEFactory.Text('p', {}, line);
             lastItem = item;
           }
           insertIn.attach(item, insertAt + i);
@@ -8240,7 +8285,7 @@
         return;
       }
       confirmMessage = ContentEdit._('Your changes have not been saved, do you really want to lose them?');
-      if (ContentEdit.Root.get().lastModified() > this._rootLastModified && !window.confirm(confirmMessage)) {
+      if (this.CEFactory.root.lastModified() > this._rootLastModified && !window.confirm(confirmMessage)) {
         return false;
       }
       this.revertToSnapshot(this.history.goTo(0), false);
@@ -8263,8 +8308,8 @@
         region.domElement().innerHTML = snapshot.regions[name];
       }
       if (restoreEditable) {
-        if (ContentEdit.Root.get().focused()) {
-          ContentEdit.Root.get().focused().blur();
+        if (this.CEFactory.root.focused()) {
+          this.CEFactory.root.focused().blur();
         }
         this._regions = {};
         this.syncRegions();
@@ -8275,14 +8320,13 @@
     };
 
     _EditorApp.prototype.save = function(passive) {
-      var child, html, modifiedRegions, name, region, root, _i, _len, _ref, _ref1;
+      var child, html, modifiedRegions, name, region, _i, _len, _ref, _ref1;
       if (!this.dispatchEvent(this.createEvent('save', {
         passive: passive
       }))) {
         return;
       }
-      root = ContentEdit.Root.get();
-      if (root.lastModified() === this._rootLastModified && passive) {
+      if (this.CEFactory.root.lastModified() === this._rootLastModified && passive) {
         this.dispatchEvent(this.createEvent('saved', {
           regions: {},
           passive: passive
@@ -8332,8 +8376,8 @@
       this.syncRegions();
       this._initRegions();
       this._preventEmptyRegions();
-      this._rootLastModified = ContentEdit.Root.get().lastModified();
-      this.history = new ContentTools.History(this._regions);
+      this._rootLastModified = this.CEFactory.root.lastModified();
+      this.history = new ContentTools.History(this, this._regions);
       this.history.watch();
       this._state = 'editing';
       this._toolbox.show();
@@ -8348,7 +8392,7 @@
       }))) {
         return;
       }
-      focused = ContentEdit.Root.get().focused();
+      focused = this.CEFactory.root.focused();
       if (focused && focused.isMounted() && focused._syncContent !== void 0) {
         focused._syncContent();
       }
@@ -8365,10 +8409,10 @@
       this._inspector.hide();
       this._regions = {};
       this._state = 'ready';
-      if (ContentEdit.Root.get().focused()) {
+      if (this.CEFactory.root.focused()) {
         this._allowEmptyRegions((function(_this) {
           return function() {
-            return ContentEdit.Root.get().focused().blur();
+            return _this.CEFactory.root.focused().blur();
           };
         })(this));
       }
@@ -8527,9 +8571,9 @@
           continue;
         }
         if (this._fixtureTest(domRegion)) {
-          this._regions[name] = new ContentEdit.Fixture(domRegion);
+          this._regions[name] = new this.CEFactory.Fixture(domRegion);
         } else {
-          this._regions[name] = new ContentEdit.Region(domRegion);
+          this._regions[name] = new this.CEFactory.Region(domRegion);
         }
         this._regionsLastModified[name] = this._regions[name].lastModified();
       }
@@ -8578,7 +8622,8 @@
   })();
 
   ContentTools.History = (function() {
-    function History(regions) {
+    function History(_editor, regions) {
+      this._editor = _editor;
       this._lastSnapshotTaken = null;
       this._regions = {};
       this.replaceRegions(regions);
@@ -8659,7 +8704,7 @@
       watch = (function(_this) {
         return function() {
           var delayedStore, lastModified;
-          lastModified = ContentEdit.Root.get().lastModified();
+          lastModified = _this._editor.CEFactory.root.lastModified();
           if (lastModified === null) {
             return;
           }
@@ -8693,7 +8738,7 @@
         region = _ref[name];
         snapshot.regions[name] = region.html();
       }
-      element = ContentEdit.Root.get().focused();
+      element = this._editor.CEFactory.root.focused();
       if (element) {
         snapshot.selected = {};
         region = element.closest(function(node) {
@@ -8781,17 +8826,29 @@
   })();
 
   ContentTools.ToolShelf = (function() {
-    function ToolShelf() {}
-
     ToolShelf._tools = {};
 
-    ToolShelf.stow = function(cls, name) {
+    ToolShelf.stow = function(cls, name, options) {
+      if (options == null) {
+        options = {};
+      }
       return this._tools[name] = cls;
     };
 
-    ToolShelf.fetch = function(name) {
+    function ToolShelf(_editor) {
+      var cls, name, _ref;
+      this._editor = _editor;
+      this._tools = {};
+      _ref = this.constructor._tools;
+      for (name in _ref) {
+        cls = _ref[name];
+        this._tools[name] = new cls(this._editor, this._tools);
+      }
+    }
+
+    ToolShelf.prototype.get = function(name) {
       if (!this._tools[name]) {
-        throw new Error("`" + name + "` has not been stowed on the tool shelf");
+        throw new Error("`" + name + "` has not been added on the tool shelf");
       }
       return this._tools[name];
     };
@@ -8801,27 +8858,30 @@
   })();
 
   ContentTools.Tool = (function() {
-    function Tool() {}
+    Tool.prototype.initialize = function() {};
 
-    Tool.label = 'Tool';
+    function Tool(_editor, _tools) {
+      this._editor = _editor;
+      this._tools = _tools;
+      this.label = 'Tool';
+      this.icon = 'tool';
+      this.requiresElement = true;
+      this.initialize();
+    }
 
-    Tool.icon = 'tool';
-
-    Tool.requiresElement = true;
-
-    Tool.canApply = function(element, selection) {
+    Tool.prototype.canApply = function(element, selection) {
       return false;
     };
 
-    Tool.isApplied = function(element, selection) {
+    Tool.prototype.isApplied = function(element, selection) {
       return false;
     };
 
-    Tool.apply = function(element, selection, callback) {
+    Tool.prototype.apply = function(element, selection, callback) {
       throw new Error('Not implemented');
     };
 
-    Tool._insertAt = function(element) {
+    Tool.prototype._insertAt = function(element) {
       var insertIndex, insertNode;
       insertNode = element;
       if (insertNode.parent().type() !== 'Region') {
@@ -8846,20 +8906,20 @@
 
     ContentTools.ToolShelf.stow(Bold, 'bold');
 
-    Bold.label = 'Bold';
+    Bold.prototype.initialize = function() {
+      this.label = 'Bold';
+      this.icon = 'bold';
+      return this.tagName = 'b';
+    };
 
-    Bold.icon = 'bold';
-
-    Bold.tagName = 'b';
-
-    Bold.canApply = function(element, selection) {
+    Bold.prototype.canApply = function(element, selection) {
       if (!element.content) {
         return false;
       }
       return selection && !selection.isCollapsed();
     };
 
-    Bold.isApplied = function(element, selection) {
+    Bold.prototype.isApplied = function(element, selection) {
       var from, to, _ref;
       if (element.content === void 0 || !element.content.length()) {
         return false;
@@ -8871,7 +8931,7 @@
       return element.content.slice(from, to).hasTags(this.tagName, true);
     };
 
-    Bold.apply = function(element, selection, callback) {
+    Bold.prototype.apply = function(element, selection, callback) {
       var from, to, _ref;
       element.storeState();
       _ref = selection.get(), from = _ref[0], to = _ref[1];
@@ -8900,11 +8960,11 @@
 
     ContentTools.ToolShelf.stow(Italic, 'italic');
 
-    Italic.label = 'Italic';
-
-    Italic.icon = 'italic';
-
-    Italic.tagName = 'i';
+    Italic.prototype.initialize = function() {
+      this.label = 'Italic';
+      this.icon = 'italic';
+      return this.tagName = 'i';
+    };
 
     return Italic;
 
@@ -8919,13 +8979,13 @@
 
     ContentTools.ToolShelf.stow(Link, 'link');
 
-    Link.label = 'Link';
+    Link.prototype.initialize = function() {
+      this.label = 'Link';
+      this.icon = 'link';
+      return this.tagName = 'a';
+    };
 
-    Link.icon = 'link';
-
-    Link.tagName = 'a';
-
-    Link.getAttr = function(attrName, element, selection) {
+    Link.prototype.getAttr = function(attrName, element, selection) {
       var c, from, selectedContent, tag, to, _i, _j, _len, _len1, _ref, _ref1, _ref2;
       if (element.type() === 'Image') {
         if (element.a) {
@@ -8952,7 +9012,7 @@
       return '';
     };
 
-    Link.canApply = function(element, selection) {
+    Link.prototype.canApply = function(element, selection) {
       var character;
       if (element.type() === 'Image') {
         return true;
@@ -8973,16 +9033,16 @@
       }
     };
 
-    Link.isApplied = function(element, selection) {
+    Link.prototype.isApplied = function(element, selection) {
       if (element.type() === 'Image') {
         return element.a;
       } else {
-        return Link.__super__.constructor.isApplied.call(this, element, selection);
+        return Link.__super__.isApplied.call(this, element, selection);
       }
     };
 
-    Link.apply = function(element, selection, callback) {
-      var allowScrolling, app, applied, characters, dialog, domElement, ends, from, measureSpan, modal, rect, scrollX, scrollY, selectTag, starts, to, transparent, _ref, _ref1;
+    Link.prototype.apply = function(element, selection, callback) {
+      var allowScrolling, applied, characters, dialog, domElement, ends, from, measureSpan, modal, rect, scrollX, scrollY, selectTag, starts, to, transparent, _ref, _ref1;
       applied = false;
       if (element.type() === 'Image') {
         rect = element.domElement().getBoundingClientRect();
@@ -9011,7 +9071,6 @@
         measureSpan = domElement.getElementsByClassName('ct--puesdo-select');
         rect = measureSpan[0].getBoundingClientRect();
       }
-      app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI(transparent = true, allowScrolling = true);
       modal.addEventListener('click', function() {
         this.unmount();
@@ -9078,8 +9137,8 @@
         element.taint();
         return modal.dispatchEvent(modal.createEvent('click'));
       });
-      app.attach(modal);
-      app.attach(dialog);
+      this._editor.attach(modal);
+      this._editor.attach(dialog);
       modal.show();
       return dialog.show();
     };
@@ -9097,20 +9156,20 @@
 
     ContentTools.ToolShelf.stow(Heading, 'heading');
 
-    Heading.label = 'Heading';
+    Heading.prototype.initialize = function() {
+      this.label = 'Heading';
+      this.icon = 'heading';
+      return this.tagName = 'h1';
+    };
 
-    Heading.icon = 'heading';
-
-    Heading.tagName = 'h1';
-
-    Heading.canApply = function(element, selection) {
+    Heading.prototype.canApply = function(element, selection) {
       if (element.isFixed()) {
         return false;
       }
       return element.content !== void 0 && ['Text', 'PreText'].indexOf(element.type()) !== -1;
     };
 
-    Heading.isApplied = function(element, selection) {
+    Heading.prototype.isApplied = function(element, selection) {
       if (!element.content) {
         return false;
       }
@@ -9120,12 +9179,12 @@
       return element.tagName() === this.tagName;
     };
 
-    Heading.apply = function(element, selection, callback) {
+    Heading.prototype.apply = function(element, selection, callback) {
       var content, insertAt, parent, textElement;
       element.storeState();
       if (element.type() === 'PreText') {
         content = element.content.html().replace(/&nbsp;/g, ' ');
-        textElement = new ContentEdit.Text(this.tagName, {}, content);
+        textElement = new this._editor.CEFactory.Text(this.tagName, {}, content);
         parent = element.parent();
         insertAt = parent.children.indexOf(element);
         parent.detach(element);
@@ -9158,11 +9217,11 @@
 
     ContentTools.ToolShelf.stow(Subheading, 'subheading');
 
-    Subheading.label = 'Subheading';
-
-    Subheading.icon = 'subheading';
-
-    Subheading.tagName = 'h2';
+    Subheading.prototype.initialize = function() {
+      this.label = 'Subheading';
+      this.icon = 'subheading';
+      return this.tagName = 'h2';
+    };
 
     return Subheading;
 
@@ -9177,25 +9236,24 @@
 
     ContentTools.ToolShelf.stow(Paragraph, 'paragraph');
 
-    Paragraph.label = 'Paragraph';
+    Paragraph.prototype.initialize = function() {
+      this.label = 'Paragraph';
+      this.icon = 'paragraph';
+      return this.tagName = 'p';
+    };
 
-    Paragraph.icon = 'paragraph';
-
-    Paragraph.tagName = 'p';
-
-    Paragraph.canApply = function(element, selection) {
+    Paragraph.prototype.canApply = function(element, selection) {
       if (element.isFixed()) {
         return false;
       }
       return element !== void 0;
     };
 
-    Paragraph.apply = function(element, selection, callback) {
-      var app, forceAdd, paragraph, region;
-      app = ContentTools.EditorApp.get();
-      forceAdd = app.ctrlDown();
-      if (ContentTools.Tools.Heading.canApply(element) && !forceAdd) {
-        return Paragraph.__super__.constructor.apply.call(this, element, selection, callback);
+    Paragraph.prototype.apply = function(element, selection, callback) {
+      var forceAdd, paragraph, region;
+      forceAdd = this._editor.ctrlDown();
+      if (this._tools.heading.canApply(element) && !forceAdd) {
+        return Paragraph.__super__.apply.call(this, element, selection, callback);
       } else {
         if (element.parent().type() !== 'Region') {
           element = element.closest(function(node) {
@@ -9203,7 +9261,7 @@
           });
         }
         region = element.parent();
-        paragraph = new ContentEdit.Text('p');
+        paragraph = new this._editor.CEFactory.Text('p');
         region.attach(paragraph, region.children.indexOf(element) + 1);
         paragraph.focus();
         return callback(true);
@@ -9223,20 +9281,20 @@
 
     ContentTools.ToolShelf.stow(Preformatted, 'preformatted');
 
-    Preformatted.label = 'Preformatted';
+    Preformatted.prototype.initialize = function() {
+      this.label = 'Preformatted';
+      this.icon = 'preformatted';
+      return this.tagName = 'pre';
+    };
 
-    Preformatted.icon = 'preformatted';
-
-    Preformatted.tagName = 'pre';
-
-    Preformatted.apply = function(element, selection, callback) {
+    Preformatted.prototype.apply = function(element, selection, callback) {
       var insertAt, parent, preText, text;
       if (element.type() === 'PreText') {
-        ContentTools.Tools.Paragraph.apply(element, selection, callback);
+        this._tools.paragraph.apply(element, selection, callback);
         return;
       }
       text = element.content.text();
-      preText = new ContentEdit.PreText('pre', {}, HTMLString.String.encode(text));
+      preText = new this._editor.CEFactory.PreText('pre', {}, HTMLString.String.encode(text));
       parent = element.parent();
       insertAt = parent.children.indexOf(element);
       parent.detach(element);
@@ -9260,17 +9318,17 @@
 
     ContentTools.ToolShelf.stow(AlignLeft, 'align-left');
 
-    AlignLeft.label = 'Align left';
+    AlignLeft.prototype.initialize = function() {
+      this.label = 'Align left';
+      this.icon = 'align-left';
+      return this.className = 'text-left';
+    };
 
-    AlignLeft.icon = 'align-left';
-
-    AlignLeft.className = 'text-left';
-
-    AlignLeft.canApply = function(element, selection) {
+    AlignLeft.prototype.canApply = function(element, selection) {
       return element.content !== void 0;
     };
 
-    AlignLeft.isApplied = function(element, selection) {
+    AlignLeft.prototype.isApplied = function(element, selection) {
       var _ref;
       if (!this.canApply(element)) {
         return false;
@@ -9281,12 +9339,12 @@
       return element.hasCSSClass(this.className);
     };
 
-    AlignLeft.apply = function(element, selection, callback) {
+    AlignLeft.prototype.apply = function(element, selection, callback) {
       var alignmentClassNames, className, _i, _len, _ref;
       if ((_ref = element.type()) === 'ListItemText' || _ref === 'TableCellText') {
         element = element.parent();
       }
-      alignmentClassNames = [ContentTools.Tools.AlignLeft.className, ContentTools.Tools.AlignCenter.className, ContentTools.Tools.AlignRight.className];
+      alignmentClassNames = [this._tools["align-left"].className, this._tools["align-center"].className, this._tools["align-right"].className];
       for (_i = 0, _len = alignmentClassNames.length; _i < _len; _i++) {
         className = alignmentClassNames[_i];
         if (element.hasCSSClass(className)) {
@@ -9313,11 +9371,11 @@
 
     ContentTools.ToolShelf.stow(AlignCenter, 'align-center');
 
-    AlignCenter.label = 'Align center';
-
-    AlignCenter.icon = 'align-center';
-
-    AlignCenter.className = 'text-center';
+    AlignCenter.prototype.initialize = function() {
+      this.label = 'Align center';
+      this.icon = 'align-center';
+      return this.className = 'text-center';
+    };
 
     return AlignCenter;
 
@@ -9332,11 +9390,11 @@
 
     ContentTools.ToolShelf.stow(AlignRight, 'align-right');
 
-    AlignRight.label = 'Align right';
-
-    AlignRight.icon = 'align-right';
-
-    AlignRight.className = 'text-right';
+    AlignRight.prototype.initialize = function() {
+      this.label = 'Align right';
+      this.icon = 'align-right';
+      return this.className = 'text-right';
+    };
 
     return AlignRight;
 
@@ -9351,13 +9409,13 @@
 
     ContentTools.ToolShelf.stow(UnorderedList, 'unordered-list');
 
-    UnorderedList.label = 'Bullet list';
+    UnorderedList.prototype.initialize = function() {
+      this.label = 'Bullet list';
+      this.icon = 'unordered-list';
+      return this.listTag = 'ul';
+    };
 
-    UnorderedList.icon = 'unordered-list';
-
-    UnorderedList.listTag = 'ul';
-
-    UnorderedList.canApply = function(element, selection) {
+    UnorderedList.prototype.canApply = function(element, selection) {
       var _ref;
       if (element.isFixed()) {
         return false;
@@ -9365,7 +9423,7 @@
       return element.content !== void 0 && ((_ref = element.parent().type()) === 'Region' || _ref === 'ListItem');
     };
 
-    UnorderedList.apply = function(element, selection, callback) {
+    UnorderedList.prototype.apply = function(element, selection, callback) {
       var insertAt, list, listItem, listItemText, parent;
       if (element.parent().type() === 'ListItem') {
         element.storeState();
@@ -9375,10 +9433,10 @@
         list.tagName(this.listTag);
         element.restoreState();
       } else {
-        listItemText = new ContentEdit.ListItemText(element.content.copy());
-        listItem = new ContentEdit.ListItem();
+        listItemText = new this._editor.CEFactory.ListItemText(element.content.copy());
+        listItem = new this._editor.CEFactory.ListItem();
         listItem.attach(listItemText);
-        list = new ContentEdit.List(this.listTag, {});
+        list = new this._editor.CEFactory.List(this.listTag, {});
         list.attach(listItem);
         parent = element.parent();
         insertAt = parent.children.indexOf(element);
@@ -9403,11 +9461,11 @@
 
     ContentTools.ToolShelf.stow(OrderedList, 'ordered-list');
 
-    OrderedList.label = 'Numbers list';
-
-    OrderedList.icon = 'ordered-list';
-
-    OrderedList.listTag = 'ol';
+    OrderedList.prototype.initialize = function() {
+      this.label = 'Numbers list';
+      this.icon = 'ordered-list';
+      return this.listTag = 'ol';
+    };
 
     return OrderedList;
 
@@ -9422,23 +9480,23 @@
 
     ContentTools.ToolShelf.stow(Table, 'table');
 
-    Table.label = 'Table';
+    Table.prototype.initialize = function() {
+      this.label = 'Table';
+      return this.icon = 'table';
+    };
 
-    Table.icon = 'table';
-
-    Table.canApply = function(element, selection) {
+    Table.prototype.canApply = function(element, selection) {
       if (element.isFixed()) {
         return false;
       }
       return element !== void 0;
     };
 
-    Table.apply = function(element, selection, callback) {
-      var app, dialog, modal, table;
+    Table.prototype.apply = function(element, selection, callback) {
+      var dialog, modal, table;
       if (element.storeState) {
         element.storeState();
       }
-      app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI();
       table = element.closest(function(node) {
         return node && node.type() === 'Table';
@@ -9480,13 +9538,13 @@
           return callback(true);
         };
       })(this));
-      app.attach(modal);
-      app.attach(dialog);
+      this._editor.attach(modal);
+      this._editor.attach(dialog);
       modal.show();
       return dialog.show();
     };
 
-    Table._adjustColumns = function(section, columns) {
+    Table.prototype._adjustColumns = function(section, columns) {
       var cell, cellTag, cellText, currentColumns, diff, i, row, _i, _len, _ref, _results;
       _ref = section.children;
       _results = [];
@@ -9510,13 +9568,13 @@
             var _j, _results1;
             _results1 = [];
             for (i = _j = 0; 0 <= diff ? _j < diff : _j > diff; i = 0 <= diff ? ++_j : --_j) {
-              cell = new ContentEdit.TableCell(cellTag);
+              cell = new this._editor.CEFactory.TableCell(cellTag);
               row.attach(cell);
-              cellText = new ContentEdit.TableCellText('');
+              cellText = new this._editor.CEFactory.TableCellText('');
               _results1.push(cell.attach(cellText));
             }
             return _results1;
-          })());
+          }).call(this));
         } else {
           _results.push(void 0);
         }
@@ -9524,9 +9582,9 @@
       return _results;
     };
 
-    Table._createTable = function(tableCfg) {
+    Table.prototype._createTable = function(tableCfg) {
       var body, foot, head, table;
-      table = new ContentEdit.Table();
+      table = new this._editor.CEFactory.Table();
       if (tableCfg.head) {
         head = this._createTableSection('thead', 'th', tableCfg.columns);
         table.attach(head);
@@ -9540,21 +9598,21 @@
       return table;
     };
 
-    Table._createTableSection = function(sectionTag, cellTag, columns) {
+    Table.prototype._createTableSection = function(sectionTag, cellTag, columns) {
       var cell, cellText, i, row, section, _i;
-      section = new ContentEdit.TableSection(sectionTag);
-      row = new ContentEdit.TableRow();
+      section = new this._editor.CEFactory.TableSection(sectionTag);
+      row = new this._editor.CEFactory.TableRow();
       section.attach(row);
       for (i = _i = 0; 0 <= columns ? _i < columns : _i > columns; i = 0 <= columns ? ++_i : --_i) {
-        cell = new ContentEdit.TableCell(cellTag);
+        cell = new this._editor.CEFactory.TableCell(cellTag);
         row.attach(cell);
-        cellText = new ContentEdit.TableCellText('');
+        cellText = new this._editor.CEFactory.TableCellText('');
         cell.attach(cellText);
       }
       return section;
     };
 
-    Table._updateTable = function(tableCfg, table) {
+    Table.prototype._updateTable = function(tableCfg, table) {
       var columns, foot, head, section, _i, _len, _ref;
       if (!tableCfg.head && table.thead()) {
         table.detach(table.thead());
@@ -9593,15 +9651,16 @@
 
     ContentTools.ToolShelf.stow(Indent, 'indent');
 
-    Indent.label = 'Indent';
+    Indent.prototype.initialize = function() {
+      this.label = 'Indent';
+      return this.icon = 'indent';
+    };
 
-    Indent.icon = 'indent';
-
-    Indent.canApply = function(element, selection) {
+    Indent.prototype.canApply = function(element, selection) {
       return element.parent().type() === 'ListItem' && element.parent().parent().children.indexOf(element.parent()) > 0;
     };
 
-    Indent.apply = function(element, selection, callback) {
+    Indent.prototype.apply = function(element, selection, callback) {
       element.parent().indent();
       return callback(true);
     };
@@ -9619,15 +9678,16 @@
 
     ContentTools.ToolShelf.stow(Unindent, 'unindent');
 
-    Unindent.label = 'Unindent';
+    Unindent.prototype.initialize = function() {
+      this.label = 'Unindent';
+      return this.icon = 'unindent';
+    };
 
-    Unindent.icon = 'unindent';
-
-    Unindent.canApply = function(element, selection) {
+    Unindent.prototype.canApply = function(element, selection) {
       return element.parent().type() === 'ListItem';
     };
 
-    Unindent.apply = function(element, selection, callback) {
+    Unindent.prototype.apply = function(element, selection, callback) {
       element.parent().unindent();
       return callback(true);
     };
@@ -9645,15 +9705,16 @@
 
     ContentTools.ToolShelf.stow(LineBreak, 'line-break');
 
-    LineBreak.label = 'Line break';
+    LineBreak.prototype.initialize = function() {
+      this.label = 'Line break';
+      return this.icon = 'line-break';
+    };
 
-    LineBreak.icon = 'line-break';
-
-    LineBreak.canApply = function(element, selection) {
+    LineBreak.prototype.canApply = function(element, selection) {
       return element.content;
     };
 
-    LineBreak.apply = function(element, selection, callback) {
+    LineBreak.prototype.apply = function(element, selection, callback) {
       var br, cursor, tail, tip;
       cursor = selection.get()[0] + 1;
       tip = element.content.substring(0, selection.get()[0]);
@@ -9680,20 +9741,20 @@
 
     ContentTools.ToolShelf.stow(Image, 'image');
 
-    Image.label = 'Image';
+    Image.prototype.initialize = function() {
+      this.label = 'Image';
+      return this.icon = 'image';
+    };
 
-    Image.icon = 'image';
-
-    Image.canApply = function(element, selection) {
+    Image.prototype.canApply = function(element, selection) {
       return !element.isFixed();
     };
 
-    Image.apply = function(element, selection, callback) {
-      var app, dialog, modal;
+    Image.prototype.apply = function(element, selection, callback) {
+      var dialog, modal;
       if (element.storeState) {
         element.storeState();
       }
-      app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI();
       dialog = new ContentTools.ImageDialog();
       dialog.addEventListener('cancel', (function(_this) {
@@ -9719,7 +9780,7 @@
           imageAttrs.height = imageSize[1];
           imageAttrs.src = imageURL;
           imageAttrs.width = imageSize[0];
-          image = new ContentEdit.Image(imageAttrs);
+          image = new _this._editor.CEFactory.Image(imageAttrs);
           _ref = _this._insertAt(element), node = _ref[0], index = _ref[1];
           node.parent().attach(image, index);
           image.focus();
@@ -9728,8 +9789,8 @@
           return callback(true);
         };
       })(this));
-      app.attach(modal);
-      app.attach(dialog);
+      this._editor.attach(modal);
+      this._editor.attach(dialog);
       modal.show();
       return dialog.show();
     };
@@ -9747,20 +9808,20 @@
 
     ContentTools.ToolShelf.stow(Video, 'video');
 
-    Video.label = 'Video';
+    Video.prototype.initialize = function() {
+      this.label = 'Video';
+      return this.icon = 'video';
+    };
 
-    Video.icon = 'video';
-
-    Video.canApply = function(element, selection) {
+    Video.prototype.canApply = function(element, selection) {
       return !element.isFixed();
     };
 
-    Video.apply = function(element, selection, callback) {
-      var app, dialog, modal;
+    Video.prototype.apply = function(element, selection, callback) {
+      var dialog, modal;
       if (element.storeState) {
         element.storeState();
       }
-      app = ContentTools.EditorApp.get();
       modal = new ContentTools.ModalUI();
       dialog = new ContentTools.VideoDialog();
       dialog.addEventListener('cancel', (function(_this) {
@@ -9778,7 +9839,7 @@
           var index, node, url, video, _ref;
           url = ev.detail().url;
           if (url) {
-            video = new ContentEdit.Video('iframe', {
+            video = new _this._editor.CEFactory.Video('iframe', {
               'frameborder': 0,
               'height': ContentTools.DEFAULT_VIDEO_HEIGHT,
               'src': url,
@@ -9797,8 +9858,8 @@
           return callback(url !== '');
         };
       })(this));
-      app.attach(modal);
-      app.attach(dialog);
+      this._editor.attach(modal);
+      this._editor.attach(dialog);
       modal.show();
       return dialog.show();
     };
@@ -9816,25 +9877,22 @@
 
     ContentTools.ToolShelf.stow(Undo, 'undo');
 
-    Undo.label = 'Undo';
-
-    Undo.icon = 'undo';
-
-    Undo.requiresElement = false;
-
-    Undo.canApply = function(element, selection) {
-      var app;
-      app = ContentTools.EditorApp.get();
-      return app.history && app.history.canUndo();
+    Undo.prototype.initialize = function() {
+      this.label = 'Undo';
+      this.icon = 'undo';
+      return this.requiresElement = false;
     };
 
-    Undo.apply = function(element, selection, callback) {
-      var app, snapshot;
-      app = ContentTools.EditorApp.get();
-      app.history.stopWatching();
-      snapshot = app.history.undo();
-      app.revertToSnapshot(snapshot);
-      return app.history.watch();
+    Undo.prototype.canApply = function(element, selection) {
+      return this._editor.history && this._editor.history.canUndo();
+    };
+
+    Undo.prototype.apply = function(element, selection, callback) {
+      var snapshot;
+      this._editor.history.stopWatching();
+      snapshot = this._editor.history.undo();
+      this._editor.revertToSnapshot(snapshot);
+      return this._editor.history.watch();
     };
 
     return Undo;
@@ -9850,25 +9908,22 @@
 
     ContentTools.ToolShelf.stow(Redo, 'redo');
 
-    Redo.label = 'Redo';
-
-    Redo.icon = 'redo';
-
-    Redo.requiresElement = false;
-
-    Redo.canApply = function(element, selection) {
-      var app;
-      app = ContentTools.EditorApp.get();
-      return app.history && app.history.canRedo();
+    Redo.prototype.initialize = function() {
+      this.label = 'Redo';
+      this.icon = 'redo';
+      return this.requiresElement = false;
     };
 
-    Redo.apply = function(element, selection, callback) {
-      var app, snapshot;
-      app = ContentTools.EditorApp.get();
-      app.history.stopWatching();
-      snapshot = app.history.redo();
-      app.revertToSnapshot(snapshot);
-      return app.history.watch();
+    Redo.prototype.canApply = function(element, selection) {
+      return this._editor.history && this._editor.history.canRedo();
+    };
+
+    Redo.prototype.apply = function(element, selection, callback) {
+      var snapshot;
+      this._editor.history.stopWatching();
+      snapshot = this._editor.history.redo();
+      this._editor.revertToSnapshot(snapshot);
+      return this._editor.history.watch();
     };
 
     return Redo;
@@ -9884,17 +9939,17 @@
 
     ContentTools.ToolShelf.stow(Remove, 'remove');
 
-    Remove.label = 'Remove';
+    Remove.prototype.initialize = function() {
+      this.label = 'Remove';
+      return this.icon = 'remove';
+    };
 
-    Remove.icon = 'remove';
-
-    Remove.canApply = function(element, selection) {
+    Remove.prototype.canApply = function(element, selection) {
       return !element.isFixed();
     };
 
-    Remove.apply = function(element, selection, callback) {
-      var app, list, row, table;
-      app = ContentTools.EditorApp.get();
+    Remove.prototype.apply = function(element, selection, callback) {
+      var list, row, table;
       element.blur();
       if (element.nextContent()) {
         element.nextContent().focus();
@@ -9907,7 +9962,7 @@
       }
       switch (element.type()) {
         case 'ListItemText':
-          if (app.ctrlDown()) {
+          if (this._editor.ctrlDown()) {
             list = element.closest(function(node) {
               return node.parent().type() === 'Region';
             });
@@ -9917,7 +9972,7 @@
           }
           break;
         case 'TableCellText':
-          if (app.ctrlDown()) {
+          if (this._editor.ctrlDown()) {
             table = element.closest(function(node) {
               return node.type() === 'Table';
             });

@@ -4,7 +4,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
     # (e.g make the selected text bold, insert an image, etc.) The toolbox is
     # also draggable so that the user can position as required whilst editing.
 
-    constructor: (tools) ->
+    constructor: (@_editor, tools) ->
         super()
 
         # The tools that will populate the toolbox. The structure of the tools
@@ -113,6 +113,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
             @_domToolGroups.removeChild(@_domToolGroups.lastChild)
 
         # Add the tools
+        @_toolShelf = new ContentTools.ToolShelf(@_editor)
         for toolGroup, i in @_tools
 
             # Create a group for the tools
@@ -123,11 +124,11 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
             for toolName in toolGroup
 
                 # Get the tool
-                tool = ContentTools.ToolShelf.fetch(toolName)
+                tool = @_toolShelf.get(toolName)
 
                 # Create an associated ToolUI component and add it to the
                 # toolbox.
-                @_toolUIs[toolName] = new ContentTools.ToolUI(tool)
+                @_toolUIs[toolName] = new ContentTools.ToolUI(@_editor, tool)
                 @_toolUIs[toolName].mount(domToolGroup)
                 @_toolUIs[toolName].disabled(true)
 
@@ -139,7 +140,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
         # Refresh all tool UIs in the toolbox
 
         # Get the currently focused element and selection (if there is one)
-        element = ContentEdit.Root.get().focused()
+        element = @_editor.CEFactory.root.focused()
         selection = null
         if element and element.selection
             selection = element.selection()
@@ -176,14 +177,12 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
 
         # Set up a timed event to update the status of each tool
         @_updateTools = () =>
-            app = ContentTools.EditorApp.get()
-
             # Determine if the element, selection, or document history has
             # changed, if not then we don't need to update the tools.
             update = false
 
             # Check the selected element and selection are the same
-            element = ContentEdit.Root.get().focused()
+            element = @_editor.CEFactory.root.focused()
 
             selection = null
             if element == @_lastUpdateElement
@@ -202,18 +201,18 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                 update = true
 
             # Check the documents history (if there is one)
-            if app.history
-                if @_lastUpdateHistoryLength != app.history.length()
+            if @_editor.history
+                if @_lastUpdateHistoryLength != @_editor.history.length()
                     update = true
 
                 # Remember the history length for next update
-                @_lastUpdateHistoryLength = app.history.length()
+                @_lastUpdateHistoryLength = @_editor.history.length()
 
-                if @_lastUpdateHistoryIndex != app.history.index()
+                if @_lastUpdateHistoryIndex != @_editor.history.index()
                     update = true
 
                 # Remember the history index for next update
-                @_lastUpdateHistoryIndex = app.history.index()
+                @_lastUpdateHistoryIndex = @_editor.history.index()
 
             # Remember the element/section for next update
             @_lastUpdateElement = element
@@ -231,7 +230,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
         @_handleKeyDown = (ev) =>
 
             # Keyboard events that apply only to non-text elements
-            element = ContentEdit.Root.get().focused()
+            element = @_editor.CEFactory.root.focused()
             if element and not element.content
 
                 # Add support for deleting non-text elements using the `delete`
@@ -240,7 +239,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                     ev.preventDefault()
 
                     # Remove the element
-                    return ContentTools.Tools.Remove.apply(element, null, () ->)
+                    return @_toolShelf.get("remove").apply(element, null, () ->)
 
                 # Add support for adding a new paragraph after non-text elements
                 # using the `return` key.
@@ -248,8 +247,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                     ev.preventDefault()
 
                     # Add a new paragraph element after the current element
-                    Paragraph = ContentTools.Tools.Paragraph
-                    return Paragraph.apply(element, null, () ->)
+                    return @_toolShelf.get("paragraph").apply(element, null, () ->)
 
             # Undo/Redo key support
             #
@@ -292,11 +290,11 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                         undo = true
 
             # Perform undo/redo
-            if undo and ContentTools.Tools.Undo.canApply(null, null)
-                ContentTools.Tools.Undo.apply(null, null, () ->)
+            if undo and @_toolShelf.get("undo").canApply(null, null)
+                @_toolShelf.get("undo").apply(null, null, () ->)
 
-            if redo and ContentTools.Tools.Redo.canApply(null, null)
-                ContentTools.Tools.Redo.apply(null, null, () ->)
+            if redo and @_toolShelf.get("redo").canApply(null, null)
+                @_toolShelf.get("redo").apply(null, null, () ->)
 
         window.addEventListener('keydown', @_handleKeyDown)
 
@@ -409,7 +407,7 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
 
     # A tool that can be selected in the toolbox.
 
-    constructor: (tool) ->
+    constructor: (@_editor, tool) ->
         super()
 
         # The tool associated with this UI tool
@@ -537,7 +535,7 @@ class ContentTools.ToolUI extends ContentTools.AnchoredComponentUI
     _onMouseUp: (ev) =>
         # If a click event has occured exectute the tool
         if @_mouseDown
-            element = ContentEdit.Root.get().focused()
+            element = @_editor.CEFactory.root.focused()
 
             # Most elements are automatically disabled if there is no element
             # however some tools such as redo/undo don't require an element to

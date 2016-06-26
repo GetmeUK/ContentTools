@@ -9,6 +9,9 @@ class _EditorApp extends ContentTools.ComponentUI
         # created to provide undo/redo support.
         @history = null
 
+        # Factory instance, for creating html editable elements
+        @CEFactory = new ContentEdit.Factory()
+
         # The state of the app
         @_state = 'dormant'
 
@@ -31,7 +34,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # A list of DOM elements representing regions
         @_domRegions = null
 
-        # A map of editable regions (`ContentEdit.Region/Fixture`) the editor
+        # A map of editable regions (`@CEFactory.Region/Fixture`) the editor
         # will manage.
         @_regions = {}
 
@@ -119,7 +122,7 @@ class _EditorApp extends ContentTools.ComponentUI
     createPlaceholderElement: (region) ->
         # Return a placeholder element for the region (used to populate an empty
         # region).
-        return new ContentEdit.Text('p', {}, '')
+        return new @CEFactory.Text('p', {}, '')
 
     init: (
             queryOrDOMElements,
@@ -138,7 +141,7 @@ class _EditorApp extends ContentTools.ComponentUI
             @_fixtureTest = fixtureTest
 
         # Mount the element to the DOM
-        @mount()
+        @mount(queryOrDOMElements)
 
         # Set up the ignition switch for page editing
         if withIgnition
@@ -176,11 +179,11 @@ class _EditorApp extends ContentTools.ComponentUI
                     @_ignition.state('ready')
 
         # Toolbox
-        @_toolbox = new ContentTools.ToolboxUI(ContentTools.DEFAULT_TOOLS)
+        @_toolbox = new ContentTools.ToolboxUI(@, ContentTools.DEFAULT_TOOLS)
         @attach(@_toolbox)
 
         # Inspector
-        @_inspector = new ContentTools.InspectorUI()
+        @_inspector = new ContentTools.InspectorUI(@)
         @attach(@_inspector)
 
         # Set as ready to edit
@@ -227,7 +230,7 @@ class _EditorApp extends ContentTools.ComponentUI
                 element.selection(new ContentSelect.Range(0, 0))
                 return
 
-            ContentEdit.Root.get().trigger('next-region', region)
+            @CEFactory.root.trigger('next-region', region)
 
         @_handlePreviousRegionTransition = (region) =>
             # Is there a previous region?
@@ -256,18 +259,18 @@ class _EditorApp extends ContentTools.ComponentUI
                 element.selection(new ContentSelect.Range(length, length))
                 return
 
-            ContentEdit.Root.get().trigger('previous-region', region)
+            @CEFactory.root.trigger('previous-region', region)
 
         # Check when elements are detached that the parent region is not empty
-        ContentEdit.Root.get().bind('detach', @_handleDetach)
+        @CEFactory.root.bind('detach', @_handleDetach)
 
         # Monitor paste events so that we can pre-parse the content the user
         # wants to paste into the region.
-        ContentEdit.Root.get().bind('paste', @_handleClipboardPaste)
+        @CEFactory.root.bind('paste', @_handleClipboardPaste)
 
         # Manage the transition between regions
-        ContentEdit.Root.get().bind('next-region', @_handleNextRegionTransition)
-        ContentEdit.Root.get().bind(
+        @CEFactory.root.bind('next-region', @_handleNextRegionTransition)
+        @CEFactory.root.bind(
             'previous-region',
             @_handlePreviousRegionTransition
             )
@@ -279,13 +282,13 @@ class _EditorApp extends ContentTools.ComponentUI
         # Destroy the editor application
 
         # Remove any events bound to the ContentEdit Root
-        ContentEdit.Root.get().unbind('detach', @_handleDetach)
-        ContentEdit.Root.get().unbind('paste', @_handleClipboardPaste)
-        ContentEdit.Root.get().unbind(
+        @CEFactory.root.unbind('detach', @_handleDetach)
+        @CEFactory.root.unbind('paste', @_handleClipboardPaste)
+        @CEFactory.root.unbind(
             'next-region',
             @_handleNextRegionTransition
             )
-        ContentEdit.Root.get().unbind(
+        @CEFactory.root.unbind(
             'previous-region',
             @_handlePreviousRegionTransition
             )
@@ -369,13 +372,13 @@ class _EditorApp extends ContentTools.ComponentUI
             for line, i in lines
                 line = encodeHTML(line)
                 if type == 'ListItemText'
-                    item = new ContentEdit.ListItem()
-                    itemText = new ContentEdit.ListItemText(line)
+                    item = new @CEFactory.ListItem()
+                    itemText = new @CEFactory.ListItemText(line)
                     item.attach(itemText)
                     lastItem = itemText
 
                 else
-                    item = new ContentEdit.Text('p', {}, line)
+                    item = new @CEFactory.Text('p', {}, line)
                     lastItem = item
 
                 insertIn.attach(item, insertAt + i)
@@ -458,7 +461,7 @@ class _EditorApp extends ContentTools.ComponentUI
         confirmMessage = ContentEdit._(
             'Your changes have not been saved, do you really want to lose them?'
             )
-        if ContentEdit.Root.get().lastModified() > @_rootLastModified and
+        if @CEFactory.root.lastModified() > @_rootLastModified and
                 not window.confirm(confirmMessage)
             return false
 
@@ -484,8 +487,8 @@ class _EditorApp extends ContentTools.ComponentUI
         # Check to see if we need to restore the regions to an editable state
         if restoreEditable
             # Unset any focused element against root
-            if ContentEdit.Root.get().focused()
-                ContentEdit.Root.get().focused().blur()
+            if @CEFactory.root.focused()
+                @CEFactory.root.focused().blur()
 
             # Reset the regions map
             @_regions = {}
@@ -507,8 +510,7 @@ class _EditorApp extends ContentTools.ComponentUI
             return
 
         # Check the document has changed, if not we don't need do anything
-        root = ContentEdit.Root.get()
-        if root.lastModified() == @_rootLastModified and passive
+        if @CEFactory.root.lastModified() == @_rootLastModified and passive
             # Trigger the saved event early with no modified regions,
             @dispatchEvent(
                 @createEvent('saved', {regions: {}, passive: passive})
@@ -572,10 +574,10 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Store the date at which the root was last modified so we can check for
         # changes on save.
-        @_rootLastModified = ContentEdit.Root.get().lastModified()
+        @_rootLastModified = @CEFactory.root.lastModified()
 
         # Create a new history instance to store the page changes against
-        @history = new ContentTools.History(@_regions)
+        @history = new ContentTools.History(@, @_regions)
         @history.watch()
 
         # Set the application state to editing
@@ -600,7 +602,7 @@ class _EditorApp extends ContentTools.ComponentUI
         #
         # For now though we manually perform a content sync if an
         # element supporting that method has focus.
-        focused = ContentEdit.Root.get().focused()
+        focused = @CEFactory.root.focused()
         if focused and focused.isMounted() and
                 focused._syncContent != undefined
 
@@ -628,9 +630,9 @@ class _EditorApp extends ContentTools.ComponentUI
         @_state = 'ready'
 
         # Blur any existing focused element
-        if ContentEdit.Root.get().focused()
+        if @CEFactory.root.focused()
             @_allowEmptyRegions () =>
-                ContentEdit.Root.get().focused().blur()
+                @CEFactory.root.focused().blur()
 
         return
 
@@ -817,9 +819,9 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Initialize the new region/fixture
             if @_fixtureTest(domRegion)
-                @_regions[name] = new ContentEdit.Fixture(domRegion)
+                @_regions[name] = new @CEFactory.Fixture(domRegion)
             else
-                @_regions[name] = new ContentEdit.Region(domRegion)
+                @_regions[name] = new @CEFactory.Region(domRegion)
 
             # Store the date at which the region was last modified so we can
             # check for changes on save.

@@ -1,5 +1,6 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var CEFactory, editor, toolShelf,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   describe('ContentTools.getEmbedVideoURL()', function() {
@@ -501,17 +502,17 @@
     describe('ContentTools.FlashUI()', function() {
       it('should return an instance of a FlashUI', function() {
         var flash;
-        flash = new ContentTools.FlashUI('ok');
+        flash = new ContentTools.FlashUI(editor, 'ok');
         return expect(flash instanceof ContentTools.FlashUI).toBe(true);
       });
       it('should mount the component', function() {
         var flash;
-        flash = new ContentTools.FlashUI('ok');
+        flash = new ContentTools.FlashUI(editor, 'ok');
         return expect(flash.isMounted()).toBe(true);
       });
       return it('should unmount the component after X seconds', function(done) {
         var checkUnmounted, flash;
-        flash = new ContentTools.FlashUI('ok');
+        flash = new ContentTools.FlashUI(editor, 'ok');
         checkUnmounted = function() {
           expect(flash.isMounted()).toBe(false);
           return done();
@@ -522,7 +523,7 @@
     return describe('ContentTools.FlashUI.mount()', function() {
       return it('should mount the component and apply the specified modifier', function() {
         var classes, flash;
-        flash = new ContentTools.FlashUI('ok');
+        flash = new ContentTools.FlashUI(editor, 'ok');
         expect(flash.isMounted()).toBe(true);
         classes = flash.domElement().getAttribute('class').split(' ');
         return expect(classes.indexOf('ct-flash--ok') > -1).toBe(true);
@@ -702,14 +703,14 @@
     describe('ContentTools.InspectorUI()', function() {
       return it('should return an instance of a InspectorUI', function() {
         var inspector;
-        inspector = new ContentTools.InspectorUI();
+        inspector = new ContentTools.InspectorUI(editor);
         return expect(inspector instanceof ContentTools.InspectorUI).toBe(true);
       });
     });
     describe('ContentTools.InspectorUI.mount()', function() {
       return it('should mount the component', function() {
         var inspector;
-        inspector = new ContentTools.InspectorUI();
+        inspector = new ContentTools.InspectorUI(editor);
         editor.attach(inspector);
         inspector.mount();
         return expect(inspector.isMounted()).toBe(true);
@@ -718,7 +719,7 @@
     describe('ContentTools.InspectorUI.unmount()', function() {
       return it('should unmount the component', function() {
         var inspector;
-        inspector = new ContentTools.InspectorUI();
+        inspector = new ContentTools.InspectorUI(editor);
         editor.attach(inspector);
         inspector.mount();
         inspector.unmount();
@@ -764,7 +765,7 @@
     describe('ContentTools.TagUI()', function() {
       return it('should return an instance of a TagUI', function() {
         var tag;
-        tag = new ContentTools.TagUI();
+        tag = new ContentTools.TagUI(editor);
         return expect(tag instanceof ContentTools.TagUI).toBe(true);
       });
     });
@@ -775,7 +776,7 @@
         inspector = editor._inspector;
         region = editor.regions()['foo'];
         elements = region.children;
-        tag = new ContentTools.TagUI(elements[0]);
+        tag = new ContentTools.TagUI(editor, elements[0]);
         tag.mount(inspector._domTags);
         return expect(tag.isMounted()).toBe(true);
       });
@@ -932,7 +933,7 @@
     describe('ContentTools.ToolboxUI()', function() {
       return it('should return an instance of a ToolboxUI', function() {
         var toolbox;
-        toolbox = new ContentTools.ToolboxUI([]);
+        toolbox = new ContentTools.ToolboxUI(editor, []);
         return expect(toolbox instanceof ContentTools.ToolboxUI).toBe(true);
       });
     });
@@ -977,7 +978,7 @@
     describe('ContentTools.ToolboxUI.mount()', function() {
       it('should mount the component', function() {
         var toolbox;
-        toolbox = new ContentTools.ToolboxUI([]);
+        toolbox = new ContentTools.ToolboxUI(editor, []);
         editor.attach(toolbox);
         toolbox.mount();
         return expect(toolbox.isMounted()).toBe(true);
@@ -985,7 +986,7 @@
       it('should restore the position of the component to any previously saved state', function() {
         var toolbox;
         window.localStorage.setItem('ct-toolbox-position', '7,7');
-        toolbox = new ContentTools.ToolboxUI([]);
+        toolbox = new ContentTools.ToolboxUI(editor, []);
         editor.attach(toolbox);
         toolbox.mount();
         expect(toolbox.domElement().style.left).toBe('7px');
@@ -994,7 +995,7 @@
       return it('should always be contained within the viewport', function() {
         var toolbox;
         window.localStorage.setItem('ct-toolbox-position', '-7,-7');
-        toolbox = new ContentTools.ToolboxUI([]);
+        toolbox = new ContentTools.ToolboxUI(editor, []);
         editor.attach(toolbox);
         toolbox.mount();
         expect(toolbox.domElement().style.left).toBe('');
@@ -1034,13 +1035,13 @@
         toolbox = editor._toolbox;
         region = editor.regions()['foo'];
         element = region.children[1];
-        spyOn(ContentTools.Tools.Undo, 'canApply');
+        spyOn(toolbox._toolShelf.get("undo"), 'canApply');
         keyDownEvent = document.createEvent('CustomEvent');
         keyDownEvent.initCustomEvent('keydown', false, false, null);
         keyDownEvent.keyCode = 90;
         keyDownEvent.ctrlKey = true;
         window.dispatchEvent(keyDownEvent);
-        return expect(ContentTools.Tools.Undo.canApply).toHaveBeenCalled();
+        return expect(toolbox._toolShelf.get("undo").canApply).toHaveBeenCalled();
       });
       return it('should allow a redo to be triggered with Ctrl-Shift-z key short-cut', function() {
         var element, keyDownEvent, region, toolbox;
@@ -1048,22 +1049,23 @@
         region = editor.regions()['foo'];
         element = region.children[1];
         element.focus();
-        spyOn(ContentTools.Tools.Redo, 'canApply');
+        spyOn(toolbox._toolShelf.get("redo"), 'canApply');
         keyDownEvent = document.createEvent('CustomEvent');
         keyDownEvent.initCustomEvent('keydown', false, false, null);
         keyDownEvent.keyCode = 90;
         keyDownEvent.ctrlKey = true;
         keyDownEvent.shiftKey = true;
         window.dispatchEvent(keyDownEvent);
-        return expect(ContentTools.Tools.Redo.canApply).toHaveBeenCalled();
+        return expect(toolbox._toolShelf.get("redo").canApply).toHaveBeenCalled();
       });
     });
   });
 
   describe('ContentTools.ToolboxUI', function() {
-    var div, editor;
+    var div, editor, toolShelf;
     div = null;
     editor = null;
+    toolShelf = null;
     beforeEach(function() {
       div = document.createElement('div');
       div.setAttribute('class', 'editable');
@@ -1071,7 +1073,8 @@
       div.innerHTML = '<p>bar</p><img scr="test.png">';
       document.body.appendChild(div);
       editor = ContentTools.EditorApp.get();
-      return editor.init('.editable');
+      editor.init('.editable');
+      return toolShelf = new ContentTools.ToolShelf(editor);
     });
     afterEach(function() {
       editor.destroy();
@@ -1080,14 +1083,14 @@
     describe('ContentTools.ToolUI()', function() {
       return it('should return an instance of a ToolUI', function() {
         var tool;
-        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'));
+        tool = new ContentTools.ToolUI(editor, toolShelf.get('bold'));
         return expect(tool instanceof ContentTools.ToolUI).toBe(true);
       });
     });
     describe('ContentTools.ToolUI.disabled()', function() {
       return it('should set/get the disabled state for the tool', function() {
         var tool;
-        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'));
+        tool = new ContentTools.ToolUI(editor, toolShelf.get('bold'));
         expect(tool.disabled()).toBe(false);
         tool.disabled(true);
         return expect(tool.disabled()).toBe(true);
@@ -1096,8 +1099,8 @@
     describe('ContentTools.ToolUI.apply()', function() {
       return it('should apply the tool associated with the component', function() {
         var element, region, tool;
-        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('heading'));
-        region = new ContentEdit.Region(document.querySelectorAll('.editable')[0]);
+        tool = new ContentTools.ToolUI(editor, toolShelf.get('heading'));
+        region = new editor.CEFactory.Region(document.querySelectorAll('.editable')[0]);
         element = region.children[0];
         tool.apply(element);
         return expect(element.tagName()).toBe('h1');
@@ -1106,7 +1109,7 @@
     describe('ContentTools.Tool.mount()', function() {
       return it('should mount the component', function() {
         var tool;
-        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('bold'));
+        tool = new ContentTools.ToolUI(editor, toolShelf.get('bold'));
         editor.attach(tool);
         tool.mount(editor.domElement());
         return expect(tool.isMounted()).toBe(true);
@@ -1115,8 +1118,8 @@
     return describe('ContentTools.Tool.update()', function() {
       return it('should update the state of the tool based on the currently focused element and content selection', function() {
         var element, region, tool;
-        tool = new ContentTools.ToolUI(ContentTools.ToolShelf.fetch('heading'));
-        region = new ContentEdit.Region(document.querySelectorAll('.editable')[0]);
+        tool = new ContentTools.ToolUI(editor, toolShelf.get('heading'));
+        region = new editor.CEFactory.Region(document.querySelectorAll('.editable')[0]);
         element = region.children[0];
         tool.update();
         expect(tool.disabled()).toBe(true);
@@ -1273,12 +1276,22 @@
     });
   });
 
+  editor = ContentTools.EditorApp.get();
+
+  editor.init();
+
+  editor.start();
+
+  CEFactory = editor.CEFactory;
+
+  toolShelf = editor._toolbox._toolShelf;
+
   describe('ContentTools.ToolShelf.stow()', function() {
     return it('should store a `ContentTools.Tool` instance against a name', function() {
       var tool;
       tool = ContentTools.Tool;
       ContentTools.ToolShelf.stow(tool, 'tool');
-      return expect(ContentTools.ToolShelf.fetch('tool')).toEqual(tool);
+      return expect(ContentTools.ToolShelf._tools['tool']).toEqual(tool);
     });
   });
 
@@ -1286,23 +1299,23 @@
     return it('should return a `ContentTools.Tool` instance by name', function() {
       var tool;
       tool = ContentTools.Tools.Bold;
-      return expect(ContentTools.ToolShelf.fetch('bold')).toEqual(tool);
+      return expect(ContentTools.ToolShelf._tools['bold']).toEqual(tool);
     });
   });
 
   describe('ContentTools.Tools.Bold.apply()', function() {
     it('should wrap the selected content in a bold tag if the bold tag is not applied to all of the selection', function() {
       var element, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 4);
-      tool = ContentTools.Tools.Bold;
-      element = new ContentEdit.Text('p', {}, 'test');
+      tool = toolShelf.get("bold");
+      element = new CEFactory.Text('p', {}, 'test');
       region.attach(element);
       tool.apply(element, selection, (function(_this) {
         return function() {};
       })(this));
       expect(element.content.html()).toBe('<b>test</b>');
-      element = new ContentEdit.Text('p', {}, '<b>te</b>st');
+      element = new CEFactory.Text('p', {}, '<b>te</b>st');
       region.attach(element);
       tool.apply(element, selection, (function(_this) {
         return function() {};
@@ -1311,11 +1324,11 @@
     });
     return it('should remove the bold tag from the selected content if the bold tag is applied to all of the selection', function() {
       var element, region, selection, tool;
-      element = new ContentEdit.Text('p', {}, '<b>test</b>');
-      region = new ContentEdit.Region(document.createElement('div'));
+      element = new CEFactory.Text('p', {}, '<b>test</b>');
+      region = new CEFactory.Region(document.createElement('div'));
       region.attach(element);
       selection = new ContentSelect.Range(0, 4);
-      tool = ContentTools.Tools.Bold;
+      tool = toolShelf.get("bold");
       tool.apply(element, selection, (function(_this) {
         return function() {};
       })(this));
@@ -1326,13 +1339,13 @@
   describe('ContentTools.Tools.Bold.canApply()', function() {
     return it('should return true if the element supports content and the selection is not collapsed', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, 'test');
-      tool = ContentTools.Tools.Bold;
+      element = new CEFactory.Text('p', {}, 'test');
+      tool = toolShelf.get("bold");
       selection = new ContentSelect.Range(0, 2);
       expect(tool.canApply(element, selection)).toBe(true);
       selection = new ContentSelect.Range(0, 0);
       expect(tool.canApply(element, selection)).toBe(false);
-      element = new ContentEdit.Image();
+      element = new CEFactory.Image();
       return expect(tool.canApply(element, selection)).toBe(false);
     });
   });
@@ -1340,8 +1353,8 @@
   describe('ContentTools.Tools.Bold.isApplied()', function() {
     return it('should return true if the selected content is wrapped in a bold tag', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, '<b>te</b>st');
-      tool = ContentTools.Tools.Bold;
+      element = new CEFactory.Text('p', {}, '<b>te</b>st');
+      tool = toolShelf.get("bold");
       selection = new ContentSelect.Range(0, 2);
       expect(tool.isApplied(element, selection)).toBe(true);
       selection = new ContentSelect.Range(0, 4);
@@ -1354,16 +1367,16 @@
   describe('ContentTools.Tools.Italic.apply()', function() {
     it('should wrap the selected content in a italic tag if the italic tag is not applied to all of the selection', function() {
       var element, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 4);
-      tool = ContentTools.Tools.Italic;
-      element = new ContentEdit.Text('p', {}, 'test');
+      tool = toolShelf.get("italic");
+      element = new CEFactory.Text('p', {}, 'test');
       region.attach(element);
       tool.apply(element, selection, (function(_this) {
         return function() {};
       })(this));
       expect(element.content.html()).toBe('<i>test</i>');
-      element = new ContentEdit.Text('p', {}, '<i>te</i>st');
+      element = new CEFactory.Text('p', {}, '<i>te</i>st');
       region.attach(element);
       tool.apply(element, selection, (function(_this) {
         return function() {};
@@ -1372,11 +1385,11 @@
     });
     return it('should remove the italic tag from the selected content if the italic tag is applied to all of the selection', function() {
       var element, region, selection, tool;
-      element = new ContentEdit.Text('p', {}, '<i>test</i>');
-      region = new ContentEdit.Region(document.createElement('div'));
+      element = new CEFactory.Text('p', {}, '<i>test</i>');
+      region = new CEFactory.Region(document.createElement('div'));
       region.attach(element);
       selection = new ContentSelect.Range(0, 4);
-      tool = ContentTools.Tools.Italic;
+      tool = toolShelf.get("italic");
       tool.apply(element, selection, (function(_this) {
         return function() {};
       })(this));
@@ -1387,13 +1400,13 @@
   describe('ContentTools.Tools.Italic.canApply()', function() {
     return it('should return true if the element supports content and the selection is not collapsed', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, 'test');
-      tool = ContentTools.Tools.Italic;
+      element = new CEFactory.Text('p', {}, 'test');
+      tool = toolShelf.get("italic");
       selection = new ContentSelect.Range(0, 2);
       expect(tool.canApply(element, selection)).toBe(true);
       selection = new ContentSelect.Range(0, 0);
       expect(tool.canApply(element, selection)).toBe(false);
-      element = new ContentEdit.Image();
+      element = new CEFactory.Image();
       return expect(tool.canApply(element, selection)).toBe(false);
     });
   });
@@ -1401,8 +1414,8 @@
   describe('ContentTools.Tools.Italic.isApplied()', function() {
     return it('should return true if the selected content is wrapped in a italic tag', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, '<i>te</i>st');
-      tool = ContentTools.Tools.Italic;
+      element = new CEFactory.Text('p', {}, '<i>te</i>st');
+      tool = toolShelf.get("italic");
       selection = new ContentSelect.Range(0, 2);
       expect(tool.isApplied(element, selection)).toBe(true);
       selection = new ContentSelect.Range(0, 4);
@@ -1415,13 +1428,13 @@
   describe('ContentTools.Tools.Link.canApply()', function() {
     return it('should return true if the element supports content and the selection is not collapsed or if the element is an image', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, 'test');
-      tool = ContentTools.Tools.Link;
+      element = new CEFactory.Text('p', {}, 'test');
+      tool = toolShelf.get("link");
       selection = new ContentSelect.Range(0, 2);
       expect(tool.canApply(element, selection)).toBe(true);
       selection = new ContentSelect.Range(0, 0);
       expect(tool.canApply(element, selection)).toBe(false);
-      element = new ContentEdit.Image();
+      element = new CEFactory.Image();
       return expect(tool.canApply(element, selection)).toBe(true);
     });
   });
@@ -1429,8 +1442,8 @@
   describe('ContentTools.Tools.Link.getAttr()', function() {
     return it('should return an attribute by name for the first anchor tag found in a selection or if the element is an image then for the anchor tag associated with image', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, '<a href="#test" target="_blank">te</a><a href="#test2">st</a>');
-      tool = ContentTools.Tools.Link;
+      element = new CEFactory.Text('p', {}, '<a href="#test" target="_blank">te</a><a href="#test2">st</a>');
+      tool = toolShelf.get("link");
       selection = new ContentSelect.Range(0, 2);
       expect(tool.getAttr('href', element, selection)).toBe('#test');
       selection = new ContentSelect.Range(2, 4);
@@ -1447,8 +1460,8 @@
   describe('ContentTools.Tools.Link.isApplied()', function() {
     return it('should return true if the selected content is wrapped in an anchor tag or is an image with an associated anchor tag', function() {
       var element, selection, tool;
-      element = new ContentEdit.Text('p', {}, '<a href="#test">te</a>st');
-      tool = ContentTools.Tools.Link;
+      element = new CEFactory.Text('p', {}, '<a href="#test">te</a>st');
+      tool = toolShelf.get("link");
       selection = new ContentSelect.Range(0, 2);
       expect(tool.isApplied(element, selection)).toBe(true);
       selection = new ContentSelect.Range(0, 4);
@@ -1473,10 +1486,10 @@
   describe('ContentTools.Tools.Heading.apply()', function() {
     return it('should change the tag name of a top level element supporting content to h1', function() {
       var element, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 0);
-      tool = ContentTools.Tools.Heading;
-      element = new ContentEdit.Text('p', {}, 'test');
+      tool = toolShelf.get("heading");
+      element = new CEFactory.Text('p', {}, 'test');
       region.attach(element);
       tool.apply(element, selection, (function(_this) {
         return function() {};
@@ -1488,18 +1501,18 @@
   describe('ContentTools.Tools.Heading.canApply()', function() {
     return it('should return true if the element is a top-level element that supports content', function() {
       var element, image, list, listItem, listItemText, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 0);
-      tool = ContentTools.Tools.Heading;
-      element = new ContentEdit.Text('p', {}, 'test');
+      tool = toolShelf.get("heading");
+      element = new CEFactory.Text('p', {}, 'test');
       region.attach(element);
       expect(tool.canApply(element, selection)).toBe(true);
-      image = new ContentEdit.Image();
+      image = new CEFactory.Image();
       region.attach(image);
       expect(tool.canApply(image, selection)).toBe(false);
-      list = new ContentEdit.List('ul');
-      listItem = new ContentEdit.ListItem();
-      listItemText = new ContentEdit.ListItemText('test');
+      list = new CEFactory.List('ul');
+      listItem = new CEFactory.ListItem();
+      listItemText = new CEFactory.ListItemText('test');
       listItem.attach(listItemText);
       list.attach(listItem);
       region.attach(list);
@@ -1510,11 +1523,11 @@
   describe('ContentTools.Tools.Heading.isApplied()', function() {
     return it('should return true if the selected element is a h1', function() {
       var element, selection, tool;
-      tool = ContentTools.Tools.Heading;
-      element = new ContentEdit.Text('h1', {}, 'test');
+      tool = toolShelf.get("heading");
+      element = new CEFactory.Text('h1', {}, 'test');
       selection = new ContentSelect.Range(0, 0);
       expect(tool.isApplied(element, selection)).toBe(true);
-      element = new ContentEdit.Text('p', {}, 'test');
+      element = new CEFactory.Text('p', {}, 'test');
       return expect(tool.isApplied(element, selection)).toBe(false);
     });
   });
@@ -1522,10 +1535,10 @@
   describe('ContentTools.Tools.Subheading.apply()', function() {
     return it('should change the tag name of a top level element supporting content to h2', function() {
       var element, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 0);
-      tool = ContentTools.Tools.Subheading;
-      element = new ContentEdit.Text('p', {}, 'test');
+      tool = toolShelf.get("subheading");
+      element = new CEFactory.Text('p', {}, 'test');
       region.attach(element);
       tool.apply(element, selection, (function(_this) {
         return function() {};
@@ -1537,18 +1550,18 @@
   describe('ContentTools.Tools.Subheading.canApply()', function() {
     return it('should return true if the element is a top-level element that supports content', function() {
       var element, image, list, listItem, listItemText, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 0);
-      tool = ContentTools.Tools.Subheading;
-      element = new ContentEdit.Text('p', {}, 'test');
+      tool = toolShelf.get("subheading");
+      element = new CEFactory.Text('p', {}, 'test');
       region.attach(element);
       expect(tool.canApply(element, selection)).toBe(true);
-      image = new ContentEdit.Image();
+      image = new CEFactory.Image();
       region.attach(image);
       expect(tool.canApply(image, selection)).toBe(false);
-      list = new ContentEdit.List('ul');
-      listItem = new ContentEdit.ListItem();
-      listItemText = new ContentEdit.ListItemText('test');
+      list = new CEFactory.List('ul');
+      listItem = new CEFactory.ListItem();
+      listItemText = new CEFactory.ListItemText('test');
       listItem.attach(listItemText);
       list.attach(listItem);
       region.attach(list);
@@ -1559,11 +1572,11 @@
   describe('ContentTools.Tools.Subheading.isApplied()', function() {
     return it('should return true if the selected element is a h2', function() {
       var element, selection, tool;
-      tool = ContentTools.Tools.Subheading;
-      element = new ContentEdit.Text('h2', {}, 'test');
+      tool = toolShelf.get("subheading");
+      element = new CEFactory.Text('h2', {}, 'test');
       selection = new ContentSelect.Range(0, 0);
       expect(tool.isApplied(element, selection)).toBe(true);
-      element = new ContentEdit.Text('p', {}, 'test');
+      element = new CEFactory.Text('p', {}, 'test');
       return expect(tool.isApplied(element, selection)).toBe(false);
     });
   });
@@ -1571,16 +1584,16 @@
   describe('ContentTools.Tools.Paragraph.apply()', function() {
     it('should change text/pre-text elements to paragraphs', function() {
       var element, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 0);
-      tool = ContentTools.Tools.Paragraph;
-      element = new ContentEdit.Text('h1', {}, 'test');
+      tool = toolShelf.get("paragraph");
+      element = new CEFactory.Text('h1', {}, 'test');
       region.attach(element);
       tool.apply(element, selection, (function(_this) {
         return function() {};
       })(this));
       expect(element.tagName()).toBe('p');
-      element = new ContentEdit.Text('pre', {}, 'test');
+      element = new CEFactory.Text('pre', {}, 'test');
       region.attach(element);
       tool.apply(element, selection, (function(_this) {
         return function() {};
@@ -1589,10 +1602,10 @@
     });
     return it('should add a paragraph after elements non-text/pre-text elements', function() {
       var image, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 0);
-      tool = ContentTools.Tools.Paragraph;
-      image = new ContentEdit.Image();
+      tool = toolShelf.get("paragraph");
+      image = new CEFactory.Image();
       region.attach(image);
       tool.apply(image, selection, (function(_this) {
         return function() {};
@@ -1605,20 +1618,20 @@
   describe('ContentTools.Tools.Paragraph.canApply()', function() {
     return it('should return true if the element is not fixed', function() {
       var fixed_heading, fixture, fixture_anchor, heading, image, region, selection, tool;
-      region = new ContentEdit.Region(document.createElement('div'));
+      region = new CEFactory.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 0);
-      tool = ContentTools.Tools.Paragraph;
-      heading = new ContentEdit.Text('h1', {}, 'test');
+      tool = toolShelf.get("paragraph");
+      heading = new CEFactory.Text('h1', {}, 'test');
       region.attach(heading);
       expect(tool.canApply(heading, selection)).toBe(true);
-      image = new ContentEdit.Image();
+      image = new CEFactory.Image();
       region.attach(image);
       expect(tool.canApply(image, selection)).toBe(true);
       fixture_anchor = document.createElement('div');
       fixed_heading = document.createElement('h1');
       fixed_heading.innerHTML = 'test';
       fixture_anchor.appendChild(fixed_heading);
-      fixture = new ContentEdit.Fixture(fixed_heading);
+      fixture = new CEFactory.Fixture(fixed_heading);
       return expect(tool.canApply(fixture.children[0], selection)).toBe(false);
     });
   });
@@ -1626,14 +1639,22 @@
   describe('ContentTools.Tools.Paragraph.apply()', function() {
     return it('should return true if the selected element is a paragraph', function() {
       var element, selection, tool;
-      tool = ContentTools.Tools.Paragraph;
-      element = new ContentEdit.Text('p', {}, 'test');
+      tool = toolShelf.get("paragraph");
+      element = new CEFactory.Text('p', {}, 'test');
       selection = new ContentSelect.Range(0, 0);
       expect(tool.isApplied(element, selection)).toBe(true);
-      element = new ContentEdit.Text('h1', {}, 'test');
+      element = new CEFactory.Text('h1', {}, 'test');
       return expect(tool.isApplied(element, selection)).toBe(false);
     });
   });
+
+  editor = ContentTools.EditorApp.get();
+
+  editor.init();
+
+  editor.start();
+
+  CEFactory = editor.CEFactory;
 
   describe('ContentTools.StylePalette.add()', function() {
     afterEach(function() {
@@ -1643,7 +1664,7 @@
       var p, style;
       style = new ContentTools.Style('test', 'test', ['p']);
       ContentTools.StylePalette.add(style);
-      p = new ContentEdit.Text('p', {}, 'foo');
+      p = new CEFactory.Text('p', {}, 'foo');
       return expect(ContentTools.StylePalette.styles(p)).toEqual([style]);
     });
   });
@@ -1660,9 +1681,9 @@
       ContentTools.StylePalette.add(test1);
       ContentTools.StylePalette.add(test2);
       ContentTools.StylePalette.add(test3);
-      p = new ContentEdit.Text('p', {}, 'foo');
-      h1 = new ContentEdit.Text('h1', {}, 'foo');
-      h2 = new ContentEdit.Text('h2', {}, 'foo');
+      p = new CEFactory.Text('p', {}, 'foo');
+      h1 = new CEFactory.Text('h1', {}, 'foo');
+      h2 = new CEFactory.Text('h2', {}, 'foo');
       expect(ContentTools.StylePalette.styles(p)).toEqual([test1, test2]);
       expect(ContentTools.StylePalette.styles(h1)).toEqual([test2, test3]);
       return expect(ContentTools.StylePalette.styles(h2)).toEqual([test3]);

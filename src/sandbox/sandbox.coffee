@@ -37,13 +37,13 @@ window.onload = () ->
             editor.busy(false)
 
             # Trigger a flash to indicate the save has been successful
-            new ContentTools.FlashUI('ok')
+            new ContentTools.FlashUI(editor, 'ok')
 
         setTimeout(saved, 2000)
 
     # Handle tools available to fixtures
     FIXTURE_TOOLS = [['undo', 'redo', 'remove']]
-    ContentEdit.Root.get().bind 'focus', (element) ->
+    editor.CEFactory.root.bind 'focus', (element) ->
         # Determine what tools should be available to the user
         if element.isFixed()
             tools = FIXTURE_TOOLS

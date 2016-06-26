@@ -1,18 +1,25 @@
 # ToolShelf
 
+# Initialize the editor
+editor = ContentTools.EditorApp.get()
+editor.init()
+editor.start()
+CEFactory = editor.CEFactory
+toolShelf = editor._toolbox._toolShelf
+
 describe 'ContentTools.ToolShelf.stow()', () ->
 
     it 'should store a `ContentTools.Tool` instance against a name', () ->
         tool = ContentTools.Tool
         ContentTools.ToolShelf.stow(tool, 'tool')
-        expect(ContentTools.ToolShelf.fetch('tool')).toEqual tool
+        expect(ContentTools.ToolShelf._tools['tool']).toEqual tool
 
 
 describe 'ContentTools.ToolShelf.fetch()', () ->
 
     it 'should return a `ContentTools.Tool` instance by name', () ->
         tool = ContentTools.Tools.Bold
-        expect(ContentTools.ToolShelf.fetch('bold')).toEqual tool
+        expect(ContentTools.ToolShelf._tools['bold']).toEqual tool
 
 
 # Tools
@@ -42,19 +49,19 @@ describe 'ContentTools.Tools.Bold.apply()', () ->
     it 'should wrap the selected content in a bold tag if the bold tag is
             not applied to all of the selection', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 4)
-        tool = ContentTools.Tools.Bold
+        tool = toolShelf.get("bold")
 
         # Bold applied to none of the selection
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         region.attach(element)
 
         tool.apply(element, selection, () =>)
         expect(element.content.html()).toBe '<b>test</b>'
 
         # Bold applied to only part of the selection
-        element = new ContentEdit.Text('p', {}, '<b>te</b>st')
+        element = new CEFactory.Text('p', {}, '<b>te</b>st')
         region.attach(element)
 
         tool.apply(element, selection, () =>)
@@ -63,12 +70,12 @@ describe 'ContentTools.Tools.Bold.apply()', () ->
     it 'should remove the bold tag from the selected content if the bold tag is
             applied to all of the selection', () ->
 
-        element = new ContentEdit.Text('p', {}, '<b>test</b>')
-        region = new ContentEdit.Region(document.createElement('div'))
+        element = new CEFactory.Text('p', {}, '<b>test</b>')
+        region = new CEFactory.Region(document.createElement('div'))
         region.attach(element)
 
         selection = new ContentSelect.Range(0, 4)
-        tool = ContentTools.Tools.Bold
+        tool = toolShelf.get("bold")
 
         # Check for selected content within bold tag
         tool.apply(element, selection, () =>)
@@ -80,8 +87,8 @@ describe 'ContentTools.Tools.Bold.canApply()', () ->
     it 'should return true if the element supports content and the selection is
             not collapsed', () ->
 
-        element = new ContentEdit.Text('p', {}, 'test')
-        tool = ContentTools.Tools.Bold
+        element = new CEFactory.Text('p', {}, 'test')
+        tool = toolShelf.get("bold")
 
         # Check true for content element with expanded selection
         selection = new ContentSelect.Range(0, 2)
@@ -92,7 +99,7 @@ describe 'ContentTools.Tools.Bold.canApply()', () ->
         expect(tool.canApply(element, selection)).toBe false
 
         # Check false for non-content element
-        element = new ContentEdit.Image()
+        element = new CEFactory.Image()
         expect(tool.canApply(element, selection)).toBe false
 
 
@@ -101,8 +108,8 @@ describe 'ContentTools.Tools.Bold.isApplied()', () ->
     it 'should return true if the selected content is wrapped in a bold
             tag', () ->
 
-        element = new ContentEdit.Text('p', {}, '<b>te</b>st')
-        tool = ContentTools.Tools.Bold
+        element = new CEFactory.Text('p', {}, '<b>te</b>st')
+        tool = toolShelf.get("bold")
 
         # Check true if entire selection is bold
         selection = new ContentSelect.Range(0, 2)
@@ -124,19 +131,19 @@ describe 'ContentTools.Tools.Italic.apply()', () ->
     it 'should wrap the selected content in a italic tag if the italic tag is
             not applied to all of the selection', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 4)
-        tool = ContentTools.Tools.Italic
+        tool = toolShelf.get("italic")
 
         # Italic applied to none of the selection
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         region.attach(element)
 
         tool.apply(element, selection, () =>)
         expect(element.content.html()).toBe '<i>test</i>'
 
         # Italic applied to only part of the selection
-        element = new ContentEdit.Text('p', {}, '<i>te</i>st')
+        element = new CEFactory.Text('p', {}, '<i>te</i>st')
         region.attach(element)
 
         tool.apply(element, selection, () =>)
@@ -145,12 +152,12 @@ describe 'ContentTools.Tools.Italic.apply()', () ->
     it 'should remove the italic tag from the selected content if the italic tag
             is applied to all of the selection', () ->
 
-        element = new ContentEdit.Text('p', {}, '<i>test</i>')
-        region = new ContentEdit.Region(document.createElement('div'))
+        element = new CEFactory.Text('p', {}, '<i>test</i>')
+        region = new CEFactory.Region(document.createElement('div'))
         region.attach(element)
 
         selection = new ContentSelect.Range(0, 4)
-        tool = ContentTools.Tools.Italic
+        tool = toolShelf.get("italic")
 
         # Check for selected content within italic tag
         tool.apply(element, selection, () =>)
@@ -162,8 +169,8 @@ describe 'ContentTools.Tools.Italic.canApply()', () ->
     it 'should return true if the element supports content and the selection is
             not collapsed', () ->
 
-        element = new ContentEdit.Text('p', {}, 'test')
-        tool = ContentTools.Tools.Italic
+        element = new CEFactory.Text('p', {}, 'test')
+        tool = toolShelf.get("italic")
 
         # Check true for content element with expanded selection
         selection = new ContentSelect.Range(0, 2)
@@ -174,7 +181,7 @@ describe 'ContentTools.Tools.Italic.canApply()', () ->
         expect(tool.canApply(element, selection)).toBe false
 
         # Check false for non-content element
-        element = new ContentEdit.Image()
+        element = new CEFactory.Image()
         expect(tool.canApply(element, selection)).toBe false
 
 
@@ -183,8 +190,8 @@ describe 'ContentTools.Tools.Italic.isApplied()', () ->
     it 'should return true if the selected content is wrapped in a italic
             tag', () ->
 
-        element = new ContentEdit.Text('p', {}, '<i>te</i>st')
-        tool = ContentTools.Tools.Italic
+        element = new CEFactory.Text('p', {}, '<i>te</i>st')
+        tool = toolShelf.get("italic")
 
         # Check true if entire selection is italic
         selection = new ContentSelect.Range(0, 2)
@@ -206,8 +213,8 @@ describe 'ContentTools.Tools.Link.canApply()', () ->
     it 'should return true if the element supports content and the selection is
             not collapsed or if the element is an image', () ->
 
-        element = new ContentEdit.Text('p', {}, 'test')
-        tool = ContentTools.Tools.Link
+        element = new CEFactory.Text('p', {}, 'test')
+        tool = toolShelf.get("link")
 
         # Check for content element with expanded selection
         selection = new ContentSelect.Range(0, 2)
@@ -218,7 +225,7 @@ describe 'ContentTools.Tools.Link.canApply()', () ->
         expect(tool.canApply(element, selection)).toBe false
 
         # Check for image element
-        element = new ContentEdit.Image()
+        element = new CEFactory.Image()
         expect(tool.canApply(element, selection)).toBe true
 
 
@@ -228,12 +235,12 @@ describe 'ContentTools.Tools.Link.getAttr()', () ->
             selection or if the element is an image then for the anchor tag
             associated with image', () ->
 
-        element = new ContentEdit.Text(
+        element = new CEFactory.Text(
             'p',
             {},
             '<a href="#test" target="_blank">te</a><a href="#test2">st</a>'
             )
-        tool = ContentTools.Tools.Link
+        tool = toolShelf.get("link")
 
         # Check we can get the href attribute
         selection = new ContentSelect.Range(0, 2)
@@ -259,8 +266,8 @@ describe 'ContentTools.Tools.Link.isApplied()', () ->
     it 'should return true if the selected content is wrapped in an anchor
             tag or is an image with an associated anchor tag', () ->
 
-        element = new ContentEdit.Text('p', {}, '<a href="#test">te</a>st')
-        tool = ContentTools.Tools.Link
+        element = new CEFactory.Text('p', {}, '<a href="#test">te</a>st')
+        tool = toolShelf.get("link")
 
         # Check true if entire selection is a link
         selection = new ContentSelect.Range(0, 2)
@@ -301,12 +308,12 @@ describe 'ContentTools.Tools.Heading.apply()', () ->
     it 'should change the tag name of a top level element supporting content to
             h1', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 0)
-        tool = ContentTools.Tools.Heading
+        tool = toolShelf.get("heading")
 
         # Apply heading tool
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         region.attach(element)
 
         tool.apply(element, selection, () =>)
@@ -318,25 +325,25 @@ describe 'ContentTools.Tools.Heading.canApply()', () ->
     it 'should return true if the element is a top-level element that supports
             content', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 0)
-        tool = ContentTools.Tools.Heading
+        tool = toolShelf.get("heading")
 
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         region.attach(element)
 
         # Check true for content top-level content element
         expect(tool.canApply(element, selection)).toBe true
 
         # Check false for image element
-        image = new ContentEdit.Image()
+        image = new CEFactory.Image()
         region.attach(image)
         expect(tool.canApply(image, selection)).toBe false
 
         # Check for content element that is not top level
-        list = new ContentEdit.List('ul')
-        listItem = new ContentEdit.ListItem()
-        listItemText= new ContentEdit.ListItemText('test')
+        list = new CEFactory.List('ul')
+        listItem = new CEFactory.ListItem()
+        listItemText= new CEFactory.ListItemText('test')
         listItem.attach(listItemText)
         list.attach(listItem)
         region.attach(list)
@@ -347,15 +354,15 @@ describe 'ContentTools.Tools.Heading.isApplied()', () ->
 
     it 'should return true if the selected element is a h1', () ->
 
-        tool = ContentTools.Tools.Heading
+        tool = toolShelf.get("heading")
 
         # H1 selected
-        element = new ContentEdit.Text('h1', {}, 'test')
+        element = new CEFactory.Text('h1', {}, 'test')
         selection = new ContentSelect.Range(0, 0)
         expect(tool.isApplied(element, selection)).toBe true
 
         # Not a H1 selected
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         expect(tool.isApplied(element, selection)).toBe false
 
 
@@ -366,12 +373,12 @@ describe 'ContentTools.Tools.Subheading.apply()', () ->
     it 'should change the tag name of a top level element supporting content to
             h2', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 0)
-        tool = ContentTools.Tools.Subheading
+        tool = toolShelf.get("subheading")
 
         # Apply heading tool
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         region.attach(element)
 
         tool.apply(element, selection, () =>)
@@ -383,25 +390,25 @@ describe 'ContentTools.Tools.Subheading.canApply()', () ->
     it 'should return true if the element is a top-level element that supports
             content', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 0)
-        tool = ContentTools.Tools.Subheading
+        tool = toolShelf.get("subheading")
 
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         region.attach(element)
 
         # Check true for content top-level content element
         expect(tool.canApply(element, selection)).toBe true
 
         # Check false for image element
-        image = new ContentEdit.Image()
+        image = new CEFactory.Image()
         region.attach(image)
         expect(tool.canApply(image, selection)).toBe false
 
         # Check for content element that is not top level
-        list = new ContentEdit.List('ul')
-        listItem = new ContentEdit.ListItem()
-        listItemText= new ContentEdit.ListItemText('test')
+        list = new CEFactory.List('ul')
+        listItem = new CEFactory.ListItem()
+        listItemText= new CEFactory.ListItemText('test')
         listItem.attach(listItemText)
         list.attach(listItem)
         region.attach(list)
@@ -412,15 +419,15 @@ describe 'ContentTools.Tools.Subheading.isApplied()', () ->
 
     it 'should return true if the selected element is a h2', () ->
 
-        tool = ContentTools.Tools.Subheading
+        tool = toolShelf.get("subheading")
 
         # H2 selected
-        element = new ContentEdit.Text('h2', {}, 'test')
+        element = new CEFactory.Text('h2', {}, 'test')
         selection = new ContentSelect.Range(0, 0)
         expect(tool.isApplied(element, selection)).toBe true
 
         # Not a H1 selected
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         expect(tool.isApplied(element, selection)).toBe false
 
 
@@ -430,19 +437,19 @@ describe 'ContentTools.Tools.Paragraph.apply()', () ->
 
     it 'should change text/pre-text elements to paragraphs', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 0)
-        tool = ContentTools.Tools.Paragraph
+        tool = toolShelf.get("paragraph")
 
         # Apply paragraph tool to text element
-        element = new ContentEdit.Text('h1', {}, 'test')
+        element = new CEFactory.Text('h1', {}, 'test')
         region.attach(element)
 
         tool.apply(element, selection, () =>)
         expect(element.tagName()).toBe 'p'
 
         # Apply paragraph tool to pre-text element
-        element = new ContentEdit.Text('pre', {}, 'test')
+        element = new CEFactory.Text('pre', {}, 'test')
         region.attach(element)
 
         tool.apply(element, selection, () =>)
@@ -450,12 +457,12 @@ describe 'ContentTools.Tools.Paragraph.apply()', () ->
 
     it 'should add a paragraph after elements non-text/pre-text elements', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 0)
-        tool = ContentTools.Tools.Paragraph
+        tool = toolShelf.get("paragraph")
 
         # Apply paragraph tool to non-text element
-        image = new ContentEdit.Image()
+        image = new CEFactory.Image()
         region.attach(image)
 
         tool.apply(image, selection, () =>)
@@ -467,17 +474,17 @@ describe 'ContentTools.Tools.Paragraph.canApply()', () ->
 
     it 'should return true if the element is not fixed', () ->
 
-        region = new ContentEdit.Region(document.createElement('div'))
+        region = new CEFactory.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 0)
-        tool = ContentTools.Tools.Paragraph
+        tool = toolShelf.get("paragraph")
 
         # Text elements
-        heading = new ContentEdit.Text('h1', {}, 'test')
+        heading = new CEFactory.Text('h1', {}, 'test')
         region.attach(heading)
         expect(tool.canApply(heading, selection)).toBe true
 
         # Non-text elements
-        image = new ContentEdit.Image()
+        image = new CEFactory.Image()
         region.attach(image)
         expect(tool.canApply(image, selection)).toBe true
 
@@ -486,7 +493,7 @@ describe 'ContentTools.Tools.Paragraph.canApply()', () ->
         fixed_heading = document.createElement('h1')
         fixed_heading.innerHTML = 'test'
         fixture_anchor.appendChild(fixed_heading)
-        fixture = new ContentEdit.Fixture(fixed_heading)
+        fixture = new CEFactory.Fixture(fixed_heading)
         expect(tool.canApply(fixture.children[0], selection)).toBe false
 
 
@@ -494,13 +501,13 @@ describe 'ContentTools.Tools.Paragraph.apply()', () ->
 
     it 'should return true if the selected element is a paragraph', () ->
 
-        tool = ContentTools.Tools.Paragraph
+        tool = toolShelf.get("paragraph")
 
         # P selected
-        element = new ContentEdit.Text('p', {}, 'test')
+        element = new CEFactory.Text('p', {}, 'test')
         selection = new ContentSelect.Range(0, 0)
         expect(tool.isApplied(element, selection)).toBe true
 
         # Not a P selected
-        element = new ContentEdit.Text('h1', {}, 'test')
+        element = new CEFactory.Text('h1', {}, 'test')
         expect(tool.isApplied(element, selection)).toBe false

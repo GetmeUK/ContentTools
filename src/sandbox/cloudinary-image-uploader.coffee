@@ -288,7 +288,7 @@ window.CloudinaryImageUploader = CloudinaryImageUploader
 # Capture resize events and update image URLs to cater
 _resizeTimeout = null
 
-ContentEdit.Root.get().bind 'taint', (element) ->
+ContentTools.EditorApp.get().CEFactory.root.bind 'taint', (element) ->
 
     # We're only interested in images
     unless element.type() is 'Image'

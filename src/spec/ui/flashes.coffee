@@ -27,17 +27,17 @@ describe 'ContentTools.FlashUI', () ->
 
         it 'should return an instance of a FlashUI', () ->
 
-            flash = new ContentTools.FlashUI('ok')
+            flash = new ContentTools.FlashUI(editor, 'ok')
             expect(flash instanceof ContentTools.FlashUI).toBe true
 
         it 'should mount the component', () ->
 
-            flash = new ContentTools.FlashUI('ok')
+            flash = new ContentTools.FlashUI(editor, 'ok')
             expect(flash.isMounted()).toBe true
 
         it 'should unmount the component after X seconds', (done) ->
 
-            flash = new ContentTools.FlashUI('ok')
+            flash = new ContentTools.FlashUI(editor, 'ok')
 
             checkUnmounted = () ->
                 expect(flash.isMounted()).toBe false
@@ -51,7 +51,7 @@ describe 'ContentTools.FlashUI', () ->
         it 'should mount the component and apply the specified modifier', () ->
 
             # `mount` is called with the specified modifier in the constructor
-            flash = new ContentTools.FlashUI('ok')
+            flash = new ContentTools.FlashUI(editor, 'ok')
             expect(flash.isMounted()).toBe true
 
             # Get a list of classes against the class and check the specified

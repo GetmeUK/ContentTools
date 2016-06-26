@@ -4,7 +4,7 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
     # currently selected element in the document and it's chain of parent
     # elements.
 
-    constructor: () ->
+    constructor: (@_editor) ->
         super()
 
         # A list of TagUI elements displayed in the inspector
@@ -36,13 +36,13 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         @_handleFocusChange = () =>
             @updateTags()
 
-        ContentEdit.Root.get().bind('blur', @_handleFocusChange)
-        ContentEdit.Root.get().bind('focus', @_handleFocusChange)
+        @_editor.CEFactory.root.bind('blur', @_handleFocusChange)
+        @_editor.CEFactory.root.bind('focus', @_handleFocusChange)
 
         # We use mount here to catch instances where the tag name is changed, in
         # which case the focus wont be affected but the element will be
         # remounted in the DOM.
-        ContentEdit.Root.get().bind('mount', @_handleFocusChange)
+        @_editor.CEFactory.root.bind('mount', @_handleFocusChange)
 
     unmount: () ->
         # Unmount the widget from the DOM
@@ -51,9 +51,9 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         @_domTags = null
 
         # Remove listeners for the inspector
-        ContentEdit.Root.get().unbind('blur', @_handleFocusChange)
-        ContentEdit.Root.get().unbind('focus', @_handleFocusChange)
-        ContentEdit.Root.get().unbind('mount', @_handleFocusChange)
+        @_editor.CEFactory.root.unbind('blur', @_handleFocusChange)
+        @_editor.CEFactory.root.unbind('focus', @_handleFocusChange)
+        @_editor.CEFactory.root.unbind('mount', @_handleFocusChange)
 
     updateCounter: () ->
         # Update the counter displaying the number of words in the editable
@@ -101,7 +101,7 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
 
         # We only display line/column if the currently focused element is a
         # preformatted text block.
-        element = ContentEdit.Root.get().focused()
+        element = @_editor.CEFactory.root.focused()
         unless element and
                 element.type() == 'PreText' and
                 element.selection().isCollapsed()
@@ -126,7 +126,7 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
 
     updateTags: () ->
         # Update the tags based on the current selection
-        element = ContentEdit.Root.get().focused()
+        element = @_editor.CEFactory.root.focused()
 
         # Clear the current list of tags
         for tag in @_tagUIs
@@ -155,7 +155,7 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
                 continue
 
             # Convert each element to a UI tag
-            tag = new ContentTools.TagUI(element)
+            tag = new ContentTools.TagUI(@_editor, element)
             @_tagUIs.push(tag)
             tag.mount(@_domTags)
 
@@ -180,7 +180,7 @@ class ContentTools.TagUI extends ContentTools.AnchoredComponentUI
     # A tag displayed in the inspector representing the selected element or one
     # of it's parents.
 
-    constructor: (@element) ->
+    constructor: (@_editor, @element) ->
         super()
 
     # Methods
@@ -212,7 +212,6 @@ class ContentTools.TagUI extends ContentTools.AnchoredComponentUI
             @element.storeState()
 
         # Set-up the dialog
-        app = ContentTools.EditorApp.get()
 
         # Modal
         modal = new ContentTools.ModalUI()
@@ -316,7 +315,7 @@ class ContentTools.TagUI extends ContentTools.AnchoredComponentUI
                 @element.restoreState()
 
         # Show the dialog
-        app.attach(modal)
-        app.attach(dialog)
+        @_editor.attach(modal)
+        @_editor.attach(dialog)
         modal.show()
         dialog.show()
