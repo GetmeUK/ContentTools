@@ -8384,18 +8384,23 @@
       document.addEventListener('keydown', this._handleHighlightOn);
       document.addEventListener('keyup', this._handleHighlightOff);
       document.addEventListener('visibilitychange', this._handleVisibility);
-      window.onbeforeunload = (function(_this) {
+      this._handleBeforeUnload = (function(_this) {
         return function(ev) {
+          var cancelMessage;
           if (_this._state === 'editing') {
-            return ContentEdit._(ContentTools.CANCEL_MESSAGE);
+            cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE);
+            (ev || window.event).returnValue = cancelMessage;
+            return cancelMessage;
           }
         };
       })(this);
-      return window.addEventListener('unload', (function(_this) {
+      window.addEventListener('beforeunload', this._handleBeforeUnload);
+      this._handleUnload = (function(_this) {
         return function(ev) {
           return _this.destroy();
         };
-      })(this));
+      })(this);
+      return window.addEventListener('unload', this._handleUnload);
     };
 
     _EditorApp.prototype._allowEmptyRegions = function(callback) {
@@ -8435,7 +8440,9 @@
 
     _EditorApp.prototype._removeDOMEventListeners = function() {
       document.removeEventListener('keydown', this._handleHighlightOn);
-      return document.removeEventListener('keyup', this._handleHighlightOff);
+      document.removeEventListener('keyup', this._handleHighlightOff);
+      window.removeEventListener('beforeunload', this._handleBeforeUnload);
+      return window.removeEventListener('unload', this._handleUnload);
     };
 
     _EditorApp.prototype._initRegions = function() {

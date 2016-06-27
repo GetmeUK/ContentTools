@@ -717,14 +717,20 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # When unloading the page we check to see if the user is currently
         # editing and if so ask them to confirm the action.
-        window.onbeforeunload = (ev) =>
+        @_handleBeforeUnload = (ev) =>
             if @_state is 'editing'
-                return ContentEdit._(ContentTools.CANCEL_MESSAGE)
+                cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
+                (ev or window.event).returnValue = cancelMessage
+                return cancelMessage
+
+        window.addEventListener('beforeunload', @_handleBeforeUnload)
 
         # When the page is unloaded we destroy the app to make sure everything
         # is cleaned up.
-        window.addEventListener 'unload', (ev) =>
+        @_handleUnload = (ev) =>
             @destroy()
+
+        window.addEventListener('unload', @_handleUnload)
 
     _allowEmptyRegions: (callback) ->
         # Execute a function while allowing empty regions (e.g disabling the
@@ -769,6 +775,10 @@ class _EditorApp extends ContentTools.ComponentUI
         # Highlight events
         document.removeEventListener('keydown', @_handleHighlightOn)
         document.removeEventListener('keyup', @_handleHighlightOff)
+
+        # Unload events
+        window.removeEventListener('beforeunload', @_handleBeforeUnload)
+        window.removeEventListener('unload', @_handleUnload)
 
     _initRegions: () ->
         # Initialize DOM regions within the page
