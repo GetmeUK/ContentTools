@@ -110,13 +110,13 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
 
         # Line/Column
         line = 0
-        column = 0
+        column = 1
 
         # Find the selected line, column
         sub = element.content.substring(0, element.selection().get()[0])
         lines = sub.text().split('\n')
         line = lines.length
-        column = lines[lines.length - 1].length
+        column = lines[lines.length - 1].length + 1
 
         # Format the line and column
         line = line.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
