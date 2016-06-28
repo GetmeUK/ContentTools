@@ -96,19 +96,17 @@ class ContentTools.DialogUI extends ContentTools.WidgetUI
         # class to override this method an call `_addEventListeners` at the
         # appropriate point.
 
-        # HACK: IE11 has a render bug (which they wont be fixing) which allows
-        # the text cursor/caret to bleed through overlayed divisions. The issue
-        # is detailed here: https://github.com/GetmeUK/ContentTools/issues/245
-        #
-        # The hack we apply removes the focus from any editable text element
-        # that might be beneath the dialog. This should be fine because the
-        # state of the element is always restored when the dialog is closed by
-        # the tool that opened the dialog.
-        #
-        # ~ Anthony Blackshaw <ant@getme.co.uk>, 21st June 2016
-        if !!window.MSInputMethodContext && !!document.documentMode
-            if document.activeElement
-                document.activeElement.blur()
+        # Blur the focused element to ensure that it's contents can be edited
+        # once the dialog is open.
+        if document.activeElement
+            document.activeElement.blur()
+
+            # HACK: This is a work around for blurring the contenteditable
+            # element in webkit, thanks to Marek Suscak's fiddle here:
+            # http://jsfiddle.net/mareksuscak/oytdoxy8/
+            #
+            # ~ Anthony Blackshaw <ant@getme.co.uk>, 28th June 2016
+            window.getSelection().removeAllRanges()
 
         # Create the dialog
         dialogCSSClasses = [
