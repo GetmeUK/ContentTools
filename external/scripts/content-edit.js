@@ -4578,11 +4578,12 @@
       if (tip.length()) {
         listItem.listItemText().focus();
         selection = new ContentSelect.Range(0, 0);
-        return selection.select(listItem.listItemText().domElement());
+        selection.select(listItem.listItemText().domElement());
       } else {
         selection = new ContentSelect.Range(0, tip.length());
-        return selection.select(this._domElement);
+        selection.select(this._domElement);
       }
+      return this.taint();
     };
 
     ListItemText.droppers = {
