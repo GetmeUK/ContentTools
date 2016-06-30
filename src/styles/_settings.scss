@@ -48,7 +48,7 @@ $highlight-color: rgba(#f39c12, 0.25) !default;
         background: black;
         border-radius: 2px;
         color: white;
-        content: attr(data-tooltip);
+        content: attr(data-ct-tooltip);
         display: block;
         @include hyphens(auto);
         left: -($width - $parent-width) / 2;

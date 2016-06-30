@@ -99,7 +99,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--rotate-ccw'
             ])
         @_domRotateCCW.setAttribute(
-            'data-tooltip',
+            'data-ct-tooltip',
             ContentEdit._('Rotate') + ' -90°'
             )
         domTools.appendChild(@_domRotateCCW)
@@ -111,7 +111,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--rotate-cw'
             ])
         @_domRotateCW.setAttribute(
-            'data-tooltip',
+            'data-ct-tooltip',
             ContentEdit._('Rotate') + ' 90°'
             )
         domTools.appendChild(@_domRotateCW)
@@ -122,7 +122,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--crop'
             ])
-        @_domCrop.setAttribute('data-tooltip', ContentEdit._('Crop marks'))
+        @_domCrop.setAttribute('data-ct-tooltip', ContentEdit._('Crop marks'))
         domTools.appendChild(@_domCrop)
 
         # Progress bar

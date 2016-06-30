@@ -176,7 +176,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--styles'
             ])
-        @_domStylesTab.setAttribute('data-tooltip', ContentEdit._('Styles'))
+        @_domStylesTab.setAttribute('data-ct-tooltip', ContentEdit._('Styles'))
         domTabs.appendChild(@_domStylesTab)
 
         # Attributes
@@ -186,7 +186,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--attributes'
             ])
         @_domAttributesTab.setAttribute(
-            'data-tooltip',
+            'data-ct-tooltip',
             ContentEdit._('Attributes')
             )
         domTabs.appendChild(@_domAttributesTab)
@@ -197,7 +197,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--icon',
             'ct-control--code'
             ])
-        @_domCodeTab.setAttribute('data-tooltip', ContentEdit._('Code'))
+        @_domCodeTab.setAttribute('data-ct-tooltip', ContentEdit._('Code'))
         domTabs.appendChild(@_domCodeTab)
 
         unless @_supportsCoding
@@ -211,7 +211,7 @@ class ContentTools.PropertiesDialog extends ContentTools.DialogUI
             'ct-control--muted'
             ])
         @_domRemoveAttribute.setAttribute(
-            'data-tooltip',
+            'data-ct-tooltip',
             ContentEdit._('Remove')
             )
         domTabs.appendChild(@_domRemoveAttribute)

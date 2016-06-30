@@ -6436,7 +6436,7 @@
         before = null;
       }
       this._domElement = this.constructor.createDiv(['ct-tool', "ct-tool--" + this.tool.icon]);
-      this._domElement.setAttribute('data-tooltip', ContentEdit._(this.tool.label));
+      this._domElement.setAttribute('data-ct-tooltip', ContentEdit._(this.tool.label));
       return ToolUI.__super__.mount.call(this, domParent, before);
     };
 
@@ -6690,13 +6690,13 @@
       domTools = this.constructor.createDiv(['ct-control-group', 'ct-control-group--left']);
       this._domControls.appendChild(domTools);
       this._domRotateCCW = this.constructor.createDiv(['ct-control', 'ct-control--icon', 'ct-control--rotate-ccw']);
-      this._domRotateCCW.setAttribute('data-tooltip', ContentEdit._('Rotate') + ' -90°');
+      this._domRotateCCW.setAttribute('data-ct-tooltip', ContentEdit._('Rotate') + ' -90°');
       domTools.appendChild(this._domRotateCCW);
       this._domRotateCW = this.constructor.createDiv(['ct-control', 'ct-control--icon', 'ct-control--rotate-cw']);
-      this._domRotateCW.setAttribute('data-tooltip', ContentEdit._('Rotate') + ' 90°');
+      this._domRotateCW.setAttribute('data-ct-tooltip', ContentEdit._('Rotate') + ' 90°');
       domTools.appendChild(this._domRotateCW);
       this._domCrop = this.constructor.createDiv(['ct-control', 'ct-control--icon', 'ct-control--crop']);
-      this._domCrop.setAttribute('data-tooltip', ContentEdit._('Crop marks'));
+      this._domCrop.setAttribute('data-ct-tooltip', ContentEdit._('Crop marks'));
       domTools.appendChild(this._domCrop);
       domProgressBar = this.constructor.createDiv(['ct-progress-bar']);
       domTools.appendChild(domProgressBar);
@@ -7220,19 +7220,19 @@
       domTabs = this.constructor.createDiv(['ct-control-group', 'ct-control-group--left']);
       this._domControls.appendChild(domTabs);
       this._domStylesTab = this.constructor.createDiv(['ct-control', 'ct-control--icon', 'ct-control--styles']);
-      this._domStylesTab.setAttribute('data-tooltip', ContentEdit._('Styles'));
+      this._domStylesTab.setAttribute('data-ct-tooltip', ContentEdit._('Styles'));
       domTabs.appendChild(this._domStylesTab);
       this._domAttributesTab = this.constructor.createDiv(['ct-control', 'ct-control--icon', 'ct-control--attributes']);
-      this._domAttributesTab.setAttribute('data-tooltip', ContentEdit._('Attributes'));
+      this._domAttributesTab.setAttribute('data-ct-tooltip', ContentEdit._('Attributes'));
       domTabs.appendChild(this._domAttributesTab);
       this._domCodeTab = this.constructor.createDiv(['ct-control', 'ct-control--icon', 'ct-control--code']);
-      this._domCodeTab.setAttribute('data-tooltip', ContentEdit._('Code'));
+      this._domCodeTab.setAttribute('data-ct-tooltip', ContentEdit._('Code'));
       domTabs.appendChild(this._domCodeTab);
       if (!this._supportsCoding) {
         ContentEdit.addCSSClass(this._domCodeTab, 'ct-control--muted');
       }
       this._domRemoveAttribute = this.constructor.createDiv(['ct-control', 'ct-control--icon', 'ct-control--remove', 'ct-control--muted']);
-      this._domRemoveAttribute.setAttribute('data-tooltip', ContentEdit._('Remove'));
+      this._domRemoveAttribute.setAttribute('data-ct-tooltip', ContentEdit._('Remove'));
       domTabs.appendChild(this._domRemoveAttribute);
       domActions = this.constructor.createDiv(['ct-control-group', 'ct-control-group--right']);
       this._domControls.appendChild(domActions);
