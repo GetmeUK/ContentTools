@@ -3856,9 +3856,13 @@
       if (this._domElement.innerHTML[this._domElement.innerHTML.length - 1] === '\u200B') {
         return;
       }
-      this.storeState();
-      this._domElement.lastChild.textContent += '\u200B';
-      return this.restoreState();
+      if (this._savedSelection) {
+        return this._domElement.lastChild.textContent += '\u200B';
+      } else {
+        this.storeState();
+        this._domElement.lastChild.textContent += '\u200B';
+        return this.restoreState();
+      }
     };
 
     PreText.droppers = {
