@@ -3802,20 +3802,6 @@
       return this._flagIfEmpty();
     };
 
-    PreText.prototype._onKeyUp = function(ev) {
-      var html, newSnaphot, snapshot;
-      this._ensureEndZWS();
-      snapshot = this.content.html();
-      html = this._domElement.innerHTML;
-      html = html.replace(/\u200B$/g, '');
-      this.content = new HTMLString.String(html, this.content.preserveWhitespace());
-      newSnaphot = this.content.html();
-      if (snapshot !== newSnaphot) {
-        this.taint();
-      }
-      return this._flagIfEmpty();
-    };
-
     PreText.prototype._keyBack = function(ev) {
       var selection;
       selection = ContentSelect.Range.query(this._domElement);
@@ -3849,18 +3835,42 @@
       return this.taint();
     };
 
+    PreText.prototype._syncContent = function(ev) {
+      var newSnapshot, snapshot;
+      this._ensureEndZWS();
+      snapshot = this.content.html();
+      this.content = new HTMLString.String(this._domElement.innerHTML.replace(/\u200B$/g, ''), this.content.preserveWhitespace());
+      newSnapshot = this.content.html();
+      if (snapshot !== newSnapshot) {
+        this.taint();
+      }
+      return this._flagIfEmpty();
+    };
+
     PreText.prototype._ensureEndZWS = function() {
+      var html, _addZWS;
       if (!this._domElement.lastChild) {
         return;
       }
-      if (this._domElement.innerHTML[this._domElement.innerHTML.length - 1] === '\u200B') {
-        return;
+      html = this._domElement.innerHTML;
+      if (html[html.length - 1] === '\u200B') {
+        if (html.indexOf('\u200B') < html.length - 1) {
+          return;
+        }
       }
+      _addZWS = (function(_this) {
+        return function() {
+          if (html.indexOf('\u200B') > -1) {
+            _this._domElement.innerHTML = html.replace(/\u200B/g, '');
+          }
+          return _this._domElement.lastChild.textContent += '\u200B';
+        };
+      })(this);
       if (this._savedSelection) {
-        return this._domElement.lastChild.textContent += '\u200B';
+        return _addZWS();
       } else {
         this.storeState();
-        this._domElement.lastChild.textContent += '\u200B';
+        _addZWS();
         return this.restoreState();
       }
     };
