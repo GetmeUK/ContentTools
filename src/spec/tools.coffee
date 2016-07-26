@@ -378,3 +378,37 @@ describe 'ContentTools.Tools.Subheading.isApplied()', () ->
 
 
 # Paragraph
+
+describe 'ContentTools.Tools.Paragraph.apply()', () ->
+
+    it 'should change text/pre-text elements to paragraphs', () ->
+
+
+    it 'should add a paragraph after elements text/pre-text elements', () ->
+
+
+describe 'ContentTools.Tools.Paragraph.canApply()', () ->
+
+    fit 'should return true if the element is not fixed', () ->
+
+        region = new ContentEdit.Region(document.createElement('div'))
+        selection = new ContentSelect.Range(0, 0)
+        tool = ContentTools.Tools.Paragraph
+
+        # Text elements
+        heading = new ContentEdit.Text('h1', {}, 'test')
+        region.attach(heading)
+        expect(tool.canApply(heading, selection)).toBe true
+
+        # Non-text elements
+        image = new ContentEdit.Image()
+        region.attach(image)
+        expect(tool.canApply(image, selection)).toBe true
+
+        # Fixed elements
+        fixture_anchor = document.createElement('div')
+        fixed_heading = document.createElement('h1')
+        fixed_heading.innerHTML = 'test'
+        fixture_anchor.appendChild(fixed_heading)
+        fixture = new ContentEdit.Fixture(fixed_heading)
+        expect(tool.canApply(fixture.children[0], selection)).toBe false

@@ -455,7 +455,6 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-
         if element.isFixed()
             return false
 

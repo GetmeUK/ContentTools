@@ -1563,6 +1563,32 @@
     });
   });
 
+  describe('ContentTools.Tools.Paragraph.apply()', function() {
+    it('should change text/pre-text elements to paragraphs', function() {});
+    return it('should add a paragraph after elements text/pre-text elements', function() {});
+  });
+
+  describe('ContentTools.Tools.Paragraph.canApply()', function() {
+    return fit('should return true if the element is not fixed', function() {
+      var fixed_heading, fixture, fixture_anchor, heading, image, region, selection, tool;
+      region = new ContentEdit.Region(document.createElement('div'));
+      selection = new ContentSelect.Range(0, 0);
+      tool = ContentTools.Tools.Paragraph;
+      heading = new ContentEdit.Text('h1', {}, 'test');
+      region.attach(heading);
+      expect(tool.canApply(heading, selection)).toBe(true);
+      image = new ContentEdit.Image();
+      region.attach(image);
+      expect(tool.canApply(image, selection)).toBe(true);
+      fixture_anchor = document.createElement('div');
+      fixed_heading = document.createElement('h1');
+      fixed_heading.innerHTML = 'test';
+      fixture_anchor.appendChild(fixed_heading);
+      fixture = new ContentEdit.Fixture(fixed_heading);
+      return expect(tool.canApply(fixture.children[0], selection)).toBe(false);
+    });
+  });
+
   describe('ContentTools.StylePalette.add()', function() {
     afterEach(function() {
       return ContentTools.StylePalette._styles = [];
