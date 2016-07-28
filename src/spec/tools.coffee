@@ -17,6 +17,24 @@ describe 'ContentTools.ToolShelf.fetch()', () ->
 
 # Tools
 
+# TODO
+# link # Incomplete
+# align-left
+# align-center
+# align-right
+# unordered-list
+# ordered-list
+# table
+# indent
+# unindent
+# line-break
+# image
+# video
+# preformatted
+# undo
+# redo
+# remove
+
 # Bold
 
 describe 'ContentTools.Tools.Bold.apply()', () ->
@@ -257,6 +275,25 @@ describe 'ContentTools.Tools.Link.isApplied()', () ->
         expect(tool.isApplied(element, selection)).toBe false
 
 
+# Align left
+
+describe 'ContentTools.Tools.AlignLeft.apply()', () ->
+
+    it 'should apply the `align-left` class to an element or its parent if it
+            does not directly support the class attribute itself', () ->
+
+
+describe 'ContentTools.Tools.AlignLeft.canApply()', () ->
+
+    it 'should return true if the element supports content', () ->
+
+
+describe 'ContentTools.Tools.AlignLeft.isApplied()', () ->
+
+    it 'should return true if the element (or relevant parent) has the
+            `align-left` class applied', () ->
+
+
 # Heading
 
 describe 'ContentTools.Tools.Heading.apply()', () ->
@@ -308,12 +345,17 @@ describe 'ContentTools.Tools.Heading.canApply()', () ->
 
 describe 'ContentTools.Tools.Heading.isApplied()', () ->
 
-    it 'should return false, tool does not support toggling', () ->
+    it 'should return true if the selected element is a h1', () ->
 
         tool = ContentTools.Tools.Heading
-        element = new ContentEdit.Text('p', {}, 'test')
-        selection = new ContentSelect.Range(0, 0)
 
+        # H1 selected
+        element = new ContentEdit.Text('h1', {}, 'test')
+        selection = new ContentSelect.Range(0, 0)
+        expect(tool.isApplied(element, selection)).toBe true
+
+        # Not a H1 selected
+        element = new ContentEdit.Text('p', {}, 'test')
         expect(tool.isApplied(element, selection)).toBe false
 
 
@@ -368,12 +410,17 @@ describe 'ContentTools.Tools.Subheading.canApply()', () ->
 
 describe 'ContentTools.Tools.Subheading.isApplied()', () ->
 
-    it 'should return false, tool does not support toggling', () ->
+    it 'should return true if the selected element is a h2', () ->
 
         tool = ContentTools.Tools.Subheading
-        element = new ContentEdit.Text('p', {}, 'test')
-        selection = new ContentSelect.Range(0, 0)
 
+        # H2 selected
+        element = new ContentEdit.Text('h2', {}, 'test')
+        selection = new ContentSelect.Range(0, 0)
+        expect(tool.isApplied(element, selection)).toBe true
+
+        # Not a H1 selected
+        element = new ContentEdit.Text('p', {}, 'test')
         expect(tool.isApplied(element, selection)).toBe false
 
 
@@ -383,13 +430,42 @@ describe 'ContentTools.Tools.Paragraph.apply()', () ->
 
     it 'should change text/pre-text elements to paragraphs', () ->
 
+        region = new ContentEdit.Region(document.createElement('div'))
+        selection = new ContentSelect.Range(0, 0)
+        tool = ContentTools.Tools.Paragraph
 
-    it 'should add a paragraph after elements text/pre-text elements', () ->
+        # Apply paragraph tool to text element
+        element = new ContentEdit.Text('h1', {}, 'test')
+        region.attach(element)
+
+        tool.apply(element, selection, () =>)
+        expect(element.tagName()).toBe 'p'
+
+        # Apply paragraph tool to pre-text element
+        element = new ContentEdit.Text('pre', {}, 'test')
+        region.attach(element)
+
+        tool.apply(element, selection, () =>)
+        expect(element.tagName()).toBe 'p'
+
+    it 'should add a paragraph after elements non-text/pre-text elements', () ->
+
+        region = new ContentEdit.Region(document.createElement('div'))
+        selection = new ContentSelect.Range(0, 0)
+        tool = ContentTools.Tools.Paragraph
+
+        # Apply paragraph tool to non-text element
+        image = new ContentEdit.Image()
+        region.attach(image)
+
+        tool.apply(image, selection, () =>)
+        expect(region.children.length).toBe 2
+        expect(region.children[1].tagName()).toBe 'p'
 
 
 describe 'ContentTools.Tools.Paragraph.canApply()', () ->
 
-    fit 'should return true if the element is not fixed', () ->
+    it 'should return true if the element is not fixed', () ->
 
         region = new ContentEdit.Region(document.createElement('div'))
         selection = new ContentSelect.Range(0, 0)
@@ -412,3 +488,19 @@ describe 'ContentTools.Tools.Paragraph.canApply()', () ->
         fixture_anchor.appendChild(fixed_heading)
         fixture = new ContentEdit.Fixture(fixed_heading)
         expect(tool.canApply(fixture.children[0], selection)).toBe false
+
+
+describe 'ContentTools.Tools.Paragraph.apply()', () ->
+
+    it 'should return true if the selected element is a paragraph', () ->
+
+        tool = ContentTools.Tools.Paragraph
+
+        # P selected
+        element = new ContentEdit.Text('p', {}, 'test')
+        selection = new ContentSelect.Range(0, 0)
+        expect(tool.isApplied(element, selection)).toBe true
+
+        # Not a P selected
+        element = new ContentEdit.Text('h1', {}, 'test')
+        expect(tool.isApplied(element, selection)).toBe false

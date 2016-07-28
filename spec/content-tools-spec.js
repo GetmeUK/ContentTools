@@ -1469,6 +1469,18 @@
     });
   });
 
+  describe('ContentTools.Tools.AlignLeft.apply()', function() {
+    return it('should apply the `align-left` class to an element or its parent if it does not directly support the class attribute itself', function() {});
+  });
+
+  describe('ContentTools.Tools.AlignLeft.canApply()', function() {
+    return it('should return true if the element supports content', function() {});
+  });
+
+  describe('ContentTools.Tools.AlignLeft.isApplied()', function() {
+    return it('should return true if the element (or relevant parent) has the `align-left` class applied', function() {});
+  });
+
   describe('ContentTools.Tools.Heading.apply()', function() {
     return it('should change the tag name of a top level element supporting content to h1', function() {
       var element, region, selection, tool;
@@ -1507,11 +1519,13 @@
   });
 
   describe('ContentTools.Tools.Heading.isApplied()', function() {
-    return it('should return false, tool does not support toggling', function() {
+    return it('should return true if the selected element is a h1', function() {
       var element, selection, tool;
       tool = ContentTools.Tools.Heading;
-      element = new ContentEdit.Text('p', {}, 'test');
+      element = new ContentEdit.Text('h1', {}, 'test');
       selection = new ContentSelect.Range(0, 0);
+      expect(tool.isApplied(element, selection)).toBe(true);
+      element = new ContentEdit.Text('p', {}, 'test');
       return expect(tool.isApplied(element, selection)).toBe(false);
     });
   });
@@ -1554,22 +1568,53 @@
   });
 
   describe('ContentTools.Tools.Subheading.isApplied()', function() {
-    return it('should return false, tool does not support toggling', function() {
+    return it('should return true if the selected element is a h2', function() {
       var element, selection, tool;
       tool = ContentTools.Tools.Subheading;
-      element = new ContentEdit.Text('p', {}, 'test');
+      element = new ContentEdit.Text('h2', {}, 'test');
       selection = new ContentSelect.Range(0, 0);
+      expect(tool.isApplied(element, selection)).toBe(true);
+      element = new ContentEdit.Text('p', {}, 'test');
       return expect(tool.isApplied(element, selection)).toBe(false);
     });
   });
 
   describe('ContentTools.Tools.Paragraph.apply()', function() {
-    it('should change text/pre-text elements to paragraphs', function() {});
-    return it('should add a paragraph after elements text/pre-text elements', function() {});
+    it('should change text/pre-text elements to paragraphs', function() {
+      var element, region, selection, tool;
+      region = new ContentEdit.Region(document.createElement('div'));
+      selection = new ContentSelect.Range(0, 0);
+      tool = ContentTools.Tools.Paragraph;
+      element = new ContentEdit.Text('h1', {}, 'test');
+      region.attach(element);
+      tool.apply(element, selection, (function(_this) {
+        return function() {};
+      })(this));
+      expect(element.tagName()).toBe('p');
+      element = new ContentEdit.Text('pre', {}, 'test');
+      region.attach(element);
+      tool.apply(element, selection, (function(_this) {
+        return function() {};
+      })(this));
+      return expect(element.tagName()).toBe('p');
+    });
+    return it('should add a paragraph after elements non-text/pre-text elements', function() {
+      var image, region, selection, tool;
+      region = new ContentEdit.Region(document.createElement('div'));
+      selection = new ContentSelect.Range(0, 0);
+      tool = ContentTools.Tools.Paragraph;
+      image = new ContentEdit.Image();
+      region.attach(image);
+      tool.apply(image, selection, (function(_this) {
+        return function() {};
+      })(this));
+      expect(region.children.length).toBe(2);
+      return expect(region.children[1].tagName()).toBe('p');
+    });
   });
 
   describe('ContentTools.Tools.Paragraph.canApply()', function() {
-    return fit('should return true if the element is not fixed', function() {
+    return it('should return true if the element is not fixed', function() {
       var fixed_heading, fixture, fixture_anchor, heading, image, region, selection, tool;
       region = new ContentEdit.Region(document.createElement('div'));
       selection = new ContentSelect.Range(0, 0);
@@ -1586,6 +1631,18 @@
       fixture_anchor.appendChild(fixed_heading);
       fixture = new ContentEdit.Fixture(fixed_heading);
       return expect(tool.canApply(fixture.children[0], selection)).toBe(false);
+    });
+  });
+
+  describe('ContentTools.Tools.Paragraph.apply()', function() {
+    return it('should return true if the selected element is a paragraph', function() {
+      var element, selection, tool;
+      tool = ContentTools.Tools.Paragraph;
+      element = new ContentEdit.Text('p', {}, 'test');
+      selection = new ContentSelect.Range(0, 0);
+      expect(tool.isApplied(element, selection)).toBe(true);
+      element = new ContentEdit.Text('h1', {}, 'test');
+      return expect(tool.isApplied(element, selection)).toBe(false);
     });
   });
 
