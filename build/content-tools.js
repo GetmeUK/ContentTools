@@ -3616,7 +3616,7 @@
         return selection.select(previous.domElement());
       } else {
         return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
-          return node.type() === 'Region';
+          return node.type() === 'Fixture' || node.type() === 'Region';
         }));
       }
     };
@@ -3624,7 +3624,7 @@
     Text.prototype._keyReturn = function(ev) {
       var element, insertAt, lineBreakStr, selection, tail, tip;
       ev.preventDefault();
-      if (this.content.isWhitespace()) {
+      if (this.content.isWhitespace() && !ev.shiftKey ^ ContentEdit.PREFER_LINE_BREAKS) {
         return;
       }
       selection = ContentSelect.Range.query(this._domElement);
@@ -3634,7 +3634,7 @@
         insertAt = selection.get()[0];
         lineBreakStr = '<br>';
         if (this.content.length() === insertAt) {
-          if (!this.content.characters[insertAt - 1].isTag('br')) {
+          if (this.content.length() === 0 || !this.content.characters[insertAt - 1].isTag('br')) {
             lineBreakStr = '<br><br>';
           }
         }
@@ -3684,7 +3684,18 @@
     };
 
     Text.prototype._keyTab = function(ev) {
-      return ev.preventDefault();
+      ev.preventDefault();
+      if (this.isFixed()) {
+        if (ev.shiftKey) {
+          return ContentEdit.Root.get().trigger('previous-region', this.closest(function(node) {
+            return node.type() === 'Fixture' || node.type() === 'Region';
+          }));
+        } else {
+          return ContentEdit.Root.get().trigger('next-region', this.closest(function(node) {
+            return node.type() === 'Fixture' || node.type() === 'Region';
+          }));
+        }
+      }
     };
 
     Text.prototype._keyUp = function(ev) {
@@ -5256,7 +5267,6 @@
   })(ContentEdit.Text);
 
 }).call(this);
-
 (function() {
   var AttributeUI, ContentTools, CropMarksUI, StyleUI, exports, _EditorApp,
     __hasProp = {}.hasOwnProperty,
