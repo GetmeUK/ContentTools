@@ -8372,6 +8372,7 @@
       }
       if (this._state === 'editing') {
         this._initRegions();
+        this._preventEmptyRegions();
       }
       if (this._ignition) {
         if (this._domRegions.length) {

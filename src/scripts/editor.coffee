@@ -654,6 +654,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # If the editor is currently in the 'editing' state then live sync
         if @_state is 'editing'
             @_initRegions()
+            @_preventEmptyRegions()
 
         if @_ignition
             if @_domRegions.length
