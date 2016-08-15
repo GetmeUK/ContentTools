@@ -643,13 +643,18 @@ class _EditorApp extends ContentTools.ComponentUI
             @_regionQuery = regionQuery
 
         # Find the DOM elements that will be managed as regions/fixtures
-        if @_regionQuery.length > 0
-            if @_regionQuery[0].nodeType is Node.ELEMENT_NODE
-                @_domRegions = @_regionQuery
-            else
+        @_domRegions = []
+        if @_regionQuery
+
+            # If a string is provided attempt select the DOM regions using a CSS
+            # selector.
+            if typeof @_regionQuery == 'string' or
+                    @_regionQuery instanceof String
                 @_domRegions = document.querySelectorAll(@_regionQuery)
-        else
-            @_domRegions = []
+
+            # Otherwise assume a valid list of DOM elements has been provided
+            else
+                @_domRegions = @_regionQuery
 
         # If the editor is currently in the 'editing' state then live sync
         if @_state is 'editing'

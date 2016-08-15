@@ -6540,6 +6540,7 @@
     AnchoredDialogUI.prototype.mount = function() {
       this._domElement = this.constructor.createDiv(['ct-widget', 'ct-anchored-dialog']);
       this.parent().domElement().appendChild(this._domElement);
+      this._contain();
       this._domElement.style.top = "" + this._position[1] + "px";
       return this._domElement.style.left = "" + this._position[0] + "px";
     };
@@ -6550,8 +6551,24 @@
       }
       this._position = newPosition.slice();
       if (this.isMounted()) {
+        this._contain();
         this._domElement.style.top = "" + this._position[1] + "px";
         return this._domElement.style.left = "" + this._position[0] + "px";
+      }
+    };
+
+    AnchoredDialogUI.prototype._contain = function() {
+      var halfWidth, pageWidth;
+      if (!this.isMounted()) {
+        return;
+      }
+      halfWidth = this._domElement.getBoundingClientRect().width / 2 + 5;
+      pageWidth = document.documentElement.clientWidth || document.body.clientWidth;
+      if ((this._position[0] + halfWidth) > (pageWidth - halfWidth)) {
+        this._position[0] = pageWidth - halfWidth;
+      }
+      if (this._position[0] < halfWidth) {
+        return this._position[0] = halfWidth;
       }
     };
 
@@ -8361,14 +8378,13 @@
       if (regionQuery !== void 0) {
         this._regionQuery = regionQuery;
       }
-      if (this._regionQuery.length > 0) {
-        if (this._regionQuery[0].nodeType === Node.ELEMENT_NODE) {
-          this._domRegions = this._regionQuery;
-        } else {
+      this._domRegions = [];
+      if (this._regionQuery) {
+        if (typeof this._regionQuery === 'string' || this._regionQuery instanceof String) {
           this._domRegions = document.querySelectorAll(this._regionQuery);
+        } else {
+          this._domRegions = this._regionQuery;
         }
-      } else {
-        this._domRegions = [];
       }
       if (this._state === 'editing') {
         this._initRegions();

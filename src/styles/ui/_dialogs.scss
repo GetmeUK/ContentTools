@@ -582,17 +582,18 @@
         font-size: 0;
         height: 34px;
         left: 0;
-        margin-left: -144px;
+        margin-left: -160px;
         margin-top: -48px;
         position: absolute;
         top: 0;
+        width: 320px;
         z-index: $base-z-index + 100;
 
         &:after {
             border: 16px solid rgba(white, 0);
             border-top-color: $bkg-color;
             content: '';
-            left: 128px;
+            left: 144px;
             position: absolute;
             top: 34px;
         }

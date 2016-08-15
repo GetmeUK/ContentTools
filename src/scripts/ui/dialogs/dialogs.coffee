@@ -10,7 +10,7 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
         # The position of the dialog
         @_position = [0, 0]
 
-    # Methods
+    # Public methods
 
     mount: () ->
         # Mount the widget to the DOM
@@ -28,6 +28,7 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
         @parent().domElement().appendChild(@_domElement)
 
         # Set the position of the dialog
+        @_contain()
         @_domElement.style.top = "#{ @_position[1] }px"
         @_domElement.style.left = "#{ @_position[0] }px"
 
@@ -39,8 +40,36 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
         @_position = newPosition.slice()
 
         if @isMounted()
+            @_contain()
             @_domElement.style.top = "#{ @_position[1] }px"
             @_domElement.style.left = "#{ @_position[0] }px"
+
+    # Private methods
+
+    _contain: () ->
+        # Ensure the position doesn't place the dialog off the page.
+
+        # The component must be mounted in the DOM, if not we can't determined
+        # the width and height and therefore whether the position places the
+        # dialog off the page or not.
+        if not @isMounted()
+            return
+
+        # Calculate half the width of the anchored dialog (as anchored dialogs
+        # are displayed centrally) amnd add a 5 pixel buffer so we don't bump
+        # right up to the edge.
+        halfWidth = (@_domElement.getBoundingClientRect().width / 2 + 5)
+
+        # Get the width of the document excluding the scroll bars
+        pageWidth = document.documentElement.clientWidth or
+            document.body.clientWidth
+
+        # Adjust the position to be contained (if necessary)
+        if (@_position[0] + halfWidth) > (pageWidth - halfWidth)
+            @_position[0] = pageWidth - halfWidth
+
+        if @_position[0] < halfWidth
+            @_position[0] = halfWidth
 
 
 class ContentTools.DialogUI extends ContentTools.WidgetUI
