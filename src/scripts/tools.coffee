@@ -6,18 +6,22 @@ class ContentTools.ToolShelf
 
     @_tools = {}
 
-    @stow: (cls, name) ->
+    @stow: (cls, name, options = {}) ->
         # Stow a tool on the shelf
-
         @_tools[name] = cls
 
-    @fetch: (name) ->
-        # Fetch a tool from the shelf by it's name
+
+    constructor: (@_editor)->
+        @_tools = {}
+
+        for name, cls of @constructor._tools
+            @_tools[name] = new cls(@_editor, @_tools)
+
+    get: (name)->
         unless @_tools[name]
-            throw new Error("`#{name}` has not been stowed on the tool shelf")
+            throw new Error("`#{name}` has not been added on the tool shelf")
 
-        return @_tools[name]
-
+        @_tools[name]
 
 class ContentTools.Tool
 
@@ -31,34 +35,37 @@ class ContentTools.Tool
     # of configuration settings (class properties). For this reason they are
     # defined using static classes.
 
-    @label = 'Tool'
-    @icon = 'tool'
+    initialize: ->
 
-    # Most tools require an element that they can be applied to, but there are
-    # exceptions (such as undo/redo). In these cases you can set the
-    # `requiresElement` flag to false so that the toolbox will not automatically
-    # disable the tool because there is not element focused.
-    @requiresElement = true
+    constructor: (@_editor, @_tools)->
+        @label = 'Tool'
+        @icon = 'tool'
 
-    # Class methods
+        # Most tools require an element that they can be applied to, but there are
+        # exceptions (such as undo/redo). In these cases you can set the
+        # `requiresElement` flag to false so that the toolbox will not automatically
+        # disable the tool because there is not element focused.
+        @requiresElement = true
 
-    @canApply: (element, selection) ->
+        @initialize()
+
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the specified
         # element and selection.
         return false
 
-    @isApplied: (element, selection) ->
+    isApplied: (element, selection) ->
         # Return true if the tool is currently applied to the specified
         # element and selection.
         return false
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the specified element and selection
         throw new Error('Not implemented')
 
     # Private class methods
 
-    @_insertAt: (element) ->
+    _insertAt: (element) ->
         # Find insert node and index for inserting an element after the
         # specified element.
 
@@ -80,11 +87,12 @@ class ContentTools.Tools.Bold extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'bold')
 
-    @label = 'Bold'
-    @icon = 'bold'
-    @tagName = 'b'
+    initialize: ->
+        @label = 'Bold'
+        @icon = 'bold'
+        @tagName = 'b'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         unless element.content
@@ -92,7 +100,7 @@ class ContentTools.Tools.Bold extends ContentTools.Tool
 
         return selection and not selection.isCollapsed()
 
-    @isApplied: (element, selection) ->
+    isApplied: (element, selection) ->
         # Return true if the tool is currently applied to the current
         # element/selection.
         if element.content is undefined or not element.content.length()
@@ -104,7 +112,7 @@ class ContentTools.Tools.Bold extends ContentTools.Tool
 
         return element.content.slice(from, to).hasTags(@tagName, true)
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
         element.storeState()
 
@@ -138,9 +146,10 @@ class ContentTools.Tools.Italic extends ContentTools.Tools.Bold
 
     ContentTools.ToolShelf.stow(@, 'italic')
 
-    @label = 'Italic'
-    @icon = 'italic'
-    @tagName = 'i'
+    initialize: ->
+        @label = 'Italic'
+        @icon = 'italic'
+        @tagName = 'i'
 
 
 class ContentTools.Tools.Link extends ContentTools.Tools.Bold
@@ -149,11 +158,12 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
 
     ContentTools.ToolShelf.stow(@, 'link')
 
-    @label = 'Link'
-    @icon = 'link'
-    @tagName = 'a'
+    initialize: ->
+        @label = 'Link'
+        @icon = 'link'
+        @tagName = 'a'
 
-    @getAttr: (attrName, element, selection) ->
+    getAttr: (attrName, element, selection) ->
         # Get an attribute for the element and selection
 
         # Images
@@ -177,7 +187,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
 
         return ''
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         if element.type() is 'Image'
@@ -200,7 +210,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
 
             return true
 
-    @isApplied: (element, selection) ->
+    isApplied: (element, selection) ->
         # Return true if the tool is currently applied to the current
         # element/selection.
         if element.type() is 'Image'
@@ -208,7 +218,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         else
             return super(element, selection)
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         applied = false
 
         # Prepare text elements for adding a link
@@ -253,7 +263,6 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             rect = measureSpan[0].getBoundingClientRect()
 
         # Set-up the dialog
-        app = ContentTools.EditorApp.get()
 
         # Modal
         modal = new ContentTools.ModalUI(transparent=true, allowScrolling=true)
@@ -354,8 +363,8 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             # Close the modal and dialog
             modal.dispatchEvent(modal.createEvent('click'))
 
-        app.attach(modal)
-        app.attach(dialog)
+        @_editor.attach(modal)
+        @_editor.attach(dialog)
         modal.show()
         dialog.show()
 
@@ -366,11 +375,12 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'heading')
 
-    @label = 'Heading'
-    @icon = 'heading'
-    @tagName = 'h1'
+    initialize: ->
+        @label = 'Heading'
+        @icon = 'heading'
+        @tagName = 'h1'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
 
@@ -380,7 +390,7 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
         return element.content != undefined and
                 ['Text', 'PreText'].indexOf(element.type()) != -1
 
-    @isApplied: (element, selection) ->
+    isApplied: (element, selection) ->
         # Return true if the tool is currently applied to the current
         # element/selection.
         if not element.content
@@ -391,7 +401,7 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
 
         return element.tagName() == @tagName
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
         element.storeState()
 
@@ -400,7 +410,7 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
         if element.type() is 'PreText'
             # Convert the element to a Text element first
             content = element.content.html().replace(/&nbsp;/g, ' ')
-            textElement = new ContentEdit.Text(@tagName, {}, content)
+            textElement = new @_editor.CEFactory.Text(@tagName, {}, content)
 
             # Remove the current element from the region
             parent = element.parent()
@@ -437,9 +447,10 @@ class ContentTools.Tools.Subheading extends ContentTools.Tools.Heading
 
     ContentTools.ToolShelf.stow(@, 'subheading')
 
-    @label = 'Subheading'
-    @icon = 'subheading'
-    @tagName = 'h2'
+    initialize: ->
+        @label = 'Subheading'
+        @icon = 'subheading'
+        @tagName = 'h2'
 
 
 class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
@@ -448,11 +459,12 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
 
     ContentTools.ToolShelf.stow(@, 'paragraph')
 
-    @label = 'Paragraph'
-    @icon = 'paragraph'
-    @tagName = 'p'
+    initialize: ->
+        @label = 'Paragraph'
+        @icon = 'paragraph'
+        @tagName = 'p'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         if element.isFixed()
@@ -460,12 +472,11 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
 
         return element != undefined
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
-        app = ContentTools.EditorApp.get()
-        forceAdd = app.ctrlDown()
+        forceAdd = @_editor.ctrlDown()
 
-        if ContentTools.Tools.Heading.canApply(element) and not forceAdd
+        if @_tools.heading.canApply(element) and not forceAdd
             # If the element is a top level text element and the user hasn't
             # indicated they want to force add a new paragraph convert it to a
             # paragraph in-place.
@@ -478,7 +489,7 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
                     return node.parent().type() is 'Region'
 
             region = element.parent()
-            paragraph = new ContentEdit.Text('p')
+            paragraph = new @_editor.CEFactory.Text('p')
             region.attach(paragraph, region.children.indexOf(element) + 1)
 
             # Give the newely inserted paragraph focus
@@ -493,24 +504,25 @@ class ContentTools.Tools.Preformatted extends ContentTools.Tools.Heading
 
     ContentTools.ToolShelf.stow(@, 'preformatted')
 
-    @label = 'Preformatted'
-    @icon = 'preformatted'
-    @tagName = 'pre'
+    initialize: ->
+        @label = 'Preformatted'
+        @icon = 'preformatted'
+        @tagName = 'pre'
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
         # If the element is already a PreText element then convert it to a
         # paragraph instead.
         if element.type() is 'PreText'
-            ContentTools.Tools.Paragraph.apply(element, selection, callback)
+            @_tools.paragraph.apply(element, selection, callback)
             return
 
         # Escape the contents of the existing element
         text = element.content.text()
 
         # Create a new pre-text element using the current elements content
-        preText = new ContentEdit.PreText(
+        preText = new @_editor.CEFactory.PreText(
             'pre', {},
             HTMLString.String.encode(text)
             )
@@ -535,16 +547,17 @@ class ContentTools.Tools.AlignLeft extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'align-left')
 
-    @label = 'Align left'
-    @icon = 'align-left'
-    @className = 'text-left'
+    initialize: ->
+        @label = 'Align left'
+        @icon = 'align-left'
+        @className = 'text-left'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         return element.content != undefined
 
-    @isApplied: (element, selection) ->
+    isApplied: (element, selection) ->
         # Return true if the tool is currently applied to the current
         # element/selection.
         if not @canApply(element)
@@ -557,7 +570,7 @@ class ContentTools.Tools.AlignLeft extends ContentTools.Tool
 
         return element.hasCSSClass(@className)
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
         # List items and table cells use child nodes to manage their content
@@ -567,9 +580,9 @@ class ContentTools.Tools.AlignLeft extends ContentTools.Tool
 
         # Remove any existing text alignment classes applied
         alignmentClassNames = [
-            ContentTools.Tools.AlignLeft.className,
-            ContentTools.Tools.AlignCenter.className,
-            ContentTools.Tools.AlignRight.className
+            @_tools["align-left"].className,
+            @_tools["align-center"].className,
+            @_tools["align-right"].className
             ]
         for className in alignmentClassNames
             if element.hasCSSClass(className)
@@ -592,9 +605,10 @@ class ContentTools.Tools.AlignCenter extends ContentTools.Tools.AlignLeft
 
     ContentTools.ToolShelf.stow(@, 'align-center')
 
-    @label = 'Align center'
-    @icon = 'align-center'
-    @className = 'text-center'
+    initialize: ->
+        @label = 'Align center'
+        @icon = 'align-center'
+        @className = 'text-center'
 
 
 class ContentTools.Tools.AlignRight extends ContentTools.Tools.AlignLeft
@@ -603,9 +617,10 @@ class ContentTools.Tools.AlignRight extends ContentTools.Tools.AlignLeft
 
     ContentTools.ToolShelf.stow(@, 'align-right')
 
-    @label = 'Align right'
-    @icon = 'align-right'
-    @className = 'text-right'
+    initialize: ->
+        @label = 'Align right'
+        @icon = 'align-right'
+        @className = 'text-right'
 
 
 class ContentTools.Tools.UnorderedList extends ContentTools.Tool
@@ -614,11 +629,12 @@ class ContentTools.Tools.UnorderedList extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'unordered-list')
 
-    @label = 'Bullet list'
-    @icon = 'unordered-list'
-    @listTag = 'ul'
+    initialize: ->
+        @label = 'Bullet list'
+        @icon = 'unordered-list'
+        @listTag = 'ul'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
 
         if element.isFixed()
             return false
@@ -628,7 +644,7 @@ class ContentTools.Tools.UnorderedList extends ContentTools.Tool
         return element.content != undefined and
                 element.parent().type() in ['Region', 'ListItem']
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
         if element.parent().type() is 'ListItem'
 
@@ -643,10 +659,10 @@ class ContentTools.Tools.UnorderedList extends ContentTools.Tool
             # Convert the element to a list
 
             # Create a new list using the current elements content
-            listItemText = new ContentEdit.ListItemText(element.content.copy())
-            listItem = new ContentEdit.ListItem()
+            listItemText = new @_editor.CEFactory.ListItemText(element.content.copy())
+            listItem = new @_editor.CEFactory.ListItem()
             listItem.attach(listItemText)
-            list = new ContentEdit.List(@listTag, {})
+            list = new @_editor.CEFactory.List(@listTag, {})
             list.attach(listItem)
 
             # Remove the current element from the region
@@ -668,9 +684,10 @@ class ContentTools.Tools.OrderedList extends ContentTools.Tools.UnorderedList
 
     ContentTools.ToolShelf.stow(@, 'ordered-list')
 
-    @label = 'Numbers list'
-    @icon = 'ordered-list'
-    @listTag = 'ol'
+    initialize: ->
+        @label = 'Numbers list'
+        @icon = 'ordered-list'
+        @listTag = 'ol'
 
 
 class ContentTools.Tools.Table extends ContentTools.Tool
@@ -679,12 +696,13 @@ class ContentTools.Tools.Table extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'table')
 
-    @label = 'Table'
-    @icon = 'table'
+    initialize: ->
+        @label = 'Table'
+        @icon = 'table'
 
     # Class methods
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
 
@@ -693,7 +711,7 @@ class ContentTools.Tools.Table extends ContentTools.Tool
 
         return element != undefined
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
 
         # If supported allow store the state for restoring once the dialog is
         # cancelled.
@@ -701,7 +719,6 @@ class ContentTools.Tools.Table extends ContentTools.Tool
             element.storeState()
 
         # Set-up the dialog
-        app = ContentTools.EditorApp.get()
 
         # Modal
         modal = new ContentTools.ModalUI()
@@ -767,14 +784,14 @@ class ContentTools.Tools.Table extends ContentTools.Tool
             callback(true)
 
         # Show the dialog
-        app.attach(modal)
-        app.attach(dialog)
+        @_editor.attach(modal)
+        @_editor.attach(dialog)
         modal.show()
         dialog.show()
 
     # Private class methods
 
-    @_adjustColumns: (section, columns) ->
+    _adjustColumns: (section, columns) ->
         # Adjust the number of columns in a table section
         for row in section.children
             cellTag = row.children[0].tagName()
@@ -790,14 +807,14 @@ class ContentTools.Tools.Table extends ContentTools.Tool
             else if diff > 0
                 # Add columns
                 for i in [0...diff]
-                    cell = new ContentEdit.TableCell(cellTag)
+                    cell = new @_editor.CEFactory.TableCell(cellTag)
                     row.attach(cell)
-                    cellText = new ContentEdit.TableCellText('')
+                    cellText = new @_editor.CEFactory.TableCellText('')
                     cell.attach(cellText)
 
-    @_createTable: (tableCfg) ->
+    _createTable: (tableCfg) ->
         # Create a new table element from the specified configuration
-        table = new ContentEdit.Table()
+        table = new @_editor.CEFactory.Table()
 
         # Head
         if tableCfg.head
@@ -815,21 +832,21 @@ class ContentTools.Tools.Table extends ContentTools.Tool
 
         return table
 
-    @_createTableSection: (sectionTag, cellTag, columns) ->
+    _createTableSection: (sectionTag, cellTag, columns) ->
         # Create a new table section element
-        section = new ContentEdit.TableSection(sectionTag)
-        row = new ContentEdit.TableRow()
+        section = new @_editor.CEFactory.TableSection(sectionTag)
+        row = new @_editor.CEFactory.TableRow()
         section.attach(row)
 
         for i in [0...columns]
-            cell = new ContentEdit.TableCell(cellTag)
+            cell = new @_editor.CEFactory.TableCell(cellTag)
             row.attach(cell)
-            cellText = new ContentEdit.TableCellText('')
+            cellText = new @_editor.CEFactory.TableCellText('')
             cell.attach(cellText)
 
         return section
 
-    @_updateTable: (tableCfg, table) ->
+    _updateTable: (tableCfg, table) ->
         # Update an existing table
 
         # Remove any sections no longer required
@@ -861,17 +878,18 @@ class ContentTools.Tools.Indent extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'indent')
 
-    @label = 'Indent'
-    @icon = 'indent'
+    initialize: ->
+        @label = 'Indent'
+        @icon = 'indent'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
 
         return element.parent().type() is 'ListItem' and
                 element.parent().parent().children.indexOf(element.parent()) > 0
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
         # Indent the list item
@@ -885,16 +903,16 @@ class ContentTools.Tools.Unindent extends ContentTools.Tool
     # Unindent a list item.
 
     ContentTools.ToolShelf.stow(@, 'unindent')
+    initialize: ->
+        @label = 'Unindent'
+        @icon = 'unindent'
 
-    @label = 'Unindent'
-    @icon = 'unindent'
-
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         return element.parent().type() is 'ListItem'
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
         # Indent the list item
@@ -908,16 +926,16 @@ class ContentTools.Tools.LineBreak extends ContentTools.Tool
     # Insert a line break in to the current element at the specified selection.
 
     ContentTools.ToolShelf.stow(@, 'line-break')
+    initialize: ->
+        @label = 'Line break'
+        @icon = 'line-break'
 
-    @label = 'Line break'
-    @icon = 'line-break'
-
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         return element.content
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
         # Insert a BR at the current in index
@@ -943,15 +961,16 @@ class ContentTools.Tools.Image extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'image')
 
-    @label = 'Image'
-    @icon = 'image'
+    initialize: ->
+        @label = 'Image'
+        @icon = 'image'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         return not element.isFixed()
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
 
         # If supported allow store the state for restoring once the dialog is
         # cancelled.
@@ -959,7 +978,6 @@ class ContentTools.Tools.Image extends ContentTools.Tool
             element.storeState()
 
         # Set-up the dialog
-        app = ContentTools.EditorApp.get()
 
         # Modal
         modal = new ContentTools.ModalUI()
@@ -993,7 +1011,7 @@ class ContentTools.Tools.Image extends ContentTools.Tool
             imageAttrs.width = imageSize[0]
 
             # Create the new image
-            image = new ContentEdit.Image(imageAttrs)
+            image = new @_editor.CEFactory.Image(imageAttrs)
 
             # Find insert position
             [node, index] = @_insertAt(element)
@@ -1008,8 +1026,8 @@ class ContentTools.Tools.Image extends ContentTools.Tool
             callback(true)
 
         # Show the dialog
-        app.attach(modal)
-        app.attach(dialog)
+        @_editor.attach(modal)
+        @_editor.attach(dialog)
         modal.show()
         dialog.show()
 
@@ -1020,15 +1038,16 @@ class ContentTools.Tools.Video extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'video')
 
-    @label = 'Video'
-    @icon = 'video'
+    initialize: ->
+        @label = 'Video'
+        @icon = 'video'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         return not element.isFixed()
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
 
         # If supported allow store the state for restoring once the dialog is
         # cancelled.
@@ -1036,7 +1055,6 @@ class ContentTools.Tools.Video extends ContentTools.Tool
             element.storeState()
 
         # Set-up the dialog
-        app = ContentTools.EditorApp.get()
 
         # Modal
         modal = new ContentTools.ModalUI()
@@ -1061,7 +1079,7 @@ class ContentTools.Tools.Video extends ContentTools.Tool
 
             if url
                 # Create the new video
-                video = new ContentEdit.Video(
+                video = new @_editor.CEFactory.Video(
                     'iframe', {
                         'frameborder': 0,
                         'height': ContentTools.DEFAULT_VIDEO_HEIGHT,
@@ -1087,8 +1105,8 @@ class ContentTools.Tools.Video extends ContentTools.Tool
             callback(url != '')
 
         # Show the dialog
-        app.attach(modal)
-        app.attach(dialog)
+        @_editor.attach(modal)
+        @_editor.attach(dialog)
         modal.show()
         dialog.show()
 
@@ -1099,24 +1117,22 @@ class ContentTools.Tools.Undo extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'undo')
 
-    @label = 'Undo'
-    @icon = 'undo'
-    @requiresElement = false
+    initialize: ->
+        @label = 'Undo'
+        @icon = 'undo'
+        @requiresElement = false
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        app = ContentTools.EditorApp.get()
-        return app.history and app.history.canUndo()
+        return @_editor.history and @_editor.history.canUndo()
 
-    @apply: (element, selection, callback) ->
-        app = ContentTools.EditorApp.get()
-
+    apply: (element, selection, callback) ->
         # Revert the document to the previous state
-        app.history.stopWatching()
-        snapshot = app.history.undo()
-        app.revertToSnapshot(snapshot)
-        app.history.watch()
+        @_editor.history.stopWatching()
+        snapshot = @_editor.history.undo()
+        @_editor.revertToSnapshot(snapshot)
+        @_editor.history.watch()
 
 
 class ContentTools.Tools.Redo extends ContentTools.Tool
@@ -1125,24 +1141,22 @@ class ContentTools.Tools.Redo extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'redo')
 
-    @label = 'Redo'
-    @icon = 'redo'
-    @requiresElement = false
+    initialize: ->
+        @label = 'Redo'
+        @icon = 'redo'
+        @requiresElement = false
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        app = ContentTools.EditorApp.get()
-        return app.history and app.history.canRedo()
+        return @_editor.history and @_editor.history.canRedo()
 
-    @apply: (element, selection, callback) ->
-        app = ContentTools.EditorApp.get()
-
+    apply: (element, selection, callback) ->
         # Revert the document to the next state
-        app.history.stopWatching()
-        snapshot = app.history.redo()
-        app.revertToSnapshot(snapshot)
-        app.history.watch()
+        @_editor.history.stopWatching()
+        snapshot = @_editor.history.redo()
+        @_editor.revertToSnapshot(snapshot)
+        @_editor.history.watch()
 
 
 class ContentTools.Tools.Remove extends ContentTools.Tool
@@ -1151,17 +1165,17 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
 
     ContentTools.ToolShelf.stow(@, 'remove')
 
-    @label = 'Remove'
-    @icon = 'remove'
+    initialize: ->
+        @label = 'Remove'
+        @icon = 'remove'
 
-    @canApply: (element, selection) ->
+    canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
         return not element.isFixed()
 
-    @apply: (element, selection, callback) ->
+    apply: (element, selection, callback) ->
         # Apply the tool to the current element
-        app = ContentTools.EditorApp.get()
 
         # Blur the element before it's removed otherwise it will retain focus
         # even when detached.
@@ -1184,7 +1198,7 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
         switch element.type()
             when 'ListItemText'
                 # Delete the associated list or list item
-                if app.ctrlDown()
+                if @_editor.ctrlDown()
                     list = element.closest (node) ->
                         return node.parent().type() is 'Region'
                     list.parent().detach(list)
@@ -1193,7 +1207,7 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
                 break
             when 'TableCellText'
                 # Delete the associated table or table row
-                if app.ctrlDown()
+                if @_editor.ctrlDown()
                     table = element.closest (node) ->
                         return node.type() is 'Table'
                     table.parent().detach(table)

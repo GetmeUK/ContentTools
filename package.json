@@ -33,5 +33,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GetmeUK/FSM.git"
-  }
+  },
+  "license": "MIT"
 }

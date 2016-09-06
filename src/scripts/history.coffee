@@ -3,7 +3,7 @@ class ContentTools.History
     # The `History` class provides a mechanism for storing, navigating and
     # reverting the changes made to an editable document.
 
-    constructor: (regions) ->
+    constructor: (@_editor, regions) ->
         # The last time a snapshot was taken
         @_lastSnapshotTaken = null
 
@@ -107,7 +107,7 @@ class ContentTools.History
         @_lastSnapshotTaken = Date.now()
 
         watch = () =>
-            lastModified = ContentEdit.Root.get().lastModified()
+            lastModified = @_editor.CEFactory.root.lastModified()
 
             # Check the document has actually been updated
             if lastModified is null
@@ -148,7 +148,7 @@ class ContentTools.History
             snapshot.regions[name] = region.html()
 
         # Store any selection state information
-        element = ContentEdit.Root.get().focused()
+        element = @_editor.CEFactory.root.focused()
 
         if element
             snapshot.selected = {}

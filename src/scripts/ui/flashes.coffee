@@ -8,9 +8,9 @@ class ContentTools.FlashUI extends ContentTools.AnchoredComponentUI
     # unmount as soon as they're animation has finished. As such references to
     # flash instances should not be stored, e.g:
     #
-    # new ContentTools.FlashUI('ok')
+    # new ContentTools.FlashUI(editor, 'ok')
 
-    constructor: (modifier) ->
+    constructor: (@_editor, modifier) ->
         super()
         @mount(modifier)
 
@@ -31,7 +31,7 @@ class ContentTools.FlashUI extends ContentTools.AnchoredComponentUI
             ])
 
         # Anchor it to the app
-        super(ContentTools.EditorApp.get().domElement())
+        super(@_editor.domElement())
 
         # Monitor for when the element is no long visible, at which point we can
         # remove it.
