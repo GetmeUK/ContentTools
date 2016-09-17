@@ -5665,12 +5665,18 @@
 
     WidgetUI.prototype.show = function() {
       var fadeIn;
-      clearTimeout(this._hideTimeout);
-      this.unmount();
-      this.mount();
+      if (this._hideTimeout) {
+        clearTimeout(this._hideTimeout);
+        this._hideTimeout = null;
+        this.unmount();
+      }
+      if (!this.isMounted()) {
+        this.mount();
+      }
       fadeIn = (function(_this) {
         return function() {
-          return _this.addCSSClass('ct-widget--active');
+          _this.addCSSClass('ct-widget--active');
+          return _this._showTimeout = null;
         };
       })(this);
       return this._showTimeout = setTimeout(fadeIn, 100);
@@ -5678,10 +5684,14 @@
 
     WidgetUI.prototype.hide = function() {
       var monitorForHidden;
-      clearTimeout(this._showTimeout);
+      if (this._showTimeout) {
+        clearTimeout(this._showTimeout);
+        this._showTimeout = null;
+      }
       this.removeCSSClass('ct-widget--active');
       monitorForHidden = (function(_this) {
         return function() {
+          _this._hideTimeout = null;
           if (!window.getComputedStyle) {
             _this.unmount();
             return;
