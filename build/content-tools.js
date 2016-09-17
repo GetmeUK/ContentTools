@@ -8355,7 +8355,7 @@
     };
 
     _EditorApp.prototype.revertToSnapshot = function(snapshot, restoreEditable) {
-      var child, name, region, _i, _len, _ref, _ref1;
+      var child, name, region, _i, _len, _ref, _ref1, _ref2;
       if (restoreEditable == null) {
         restoreEditable = true;
       }
@@ -8374,7 +8374,15 @@
           ContentEdit.Root.get().focused().blur();
         }
         this._regions = {};
-        this.syncRegions();
+        this.syncRegions(null, true);
+        ContentEdit.Root.get()._modified = snapshot.rootModified;
+        _ref2 = this._regions;
+        for (name in _ref2) {
+          region = _ref2[name];
+          if (snapshot.regionModifieds[name]) {
+            region._modified = snapshot.regionModifieds[name];
+          }
+        }
         this.history.replaceRegions(this._regions);
         this.history.restoreSelection(snapshot);
         return this._inspector.updateTags();
@@ -8481,8 +8489,8 @@
       }
     };
 
-    _EditorApp.prototype.syncRegions = function(regionQuery) {
-      if (regionQuery !== void 0) {
+    _EditorApp.prototype.syncRegions = function(regionQuery, restoring) {
+      if (regionQuery) {
         this._regionQuery = regionQuery;
       }
       this._domRegions = [];
@@ -8494,7 +8502,7 @@
         }
       }
       if (this._state === 'editing') {
-        this._initRegions();
+        this._initRegions(restoring);
         this._preventEmptyRegions();
       }
       if (this._ignition) {
@@ -8617,8 +8625,11 @@
       return window.removeEventListener('unload', this._handleUnload);
     };
 
-    _EditorApp.prototype._initRegions = function() {
+    _EditorApp.prototype._initRegions = function(restoring) {
       var domRegion, found, i, index, name, region, _i, _len, _ref, _ref1, _results;
+      if (restoring == null) {
+        restoring = false;
+      }
       found = {};
       this._orderedRegions = [];
       _ref = this._domRegions;
@@ -8638,7 +8649,9 @@
         } else {
           this._regions[name] = new ContentEdit.Region(domRegion);
         }
-        this._regionsLastModified[name] = this._regions[name].lastModified();
+        if (!restoring) {
+          this._regionsLastModified[name] = this._regions[name].lastModified();
+        }
       }
       _ref1 = this._regions;
       _results = [];
@@ -8793,12 +8806,15 @@
       var element, name, other_region, region, snapshot, _ref, _ref1;
       snapshot = {
         regions: {},
+        regionModifieds: {},
+        rootModified: ContentEdit.Root.get().lastModified(),
         selected: null
       };
       _ref = this._regions;
       for (name in _ref) {
         region = _ref[name];
         snapshot.regions[name] = region.html();
+        snapshot.regionModifieds[name] = region.lastModified();
       }
       element = ContentEdit.Root.get().focused();
       if (element) {

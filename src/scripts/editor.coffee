@@ -496,7 +496,13 @@ class _EditorApp extends ContentTools.ComponentUI
             # Reset the regions map
             @_regions = {}
 
-            @syncRegions()
+            @syncRegions(null, true)
+
+            # Restore timestamps
+            ContentEdit.Root.get()._modified = snapshot.rootModified
+            for name, region of @_regions
+                if snapshot.regionModifieds[name]
+                    region._modified = snapshot.regionModifieds[name]
 
             # Update history with the new regions
             @history.replaceRegions(@_regions)
@@ -640,12 +646,12 @@ class _EditorApp extends ContentTools.ComponentUI
 
         return
 
-    syncRegions: (regionQuery) ->
+    syncRegions: (regionQuery, restoring) ->
         # Sync the editor with the page in order to map out the regions/fixtures
         # that can be edited.
 
         # If a region query has been provided then set it
-        if regionQuery != undefined
+        if regionQuery
             @_regionQuery = regionQuery
 
         # Find the DOM elements that will be managed as regions/fixtures
@@ -664,7 +670,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # If the editor is currently in the 'editing' state then live sync
         if @_state is 'editing'
-            @_initRegions()
+            @_initRegions(restoring)
             @_preventEmptyRegions()
 
         if @_ignition
@@ -794,7 +800,7 @@ class _EditorApp extends ContentTools.ComponentUI
         window.removeEventListener('beforeunload', @_handleBeforeUnload)
         window.removeEventListener('unload', @_handleUnload)
 
-    _initRegions: () ->
+    _initRegions: (restoring=false) ->
         # Initialize DOM regions within the page
 
         found = {}
@@ -829,7 +835,8 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Store the date at which the region was last modified so we can
             # check for changes on save.
-            @_regionsLastModified[name] = @_regions[name].lastModified()
+            if not restoring
+                @_regionsLastModified[name] = @_regions[name].lastModified()
 
         # Remove any regions no longer part of the page
         for name, region of @_regions

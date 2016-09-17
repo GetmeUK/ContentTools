@@ -141,11 +141,17 @@ class ContentTools.History
         # Store the current state of the document
 
         # Take a snapshot
-        snapshot = {regions: {}, selected: null}
+        snapshot = {
+            regions: {},
+            regionModifieds: {},
+            rootModified: ContentEdit.Root.get().lastModified(),
+            selected: null
+            }
 
         # Store the HTML
         for name, region of @_regions
             snapshot.regions[name] = region.html()
+            snapshot.regionModifieds[name] = region.lastModified()
 
         # Store any selection state information
         element = ContentEdit.Root.get().focused()
