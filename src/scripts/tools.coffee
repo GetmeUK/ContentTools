@@ -56,6 +56,14 @@ class ContentTools.Tool
         # Apply the tool to the specified element and selection
         throw new Error('Not implemented')
 
+    @editor: () ->
+        # Return an instance of the ContentTools.EditorApp
+        return ContentTools.EditorApp.get()
+
+    @dispatchEditorEvent: (name, detail) ->
+        # Dispatch an event against the editor
+        @editor().dispatchEvent(@editor().createEvent(name, detail))
+
     # Private class methods
 
     @_insertAt: (element) ->
@@ -106,6 +114,16 @@ class ContentTools.Tools.Bold extends ContentTools.Tool
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
+
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         element.storeState()
 
         [from, to] = selection.get()
@@ -130,6 +148,9 @@ class ContentTools.Tools.Bold extends ContentTools.Tool
         element.restoreState()
 
         callback(true)
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.Italic extends ContentTools.Tools.Bold
@@ -209,6 +230,15 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             return super(element, selection)
 
     @apply: (element, selection, callback) ->
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         applied = false
 
         # Prepare text elements for adding a link
@@ -272,6 +302,13 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                 element.restoreState()
 
             callback(applied)
+
+            # Dispatch `applied` event
+            if applied
+                ContentTools.Tools.Link.dispatchEditorEvent(
+                    'tool-applied',
+                    toolDetail
+                    )
 
         # Dialog
         dialog = new ContentTools.LinkDialog(
@@ -392,6 +429,15 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
         return element.tagName() == @tagName
 
     @apply: (element, selection, callback) ->
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         # Apply the tool to the current element
         element.storeState()
 
@@ -428,6 +474,9 @@ class ContentTools.Tools.Heading extends ContentTools.Tool
 
             element.restoreState()
 
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
+
         callback(true)
 
 
@@ -462,8 +511,7 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
-        app = ContentTools.EditorApp.get()
-        forceAdd = app.ctrlDown()
+        forceAdd = @editor().ctrlDown()
 
         if ContentTools.Tools.Heading.canApply(element) and not forceAdd
             # If the element is a top level text element and the user hasn't
@@ -471,6 +519,15 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
             # paragraph in-place.
             return super(element, selection, callback)
         else
+            # Dispatch `apply` event
+            toolDetail = {
+                'tool': this,
+                'element': element,
+                'selection': selection
+                }
+            if not @dispatchEditorEvent('tool-apply', toolDetail)
+                return
+
             # If the element isn't a text element find the nearest top level
             # node and insert a new paragraph element after it.
             if element.parent().type() != 'Region'
@@ -486,6 +543,9 @@ class ContentTools.Tools.Paragraph extends ContentTools.Tools.Heading
 
             callback(true)
 
+            # Dispatch `applied` event
+            @dispatchEditorEvent('tool-applied', toolDetail)
+
 
 class ContentTools.Tools.Preformatted extends ContentTools.Tools.Heading
 
@@ -499,6 +559,15 @@ class ContentTools.Tools.Preformatted extends ContentTools.Tools.Heading
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
+
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
 
         # If the element is already a PreText element then convert it to a
         # paragraph instead.
@@ -527,6 +596,9 @@ class ContentTools.Tools.Preformatted extends ContentTools.Tools.Heading
         preText.selection(selection)
 
         callback(true)
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.AlignLeft extends ContentTools.Tool
@@ -560,6 +632,15 @@ class ContentTools.Tools.AlignLeft extends ContentTools.Tool
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         # List items and table cells use child nodes to manage their content
         # which don't support classes, so we need to use the parent.
         if element.type() in ['ListItemText', 'TableCellText']
@@ -584,6 +665,9 @@ class ContentTools.Tools.AlignLeft extends ContentTools.Tool
         element.addCSSClass(@className)
 
         callback(true)
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.AlignCenter extends ContentTools.Tools.AlignLeft
@@ -630,6 +714,16 @@ class ContentTools.Tools.UnorderedList extends ContentTools.Tool
 
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
+
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         if element.parent().type() is 'ListItem'
 
             # Find the parent list and change it to an unordered list
@@ -660,6 +754,9 @@ class ContentTools.Tools.UnorderedList extends ContentTools.Tool
             listItemText.selection(selection)
 
         callback(true)
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.OrderedList extends ContentTools.Tools.UnorderedList
@@ -694,6 +791,14 @@ class ContentTools.Tools.Table extends ContentTools.Tool
         return element != undefined
 
     @apply: (element, selection, callback) ->
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
 
         # If supported allow store the state for restoring once the dialog is
         # cancelled.
@@ -765,6 +870,9 @@ class ContentTools.Tools.Table extends ContentTools.Tool
             dialog.hide()
 
             callback(true)
+
+            # Dispatch `applied` event
+            @dispatchEditorEvent('tool-applied', toolDetail)
 
         # Show the dialog
         app.attach(modal)
@@ -874,10 +982,22 @@ class ContentTools.Tools.Indent extends ContentTools.Tool
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         # Indent the list item
         element.parent().indent()
 
         callback(true)
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.Unindent extends ContentTools.Tool
@@ -897,10 +1017,22 @@ class ContentTools.Tools.Unindent extends ContentTools.Tool
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         # Indent the list item
         element.parent().unindent()
 
         callback(true)
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.LineBreak extends ContentTools.Tool
@@ -920,6 +1052,15 @@ class ContentTools.Tools.LineBreak extends ContentTools.Tool
     @apply: (element, selection, callback) ->
         # Apply the tool to the current element
 
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         # Insert a BR at the current in index
         cursor = selection.get()[0] + 1
 
@@ -935,6 +1076,9 @@ class ContentTools.Tools.LineBreak extends ContentTools.Tool
         element.selection(selection)
 
         callback(true)
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.Image extends ContentTools.Tool
@@ -952,6 +1096,15 @@ class ContentTools.Tools.Image extends ContentTools.Tool
         return not element.isFixed()
 
     @apply: (element, selection, callback) ->
+
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
 
         # If supported allow store the state for restoring once the dialog is
         # cancelled.
@@ -1007,6 +1160,9 @@ class ContentTools.Tools.Image extends ContentTools.Tool
 
             callback(true)
 
+            # Dispatch `applied` event
+            @dispatchEditorEvent('tool-applied', toolDetail)
+
         # Show the dialog
         app.attach(modal)
         app.attach(dialog)
@@ -1029,6 +1185,15 @@ class ContentTools.Tools.Video extends ContentTools.Tool
         return not element.isFixed()
 
     @apply: (element, selection, callback) ->
+
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
 
         # If supported allow store the state for restoring once the dialog is
         # cancelled.
@@ -1084,7 +1249,12 @@ class ContentTools.Tools.Video extends ContentTools.Tool
             modal.hide()
             dialog.hide()
 
-            callback(url != '')
+            applied = url != ''
+            callback(applied)
+
+            # Dispatch `applied` event
+            if applied
+                @dispatchEditorEvent('tool-applied', toolDetail)
 
         # Show the dialog
         app.attach(modal)
@@ -1110,13 +1280,25 @@ class ContentTools.Tools.Undo extends ContentTools.Tool
         return app.history and app.history.canUndo()
 
     @apply: (element, selection, callback) ->
-        app = ContentTools.EditorApp.get()
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
+        app = @editor()
 
         # Revert the document to the previous state
         app.history.stopWatching()
         snapshot = app.history.undo()
         app.revertToSnapshot(snapshot)
         app.history.watch()
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.Redo extends ContentTools.Tool
@@ -1136,6 +1318,15 @@ class ContentTools.Tools.Redo extends ContentTools.Tool
         return app.history and app.history.canRedo()
 
     @apply: (element, selection, callback) ->
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         app = ContentTools.EditorApp.get()
 
         # Revert the document to the next state
@@ -1143,6 +1334,9 @@ class ContentTools.Tools.Redo extends ContentTools.Tool
         snapshot = app.history.redo()
         app.revertToSnapshot(snapshot)
         app.history.watch()
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)
 
 
 class ContentTools.Tools.Remove extends ContentTools.Tool
@@ -1160,8 +1354,17 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
         return not element.isFixed()
 
     @apply: (element, selection, callback) ->
+        # Dispatch `apply` event
+        toolDetail = {
+            'tool': this,
+            'element': element,
+            'selection': selection
+            }
+        if not @dispatchEditorEvent('tool-apply', toolDetail)
+            return
+
         # Apply the tool to the current element
-        app = ContentTools.EditorApp.get()
+        app = @editor()
 
         # Blur the element before it's removed otherwise it will retain focus
         # even when detached.
@@ -1178,6 +1381,10 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
         # elements.
         if not element.isMounted()
             callback(true)
+
+            # Dispatch `applied` event
+            @dispatchEditorEvent('tool-applied', toolDetail)
+
             return
 
         # Remove the element
@@ -1206,3 +1413,6 @@ class ContentTools.Tools.Remove extends ContentTools.Tool
                 break
 
         callback(true)
+
+        # Dispatch `applied` event
+        @dispatchEditorEvent('tool-applied', toolDetail)

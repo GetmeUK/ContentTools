@@ -8911,6 +8911,14 @@
       throw new Error('Not implemented');
     };
 
+    Tool.editor = function() {
+      return ContentTools.EditorApp.get();
+    };
+
+    Tool.dispatchEditorEvent = function(name, detail) {
+      return this.editor().dispatchEvent(this.editor().createEvent(name, detail));
+    };
+
     Tool._insertAt = function(element) {
       var insertIndex, insertNode;
       insertNode = element;
@@ -8962,7 +8970,15 @@
     };
 
     Bold.apply = function(element, selection, callback) {
-      var from, to, _ref;
+      var from, to, toolDetail, _ref;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       element.storeState();
       _ref = selection.get(), from = _ref[0], to = _ref[1];
       if (this.isApplied(element, selection)) {
@@ -8974,7 +8990,8 @@
       element.updateInnerHTML();
       element.taint();
       element.restoreState();
-      return callback(true);
+      callback(true);
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return Bold;
@@ -9072,7 +9089,15 @@
     };
 
     Link.apply = function(element, selection, callback) {
-      var allowScrolling, app, applied, characters, dialog, domElement, ends, from, measureSpan, modal, rect, scrollX, scrollY, selectTag, starts, to, transparent, _ref, _ref1;
+      var allowScrolling, app, applied, characters, dialog, domElement, ends, from, measureSpan, modal, rect, scrollX, scrollY, selectTag, starts, to, toolDetail, transparent, _ref, _ref1;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       applied = false;
       if (element.type() === 'Image') {
         rect = element.domElement().getBoundingClientRect();
@@ -9111,7 +9136,10 @@
           element.updateInnerHTML();
           element.restoreState();
         }
-        return callback(applied);
+        callback(applied);
+        if (applied) {
+          return ContentTools.Tools.Link.dispatchEditorEvent('tool-applied', toolDetail);
+        }
       });
       dialog = new ContentTools.LinkDialog(this.getAttr('href', element, selection), this.getAttr('target', element, selection));
       _ref1 = ContentTools.getScrollPosition(), scrollX = _ref1[0], scrollY = _ref1[1];
@@ -9211,7 +9239,15 @@
     };
 
     Heading.apply = function(element, selection, callback) {
-      var content, insertAt, parent, textElement;
+      var content, insertAt, parent, textElement, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       element.storeState();
       if (element.type() === 'PreText') {
         content = element.content.html().replace(/&nbsp;/g, ' ');
@@ -9232,6 +9268,7 @@
         }
         element.restoreState();
       }
+      this.dispatchEditorEvent('tool-applied', toolDetail);
       return callback(true);
     };
 
@@ -9281,12 +9318,19 @@
     };
 
     Paragraph.apply = function(element, selection, callback) {
-      var app, forceAdd, paragraph, region;
-      app = ContentTools.EditorApp.get();
-      forceAdd = app.ctrlDown();
+      var forceAdd, paragraph, region, toolDetail;
+      forceAdd = this.editor().ctrlDown();
       if (ContentTools.Tools.Heading.canApply(element) && !forceAdd) {
         return Paragraph.__super__.constructor.apply.call(this, element, selection, callback);
       } else {
+        toolDetail = {
+          'tool': this,
+          'element': element,
+          'selection': selection
+        };
+        if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+          return;
+        }
         if (element.parent().type() !== 'Region') {
           element = element.closest(function(node) {
             return node.parent().type() === 'Region';
@@ -9296,7 +9340,8 @@
         paragraph = new ContentEdit.Text('p');
         region.attach(paragraph, region.children.indexOf(element) + 1);
         paragraph.focus();
-        return callback(true);
+        callback(true);
+        return this.dispatchEditorEvent('tool-applied', toolDetail);
       }
     };
 
@@ -9320,7 +9365,15 @@
     Preformatted.tagName = 'pre';
 
     Preformatted.apply = function(element, selection, callback) {
-      var insertAt, parent, preText, text;
+      var insertAt, parent, preText, text, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       if (element.type() === 'PreText') {
         ContentTools.Tools.Paragraph.apply(element, selection, callback);
         return;
@@ -9334,7 +9387,8 @@
       element.blur();
       preText.focus();
       preText.selection(selection);
-      return callback(true);
+      callback(true);
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return Preformatted;
@@ -9372,7 +9426,15 @@
     };
 
     AlignLeft.apply = function(element, selection, callback) {
-      var alignmentClassNames, className, _i, _len, _ref;
+      var alignmentClassNames, className, toolDetail, _i, _len, _ref;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       if ((_ref = element.type()) === 'ListItemText' || _ref === 'TableCellText') {
         element = element.parent();
       }
@@ -9387,7 +9449,8 @@
         }
       }
       element.addCSSClass(this.className);
-      return callback(true);
+      callback(true);
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return AlignLeft;
@@ -9456,7 +9519,15 @@
     };
 
     UnorderedList.apply = function(element, selection, callback) {
-      var insertAt, list, listItem, listItemText, parent;
+      var insertAt, list, listItem, listItemText, parent, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       if (element.parent().type() === 'ListItem') {
         element.storeState();
         list = element.closest(function(node) {
@@ -9477,7 +9548,8 @@
         listItemText.focus();
         listItemText.selection(selection);
       }
-      return callback(true);
+      callback(true);
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return UnorderedList;
@@ -9524,7 +9596,15 @@
     };
 
     Table.apply = function(element, selection, callback) {
-      var app, dialog, modal, table;
+      var app, dialog, modal, table, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       if (element.storeState) {
         element.storeState();
       }
@@ -9567,7 +9647,8 @@
           }
           modal.hide();
           dialog.hide();
-          return callback(true);
+          callback(true);
+          return _this.dispatchEditorEvent('tool-applied', toolDetail);
         };
       })(this));
       app.attach(modal);
@@ -9692,8 +9773,18 @@
     };
 
     Indent.apply = function(element, selection, callback) {
+      var toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       element.parent().indent();
-      return callback(true);
+      callback(true);
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return Indent;
@@ -9718,8 +9809,18 @@
     };
 
     Unindent.apply = function(element, selection, callback) {
+      var toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       element.parent().unindent();
-      return callback(true);
+      callback(true);
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return Unindent;
@@ -9744,7 +9845,15 @@
     };
 
     LineBreak.apply = function(element, selection, callback) {
-      var br, cursor, tail, tip;
+      var br, cursor, tail, tip, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       cursor = selection.get()[0] + 1;
       tip = element.content.substring(0, selection.get()[0]);
       tail = element.content.substring(selection.get()[1]);
@@ -9754,7 +9863,8 @@
       element.taint();
       selection.set(cursor, cursor);
       element.selection(selection);
-      return callback(true);
+      callback(true);
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return LineBreak;
@@ -9779,7 +9889,15 @@
     };
 
     Image.apply = function(element, selection, callback) {
-      var app, dialog, modal;
+      var app, dialog, modal, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       if (element.storeState) {
         element.storeState();
       }
@@ -9815,7 +9933,8 @@
           image.focus();
           modal.hide();
           dialog.hide();
-          return callback(true);
+          callback(true);
+          return _this.dispatchEditorEvent('tool-applied', toolDetail);
         };
       })(this));
       app.attach(modal);
@@ -9846,7 +9965,15 @@
     };
 
     Video.apply = function(element, selection, callback) {
-      var app, dialog, modal;
+      var app, dialog, modal, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       if (element.storeState) {
         element.storeState();
       }
@@ -9865,7 +9992,7 @@
       })(this));
       dialog.addEventListener('save', (function(_this) {
         return function(ev) {
-          var index, node, url, video, _ref;
+          var applied, index, node, url, video, _ref;
           url = ev.detail().url;
           if (url) {
             video = new ContentEdit.Video('iframe', {
@@ -9884,7 +10011,11 @@
           }
           modal.hide();
           dialog.hide();
-          return callback(url !== '');
+          applied = url !== '';
+          callback(applied);
+          if (applied) {
+            return _this.dispatchEditorEvent('tool-applied', toolDetail);
+          }
         };
       })(this));
       app.attach(modal);
@@ -9919,12 +10050,21 @@
     };
 
     Undo.apply = function(element, selection, callback) {
-      var app, snapshot;
-      app = ContentTools.EditorApp.get();
+      var app, snapshot, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
+      app = this.editor();
       app.history.stopWatching();
       snapshot = app.history.undo();
       app.revertToSnapshot(snapshot);
-      return app.history.watch();
+      app.history.watch();
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return Undo;
@@ -9953,12 +10093,21 @@
     };
 
     Redo.apply = function(element, selection, callback) {
-      var app, snapshot;
+      var app, snapshot, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
       app = ContentTools.EditorApp.get();
       app.history.stopWatching();
       snapshot = app.history.redo();
       app.revertToSnapshot(snapshot);
-      return app.history.watch();
+      app.history.watch();
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return Redo;
@@ -9983,8 +10132,16 @@
     };
 
     Remove.apply = function(element, selection, callback) {
-      var app, list, row, table;
-      app = ContentTools.EditorApp.get();
+      var app, list, row, table, toolDetail;
+      toolDetail = {
+        'tool': this,
+        'element': element,
+        'selection': selection
+      };
+      if (!this.dispatchEditorEvent('tool-apply', toolDetail)) {
+        return;
+      }
+      app = this.editor();
       element.blur();
       if (element.nextContent()) {
         element.nextContent().focus();
@@ -9993,6 +10150,7 @@
       }
       if (!element.isMounted()) {
         callback(true);
+        this.dispatchEditorEvent('tool-applied', toolDetail);
         return;
       }
       switch (element.type()) {
@@ -10021,7 +10179,8 @@
           element.parent().detach(element);
           break;
       }
-      return callback(true);
+      callback(true);
+      return this.dispatchEditorEvent('tool-applied', toolDetail);
     };
 
     return Remove;
