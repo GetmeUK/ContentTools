@@ -355,6 +355,9 @@
       domElement = document.createElement('div');
       document.body.appendChild(domElement);
       widget._domElement = domElement;
+      widget.mount = function() {
+        return widget._domElement = domElement;
+      };
       widget.show();
       checkShown = function() {
         var classes;

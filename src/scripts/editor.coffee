@@ -157,12 +157,18 @@ class _EditorApp extends ContentTools.ComponentUI
             @_ignition.addEventListener 'confirm', (ev) =>
                 ev.preventDefault()
 
+                if @_ignition.state() != 'editing'
+                    return
+
                 # Stop the editor and request that changes are saved
                 @_ignition.state('ready')
                 @stop(true)
 
             @_ignition.addEventListener 'cancel', (ev) =>
                 ev.preventDefault()
+
+                if @_ignition.state() != 'editing'
+                    return
 
                 # Stop the editor and request that changes are reverted
                 @stop(false)

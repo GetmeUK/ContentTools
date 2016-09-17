@@ -158,15 +158,6 @@
       })(this);
       return setTimeout(saved, 2000);
     });
-
-    editor.addEventListener('tool-apply', function(ev) {
-      console.log('apply', ev.detail());
-    });
-
-    editor.addEventListener('tool-applied', function(ev) {
-      console.log('applied', ev.detail());
-    });
-
     FIXTURE_TOOLS = [['undo', 'redo', 'remove']];
     ContentEdit.Root.get().bind('focus', function(element) {
       var tools;

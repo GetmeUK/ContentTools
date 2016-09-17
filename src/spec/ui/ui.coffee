@@ -423,6 +423,10 @@ describe 'ContentTools.WidgetUI.show()', () ->
         document.body.appendChild(domElement)
         widget._domElement = domElement
 
+        # Attach a fake mount method to allow the widget to remount itself
+        widget.mount = () ->
+            widget._domElement = domElement
+
         # Show the widget (there's a delay to allow any CSS transitions to
         # activate).
         widget.show()

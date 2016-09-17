@@ -199,18 +199,24 @@ class ContentTools.WidgetUI extends ContentTools.ComponentUI
 
     show: () ->
         # Show the widget
-        if not @isMounted()
-            @mount()
+
+        # Make sure any hide action is stopped
+        clearTimeout(@_hideTimeout)
+        @unmount()
+        @mount()
 
         # We delay adding the --active modifier to ensure any CSS transition is
         # activated.
         fadeIn = () =>
             @addCSSClass('ct-widget--active')
 
-        setTimeout(fadeIn, 100)
+        @_showTimeout = setTimeout(fadeIn, 100)
 
     hide: () ->
         # Hide the widget
+
+        # Make sure any show action is stopped
+        clearTimeout(@_showTimeout)
 
         # Removing the --active modifier will attempt to trigger an CSS
         # transition to fade out the widget. Once the transition to 0 opacity
@@ -229,10 +235,10 @@ class ContentTools.WidgetUI extends ContentTools.ComponentUI
             if parseFloat(window.getComputedStyle(@_domElement).opacity) < 0.01
                 @unmount()
             else
-                setTimeout(monitorForHidden, 250)
+                @_hideTimeout = setTimeout(monitorForHidden, 250)
 
         if @isMounted()
-            setTimeout(monitorForHidden, 250)
+            @_hideTimeout = setTimeout(monitorForHidden, 250)
 
 
 class ContentTools.AnchoredComponentUI extends ContentTools.ComponentUI

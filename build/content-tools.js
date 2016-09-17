@@ -5665,19 +5665,20 @@
 
     WidgetUI.prototype.show = function() {
       var fadeIn;
-      if (!this.isMounted()) {
-        this.mount();
-      }
+      clearTimeout(this._hideTimeout);
+      this.unmount();
+      this.mount();
       fadeIn = (function(_this) {
         return function() {
           return _this.addCSSClass('ct-widget--active');
         };
       })(this);
-      return setTimeout(fadeIn, 100);
+      return this._showTimeout = setTimeout(fadeIn, 100);
     };
 
     WidgetUI.prototype.hide = function() {
       var monitorForHidden;
+      clearTimeout(this._showTimeout);
       this.removeCSSClass('ct-widget--active');
       monitorForHidden = (function(_this) {
         return function() {
@@ -5688,12 +5689,12 @@
           if (parseFloat(window.getComputedStyle(_this._domElement).opacity) < 0.01) {
             return _this.unmount();
           } else {
-            return setTimeout(monitorForHidden, 250);
+            return _this._hideTimeout = setTimeout(monitorForHidden, 250);
           }
         };
       })(this);
       if (this.isMounted()) {
-        return setTimeout(monitorForHidden, 250);
+        return this._hideTimeout = setTimeout(monitorForHidden, 250);
       }
     };
 
@@ -8102,6 +8103,9 @@
         this._ignition.addEventListener('confirm', (function(_this) {
           return function(ev) {
             ev.preventDefault();
+            if (_this._ignition.state() !== 'editing') {
+              return;
+            }
             _this._ignition.state('ready');
             return _this.stop(true);
           };
@@ -8109,6 +8113,9 @@
         this._ignition.addEventListener('cancel', (function(_this) {
           return function(ev) {
             ev.preventDefault();
+            if (_this._ignition.state() !== 'editing') {
+              return;
+            }
             _this.stop(false);
             if (_this.isEditing()) {
               return _this._ignition.state('editing');
