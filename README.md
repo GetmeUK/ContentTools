@@ -58,7 +58,7 @@ ContentTools is available via the [jsdelivr open source CDN](http://www.jsdelivr
 
 For example to access the current primary JavaScript file the URL would be:
 
-`http://cdn.jsdelivr.net/contenttools/1.2.4/content-tools.min.js`
+`http://cdn.jsdelivr.net/contenttools/1.3.0/content-tools.min.js`
 
 As the project's CSS uses relative file paths you will need to either role your own version of CSS from the SASS files (recommended) or [override references to fonts/images within your local CSS](https://gist.github.com/anthonyjb/a6aec8ecfbfe6f875d5c6691687ba43d).
 
