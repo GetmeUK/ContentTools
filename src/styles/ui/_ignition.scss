@@ -81,6 +81,7 @@
         &__button {
 
             // Set the base appeance of the button
+            border: 0;
             border-radius: $buttonSize / 2;
             content: '';
             cursor: pointer;
