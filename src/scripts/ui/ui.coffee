@@ -155,6 +155,25 @@ class ContentTools.ComponentUI
     _removeDOMEventListeners: () ->
         # Remove all event bindings for the DOM element in this method
 
+    @createButton: (classNames, attributes, content) -> 
+        # Create the element
+        domElement = document.createElement('button')
+
+        # Add the specified CSS classes
+        if classNames and classNames.length > 0
+            domElement.setAttribute('class', classNames.join(' '))
+        
+        # Add the specified attributes
+        if attributes
+            for name, value of attributes
+                domElement.setAttribute(name, value)
+
+        if content
+            domElement.innerHTML = content
+        
+        return domElement
+
+
     @createDiv: (classNames, attributes, content) ->
         # All UI components are constructed entirely from one or more nested
         # <div>s, this class method provides a shortcut for creating a <div>
