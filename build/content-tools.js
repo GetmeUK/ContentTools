@@ -8547,9 +8547,8 @@
           var _ref;
           if ((_ref = ev.keyCode) === 17 || _ref === 224 || _ref === 91 || _ref === 93) {
             _this._ctrlDown = true;
-            return;
           }
-          if (ev.keyCode === 16) {
+          if (ev.keyCode === 16 && !_this._ctrlDown) {
             if (_this._highlightTimeout) {
               return;
             }
@@ -8887,10 +8886,10 @@
 
     StylePalette.styles = function(element) {
       var tagName;
-      tagName = element.tagName();
       if (element === void 0) {
         return this._styles.slice();
       }
+      tagName = element.tagName();
       return this._styles.filter(function(style) {
         if (!style._applicableTo) {
           return true;

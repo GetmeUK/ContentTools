@@ -692,9 +692,8 @@ class _EditorApp extends ContentTools.ComponentUI
         @_handleHighlightOn = (ev) =>
             if ev.keyCode in [17, 224, 91, 93] # Ctrl/Cmd
                 @_ctrlDown = true
-                return
 
-            if ev.keyCode is 16 # Shift
+            if ev.keyCode is 16 and not @_ctrlDown # Shift
                 # Check for repeating key in which case we don't want to create
                 # additional timeouts.
                 if @_highlightTimeout
