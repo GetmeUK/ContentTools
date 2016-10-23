@@ -1174,7 +1174,8 @@
       if (this._attributes[name] === void 0) {
         return;
       }
-      return delete this._attributes[name];
+      delete this._attributes[name];
+      return this._head = null;
     };
 
     Tag.prototype.copy = function() {
@@ -1665,8 +1666,10 @@
     HELPER_CHAR_LIMIT: 250,
     INDENT: '    ',
     LANGUAGE: 'en',
+    LINE_ENDINGS: '\n',
     PREFER_LINE_BREAKS: false,
     RESIZE_CORNER_SIZE: 15,
+    TRIM_WHITESPACE: true,
     _translations: {},
     _: function(s) {
       var lang;
@@ -2529,7 +2532,9 @@
       }
     };
 
-    Element.prototype._onMouseUp = function(ev) {};
+    Element.prototype._onMouseUp = function(ev) {
+      return this._ieMouseDownEchoed = false;
+    };
 
     Element.prototype._onNativeDrop = function(ev) {
       ev.preventDefault();
@@ -2736,7 +2741,7 @@
     };
 
     ElementCollection.prototype.html = function(indent) {
-      var c, children;
+      var attributes, c, children, le;
       if (indent == null) {
         indent = '';
       }
@@ -2750,10 +2755,12 @@
         }
         return _results;
       }).call(this);
+      le = ContentEdit.LINE_ENDINGS;
       if (this.isFixed()) {
-        return children.join('\n');
+        return children.join(le);
       } else {
-        return ("" + indent + "<" + (this.tagName()) + (this._attributesToString()) + ">\n") + ("" + (children.join('\n')) + "\n") + ("" + indent + "</" + (this.tagName()) + ">");
+        attributes = this._attributesToString();
+        return ("" + indent + "<" + (this.tagName()) + attributes + ">" + le) + ("" + (children.join(le)) + le) + ("" + indent + "</" + (this.tagName()) + ">");
       }
     };
 
@@ -2970,10 +2977,11 @@
     };
 
     Region.prototype.html = function(indent) {
-      var c;
+      var c, le;
       if (indent == null) {
         indent = '';
       }
+      le = ContentEdit.LINE_ENDINGS;
       return ((function() {
         var _i, _len, _ref, _results;
         _ref = this.children;
@@ -2983,7 +2991,7 @@
           _results.push(c.html(indent));
         }
         return _results;
-      }).call(this)).join('\n').trim();
+      }).call(this)).join(le).trim();
     };
 
     Region.prototype.setContent = function(domElementOrHTML) {
@@ -3066,10 +3074,11 @@
     };
 
     Fixture.prototype.html = function(indent) {
-      var c;
+      var c, le;
       if (indent == null) {
         indent = '';
       }
+      le = ContentEdit.LINE_ENDINGS;
       return ((function() {
         var _i, _len, _ref, _results;
         _ref = this.children;
@@ -3079,7 +3088,7 @@
           _results.push(c.html(indent));
         }
         return _results;
-      }).call(this)).join('\n').trim();
+      }).call(this)).join(le).trim();
     };
 
     return Fixture;
@@ -3379,7 +3388,11 @@
       if (content instanceof HTMLString.String) {
         this.content = content;
       } else {
-        this.content = new HTMLString.String(content).trim();
+        if (ContentEdit.TRIM_WHITESPACE) {
+          this.content = new HTMLString.String(content).trim();
+        } else {
+          this.content = new HTMLString.String(content, true);
+        }
       }
     }
 
@@ -3396,7 +3409,6 @@
     };
 
     Text.prototype.blur = function() {
-      var error;
       if (this.isMounted()) {
         this._syncContent();
       }
@@ -3405,10 +3417,8 @@
           this.parent().detach(this);
         }
       } else if (this.isMounted()) {
-        try {
+        if (!document.documentMode && !/Edge/.test(navigator.userAgent)) {
           this._domElement.blur();
-        } catch (_error) {
-          error = _error;
         }
         this._domElement.removeAttribute('contenteditable');
       }
@@ -3448,12 +3458,16 @@
     };
 
     Text.prototype.html = function(indent) {
-      var content;
+      var attributes, content, le;
       if (indent == null) {
         indent = '';
       }
       if (!this._lastCached || this._lastCached < this._modified) {
-        content = this.content.copy().trim();
+        if (ContentEdit.TRIM_WHITESPACE) {
+          content = this.content.copy().trim();
+        } else {
+          content = this.content.copy();
+        }
         content.optimize();
         this._lastCached = Date.now();
         this._cached = content.html();
@@ -3461,7 +3475,9 @@
       if (this.isFixed()) {
         return this._cached;
       } else {
-        return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">\n") + ("" + indent + ContentEdit.INDENT + this._cached + "\n") + ("" + indent + "</" + this._tagName + ">");
+        le = ContentEdit.LINE_ENDINGS;
+        attributes = this._attributesToString();
+        return ("" + indent + "<" + this._tagName + attributes + ">" + le) + ("" + indent + ContentEdit.INDENT + this._cached + le) + ("" + indent + "</" + this._tagName + ">");
       }
     };
 
@@ -4023,20 +4039,21 @@
         return;
       }
       helper = Image.__super__.createDraggingDOMElement.call(this);
-      helper.style.backgroundImage = "url(" + this._attributes['src'] + ")";
+      helper.style.backgroundImage = "url('" + this._attributes['src'] + "')";
       return helper;
     };
 
     Image.prototype.html = function(indent) {
-      var attributes, img;
+      var attributes, img, le;
       if (indent == null) {
         indent = '';
       }
       img = "" + indent + "<img" + (this._attributesToString()) + ">";
       if (this.a) {
+        le = ContentEdit.LINE_ENDINGS;
         attributes = ContentEdit.attributesToString(this.a);
         attributes = "" + attributes + " data-ce-tag=\"img\"";
-        return ("" + indent + "<a " + attributes + ">\n") + ("" + ContentEdit.INDENT + img + "\n") + ("" + indent + "</a>");
+        return ("" + indent + "<a " + attributes + ">" + le) + ("" + ContentEdit.INDENT + img + le) + ("" + indent + "</a>");
       } else {
         return img;
       }
@@ -4054,7 +4071,7 @@
       }
       this._domElement.setAttribute('class', classes);
       style = this._attributes['style'] ? this._attributes['style'] : '';
-      style += "background-image:url(" + this._attributes['src'] + ");";
+      style += "background-image:url('" + this._attributes['src'] + "');";
       if (this._attributes['width']) {
         style += "width:" + this._attributes['width'] + "px;";
       }
@@ -4192,10 +4209,11 @@
     };
 
     Video.prototype.html = function(indent) {
-      var attributes, source, sourceStrings, _i, _len, _ref;
+      var attributes, le, source, sourceStrings, _i, _len, _ref;
       if (indent == null) {
         indent = '';
       }
+      le = ContentEdit.LINE_ENDINGS;
       if (this.tagName() === 'video') {
         sourceStrings = [];
         _ref = this.sources;
@@ -4204,7 +4222,7 @@
           attributes = ContentEdit.attributesToString(source);
           sourceStrings.push("" + indent + ContentEdit.INDENT + "<source " + attributes + ">");
         }
-        return ("" + indent + "<video" + (this._attributesToString()) + ">\n") + sourceStrings.join('\n') + ("\n" + indent + "</video>");
+        return ("" + indent + "<video" + (this._attributesToString()) + ">" + le) + sourceStrings.join(le) + ("" + le + indent + "</video>");
       } else {
         return ("" + indent + "<" + this._tagName + (this._attributesToString()) + ">") + ("</" + this._tagName + ">");
       }
@@ -4394,7 +4412,7 @@
         lines.push(this.list().html(indent + ContentEdit.INDENT));
       }
       lines.push("" + indent + "</li>");
-      return lines.join('\n');
+      return lines.join(ContentEdit.LINE_ENDINGS);
     };
 
     ListItem.prototype.indent = function() {
@@ -4539,7 +4557,7 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         childNode = _ref[_i];
         if (childNode.nodeType === 1) {
-          if ((_ref1 = childNode.tagName.toLowerCase()) === 'ul' || _ref1 === 'li') {
+          if ((_ref1 = childNode.tagName.toLowerCase()) === 'ul' || _ref1 === 'ol' || _ref1 === 'li') {
             if (!listDOMElement) {
               listDOMElement = childNode;
             }
@@ -4606,7 +4624,11 @@
         indent = '';
       }
       if (!this._lastCached || this._lastCached < this._modified) {
-        content = this.content.copy().trim();
+        if (ContentEdit.TRIM_WHITESPACE) {
+          content = this.content.copy().trim();
+        } else {
+          content = this.content.copy();
+        }
         content.optimize();
         this._lastCached = Date.now();
         this._cached = content.html();
@@ -5084,7 +5106,7 @@
         lines.push(this.tableCellText().html(indent + ContentEdit.INDENT));
       }
       lines.push("" + indent + "</" + (this.tagName()) + ">");
-      return lines.join('\n');
+      return lines.join(ContentEdit.LINE_ENDINGS);
     };
 
     TableCell.prototype._onMouseOver = function(ev) {
@@ -5179,7 +5201,11 @@
         indent = '';
       }
       if (!this._lastCached || this._lastCached < this._modified) {
-        content = this.content.copy().trim();
+        if (ContentEdit.TRIM_WHITESPACE) {
+          content = this.content.copy().trim();
+        } else {
+          content = this.content.copy();
+        }
         content.optimize();
         this._lastCached = Date.now();
         this._cached = content.html();
@@ -5357,6 +5383,7 @@
   })(ContentEdit.Text);
 
 }).call(this);
+
 (function() {
   var AttributeUI, ContentTools, CropMarksUI, StyleUI, exports, _EditorApp,
     __hasProp = {}.hasOwnProperty,
