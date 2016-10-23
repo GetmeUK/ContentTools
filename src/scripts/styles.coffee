@@ -13,13 +13,13 @@ class ContentTools.StylePalette
         @_styles = @_styles.concat(styles)
 
     @styles: (element) ->
-        # Return the styles (optional only those applicable for the specified
-        # tag name).
-        tagName = element.tagName()
-
         # If no element is specified return a copy of the stlyes list
         if element is undefined
             return @_styles.slice()
+        
+        # Return the styles (optional only those applicable for the specified
+        # tag name).
+        tagName = element.tagName()
 
         # Filter the styles
         return @_styles.filter (style) ->
