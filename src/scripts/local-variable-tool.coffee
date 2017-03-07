@@ -3,15 +3,15 @@ class ReplaceVariableTool extends ContentTools.Tools.Bold
   # Insert/Remove a <replace-variable> tag.
 
   # Register the tool with the toolshelf
-  ContentTools.ToolShelf.stow(@, 'replace-variable')
+  ContentTools.ToolShelf.stow(@, 'local-variable')
 
   # The tooltip and icon modifier CSS class for the tool
-  @label = 'Variable'
-  @icon = 'variable'
+  @label = 'Local Variable'
+  @icon = 'local-variable'
 
   # The Bold provides a tagName attribute we can override to make inheriting
   # from the class cleaner.
-  @tagName = 'replace-variable'
+  @tagName = 'local-variable'
 
   @apply: (element, selection, callback) ->
 # Apply a <replace-variable> element to the specified element and selection
@@ -34,7 +34,8 @@ class ReplaceVariableTool extends ContentTools.Tools.Bold
     modal = new ContentTools.ModalUI(transparent=true, allowScrolling=true)
 
     modal.addEventListener 'click', () ->
-# Close the dialog
+
+      # Close the dialog
       @unmount()
       dialog.hide()
 
@@ -55,7 +56,7 @@ class ReplaceVariableTool extends ContentTools.Tools.Bold
     rect = measureSpan[0].getBoundingClientRect()
 
     # Create the dialog
-    dialog = new ReplaceVariableDialog(@getValue(element, selection))
+    dialog = new LocalVariableDialog(@getValue(element, selection))
     dialog.position([
       rect.left + (rect.width / 2) + window.scrollX,
       rect.top + (rect.height / 2) + window.scrollY
@@ -67,11 +68,11 @@ class ReplaceVariableTool extends ContentTools.Tools.Bold
       value = ev.detail().value
 
       # Clear any existing link
-      element.content = element.content.unformat(from, to, 'replace-variable')
+      element.content = element.content.unformat(from, to, 'local-variable')
 
       # If specified add the new replace-variable
       if value
-        replaceVariable = new HTMLString.Tag('replace-variable', {value: value})
+        replaceVariable = new HTMLString.Tag('local-variable', {value: value})
         element.content = element.content.format(from, to, replaceVariable)
 
       element.updateInnerHTML()
@@ -105,12 +106,12 @@ class ReplaceVariableTool extends ContentTools.Tools.Bold
     for c in selectedContent.characters
 
 # Does this character have a replace-variable tag applied?
-      if not c.hasTags('replace-variable')
+      if not c.hasTags('local-variable')
         continue
 
       # Find the replace-variable tag and return the value attribute value
       for tag in c.tags()
-        if tag.name() == 'replace-variable'
+        if tag.name() == 'local-variable'
           return tag.attr('value')
 
       return ''
@@ -118,7 +119,7 @@ class ReplaceVariableTool extends ContentTools.Tools.Bold
 # @getCommonName: (element, selection) ->
 # Return any existing `common-name` attribute for the element and selection
 
-class ReplaceVariableDialog extends ContentTools.LinkDialog
+class LocalVariableDialog extends ContentTools.LinkDialog
 
   # An anchored dialog to support inserting/modifying a <replace-variable> tag
 
@@ -140,4 +141,4 @@ class ReplaceVariableDialog extends ContentTools.LinkDialog
     }
     @dispatchEvent(@createEvent('save', detail))
 
-ContentTools.DEFAULT_TOOLS[0].push('replace-variable')
+ContentTools.DEFAULT_TOOLS[0].push('local-variable')

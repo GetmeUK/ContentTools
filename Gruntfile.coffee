@@ -40,7 +40,7 @@ module.exports = (grunt) ->
                         'src/scripts/tools.coffee'
 
                         # Custom tools
-                        'src/scripts/replace-variable-tool.coffee'
+                        'src/scripts/local-variable-tool.coffee'
                     ]
 
             sandbox:
