@@ -4,3 +4,6 @@ jasmine
 node_modules
 
 .DS_Store
+.idea
+.grunt
+claims/

@@ -183,6 +183,7 @@
         &--undo:before           { content: "\e965"; }
         &--redo:before           { content: "\e966"; }
         &--remove:before         { content: "\e9ac"; }
+        &--local-variable:before { content: "\e997"; }
 
     } // .ct-tool
 
