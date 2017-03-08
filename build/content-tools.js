@@ -10338,28 +10338,76 @@
   LocalVariableDialog = (function(_super) {
     __extends(LocalVariableDialog, _super);
 
-    function LocalVariableDialog() {
-      return LocalVariableDialog.__super__.constructor.apply(this, arguments);
+    function LocalVariableDialog(value) {
+      if (value == null) {
+        value = '';
+      }
+      LocalVariableDialog.__super__.constructor.call(this);
+      this._value = value;
     }
 
     LocalVariableDialog.prototype.mount = function() {
       LocalVariableDialog.__super__.mount.call(this);
+      this._domInput = document.createElement('input');
+      this._domInput.setAttribute('class', 'ct-local-variable-dialog__input');
       this._domInput.setAttribute('name', 'value');
-      this._domInput.setAttribute('placeholder', 'Enter the variable name.');
-      return this._domElement.removeChild(this._domTargetButton);
+      this._domInput.setAttribute('placeholder', ContentEdit._('Enter the variable name') + '...');
+      this._domInput.setAttribute('type', 'text');
+      this._domInput.setAttribute('value', this._value);
+      this._domElement.appendChild(this._domInput);
+      this._domButton = this.constructor.createDiv(['ct-local-variable-dialog__button']);
+      this._domElement.appendChild(this._domButton);
+      return this._addDOMEventListeners();
     };
 
     LocalVariableDialog.prototype.save = function() {
       var detail;
+      if (!this.isMounted()) {
+        this.dispatchEvent(this.createEvent('save'));
+        return;
+      }
       detail = {
         value: this._domInput.value.trim()
       };
       return this.dispatchEvent(this.createEvent('save', detail));
     };
 
+    LocalVariableDialog.prototype.show = function() {
+      LocalVariableDialog.__super__.show.call(this);
+      this._domInput.focus();
+      if (this._value) {
+        return this._domInput.select();
+      }
+    };
+
+    LocalVariableDialog.prototype.unmount = function() {
+      if (this.isMounted()) {
+        this._domInput.blur();
+      }
+      LocalVariableDialog.__super__.unmount.call(this);
+      this._domButton = null;
+      return this._domInput = null;
+    };
+
+    LocalVariableDialog.prototype._addDOMEventListeners = function() {
+      this._domInput.addEventListener('keypress', (function(_this) {
+        return function(ev) {
+          if (ev.keyCode === 13) {
+            return _this.save();
+          }
+        };
+      })(this));
+      return this._domButton.addEventListener('click', (function(_this) {
+        return function(ev) {
+          ev.preventDefault();
+          return _this.save();
+        };
+      })(this));
+    };
+
     return LocalVariableDialog;
 
-  })(ContentTools.LinkDialog);
+  })(ContentTools.AnchoredDialogUI);
 
   ContentTools.DEFAULT_TOOLS[0].push('local-variable');
 

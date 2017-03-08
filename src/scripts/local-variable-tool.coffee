@@ -119,26 +119,93 @@ class ReplaceVariableTool extends ContentTools.Tools.Bold
 # @getCommonName: (element, selection) ->
 # Return any existing `common-name` attribute for the element and selection
 
-class LocalVariableDialog extends ContentTools.LinkDialog
+class LocalVariableDialog extends ContentTools.AnchoredDialogUI
 
-  # An anchored dialog to support inserting/modifying a <replace-variable> tag
+  # An anchored dialog to support inserting/modifying a link
 
-  mount: () ->
+  constructor: (value='') ->
     super()
 
-    # Update the name and placeholder for the input field provided by the
-    # link dialog.
-    @_domInput.setAttribute('name', 'value')
-    @_domInput.setAttribute('placeholder', 'Enter the variable name.')
+    # The initial value to set the href and target attribute
+    # of the link as (e.g if we're editing a link).
+    @_value=value
 
-    # Remove the new window target DOM element
-    @_domElement.removeChild(@_domTargetButton);
+  mount: () ->
+# Mount the widget
+    super()
+
+    # Create the input element for the link
+    @_domInput = document.createElement('input')
+    @_domInput.setAttribute('class', 'ct-local-variable-dialog__input')
+    @_domInput.setAttribute('name', 'value')
+    @_domInput.setAttribute(
+      'placeholder',
+      ContentEdit._('Enter the variable name') + '...'
+    )
+    @_domInput.setAttribute('type', 'text')
+    @_domInput.setAttribute('value', @_value)
+    @_domElement.appendChild(@_domInput)
+
+    # Create the confirm button
+    @_domButton = @constructor.createDiv(['ct-local-variable-dialog__button'])
+    @_domElement.appendChild(@_domButton)
+
+    # Add interaction handlers
+    @_addDOMEventListeners()
 
   save: () ->
-# Save the value.
-    detail = {
-      value: @_domInput.value.trim()
-    }
+# Save the link. This method triggers the save method against the dialog
+# allowing the calling code to listen for the `save` event and manage
+# the outcome.
+
+    if not @isMounted()
+      @dispatchEvent(@createEvent('save'))
+      return
+
+    detail = {value: @_domInput.value.trim()}
+
     @dispatchEvent(@createEvent('save', detail))
+
+  show: () ->
+# Show the widget
+    super()
+
+    # Once visible automatically give focus to the link input
+    @_domInput.focus()
+
+    # If a there's an intially value then select it so it can be easily
+    # replaced.
+    if @_value
+      @_domInput.select()
+
+  unmount: () ->
+# Unmount the component from the DOM
+
+# Unselect any content
+    if @isMounted()
+      @_domInput.blur()
+
+    super()
+
+    @_domButton = null
+    @_domInput = null
+
+# Private methods
+
+  _addDOMEventListeners: () ->
+# Add event listeners for the widget
+
+# Add support for saving the link whenever the `return` key is pressed
+# or the button is selected.
+
+# Input
+    @_domInput.addEventListener 'keypress', (ev) =>
+      if ev.keyCode is 13
+        @save()
+
+    # Button
+    @_domButton.addEventListener 'click', (ev) =>
+      ev.preventDefault()
+      @save()
 
 ContentTools.DEFAULT_TOOLS[0].push('local-variable')

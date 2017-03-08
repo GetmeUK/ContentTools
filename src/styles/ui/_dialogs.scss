@@ -671,4 +671,71 @@
 
     }
 
+    /**
+     * local-variable dialogs are a special type of dialog that are appear at a fixed
+     * position with the page, for example above a selection of text. They are
+     * used to support simple task (such as inserting a link) in a less
+     * intrusive manner than full dialogs.
+     *
+     * local-variable dialogs support an single text input and a confirm button only.
+     */
+    &.ct-local-variable-dialog {
+        $bkg-color: #27ae60;
+
+        border-bottom: 2px solid $bkg-color;
+        box-shadow: 0 3px 3px $shadow-color;
+        font-size: 0;
+        height: 34px;
+        left: 0;
+        margin-left: -160px;
+        margin-top: -48px;
+        position: absolute;
+        top: 0;
+        width: 320px;
+        z-index: $base-z-index + 100;
+
+        &:after {
+            border: 16px solid rgba(white, 0);
+            border-top-color: $bkg-color;
+            content: '';
+            left: 144px;
+            position: absolute;
+            top: 34px;
+        }
+    }
+
+    .ct-local-variable-dialog {
+        &__input {
+            border: none;
+            color: $text-color;
+            height: 32px;
+            outline: none;
+            @include type-text($line-height: 32px);
+            padding: 0 8px 0 16px;
+            vertical-align: top;
+            width: 288px;
+        }
+
+        &__button {
+            background: $confirm-action-color;
+            cursor: pointer;
+            display: inline-block;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+            @include type-icons;
+            width: 32px;
+
+            &:before {
+                color: white;
+                content: '\ea10';
+            }
+
+            &:hover {
+                background: lighten($confirm-action-color, 5%);
+            }
+        }
+
+    }
+
 }
