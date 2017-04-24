@@ -390,7 +390,7 @@ describe 'ContentTools.WidgetUI.attach()', () ->
 
 describe 'ContentTools.WidgetUI.detach()', () ->
 
-    fit 'should detach a child widget and unmount it', () ->
+    it 'should detach a child widget and unmount it', () ->
 
         parent = new ContentTools.WidgetUI()
         child = new ContentTools.WidgetUI()
