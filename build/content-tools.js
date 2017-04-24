@@ -5558,13 +5558,18 @@
       return ContentEdit.addCSSClass(this._domElement, className);
     };
 
-    ComponentUI.prototype.detatch = function(component) {
+    ComponentUI.prototype.detach = function(component) {
       var componentIndex;
       componentIndex = this._children.indexOf(component);
       if (componentIndex === -1) {
         return;
       }
       return this._children.splice(componentIndex, 1);
+    };
+
+    ComponentUI.prototype.detatch = function(component) {
+      console.log('Please call detach, detatch will be removed in release 1.4.x');
+      return this.detach(component);
     };
 
     ComponentUI.prototype.mount = function() {};
@@ -5683,11 +5688,16 @@
       }
     };
 
-    WidgetUI.prototype.detatch = function(component) {
-      WidgetUI.__super__.detatch.call(this, component);
+    WidgetUI.prototype.detach = function(component) {
+      WidgetUI.__super__.detach.call(this, component);
       if (this.isMounted()) {
         return component.unmount();
       }
+    };
+
+    WidgetUI.prototype.detatch = function(component) {
+      console.log('Please call detach, detatch will be removed in release 1.4.x');
+      return this.detach(component);
     };
 
     WidgetUI.prototype.show = function() {

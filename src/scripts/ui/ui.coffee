@@ -56,7 +56,7 @@ class ContentTools.ComponentUI
             return
         ContentEdit.addCSSClass(@_domElement, className)
 
-    detatch: (component) ->
+    detach: (component) ->
         # Detach a child component from this component
 
         # Find the component to detatch (if not found return)
@@ -66,6 +66,15 @@ class ContentTools.ComponentUI
 
         # Remove the component from the components children
         @_children.splice(componentIndex, 1)
+
+    detatch: (component) ->
+        # Misspelling present in earlier versions, retain until the next minor
+        # release so that a patch can be provided without breaking backward
+        # compatability.
+        console.log(
+            'Please call detach, detatch will be removed in release 1.4.x'
+            )
+        @detach(component)
 
     mount: () ->
         # Mount the component to the DOM
@@ -190,12 +199,21 @@ class ContentTools.WidgetUI extends ContentTools.ComponentUI
         if not @isMounted()
             component.mount()
 
-    detatch: (component) ->
+    detach: (component) ->
         # Detach a child component from this component
         super(component)
 
         if @isMounted()
             component.unmount()
+
+    detatch: (component) ->
+        # Misspelling present in earlier versions, retain until the next minor
+        # release so that a patch can be provided without breaking backward
+        # compatability.
+        console.log(
+            'Please call detach, detatch will be removed in release 1.4.x'
+            )
+        @detach(component)
 
     show: () ->
         # Show the widget

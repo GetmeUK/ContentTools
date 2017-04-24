@@ -99,13 +99,13 @@
     });
   });
 
-  describe('ContentTools.ComponentUI.detatch()', function() {
-    return it('should detatch a child component', function() {
+  describe('ContentTools.ComponentUI.detach()', function() {
+    return it('should detach a child component', function() {
       var child, parent;
       parent = new ContentTools.ComponentUI();
       child = new ContentTools.ComponentUI();
       parent.attach(child);
-      parent.detatch(child);
+      parent.detach(child);
       return expect(parent.children()).toEqual([]);
     });
   });
@@ -332,8 +332,8 @@
     });
   });
 
-  describe('ContentTools.WidgetUI.detatch()', function() {
-    return it('should detatch a child widget and unmount it', function() {
+  describe('ContentTools.WidgetUI.detach()', function() {
+    return fit('should detach a child widget and unmount it', function() {
       var child, domElement, parent;
       parent = new ContentTools.WidgetUI();
       child = new ContentTools.WidgetUI();
@@ -342,7 +342,7 @@
       domElement = document.createElement('div');
       document.body.appendChild(domElement);
       parent._domElement = domElement;
-      parent.detatch(child);
+      parent.detach(child);
       expect(parent.children()).toEqual([]);
       return expect(child.unmount).toHaveBeenCalled();
     });
