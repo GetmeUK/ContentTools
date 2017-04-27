@@ -574,6 +574,16 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Set the edtior to busy while we set up
         @busy(true)
+        
+        # allow custom halndlers when the editor is being activated
+        @trigger('start')
+
+        # TODO is there a way to stop the editor initialization
+        # based on a result/user feedback in the `start` handlers?
+        if (false) {
+            @busy(false)
+            return
+        }
 
         # Convert each assigned node to a region
         @syncRegions()
