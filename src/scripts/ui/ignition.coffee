@@ -65,24 +65,49 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
         @parent().domElement().appendChild(@_domElement)
 
         # Edit button
-        @_domEdit = @constructor.createDiv([
+        @_domEdit = @constructor.createButton([
             'ct-ignition__button',
             'ct-ignition__button--edit'
-            ])
+            ], 
+            {
+                'aria-label': 'Edit'
+            })
+
+        # @_domEdit = @constructor.createDiv([
+        #     'ct-ignition__button',
+        #     'ct-ignition__button--edit'
+        #     ])
         @_domElement.appendChild(@_domEdit)
 
         # Confirm button
-        @_domConfirm = @constructor.createDiv([
+
+        @_domConfirm = @constructor.createButton([
             'ct-ignition__button',
             'ct-ignition__button--confirm'
-            ])
+            ],
+            {
+                'aria-label': 'Confirm'
+            })
+        
+        # @_domConfirm = @constructor.createDiv([
+        #     'ct-ignition__button',
+        #     'ct-ignition__button--confirm'
+        #     ])
         @_domElement.appendChild(@_domConfirm)
 
         # Cancel button
-        @_domCancel = @constructor.createDiv([
+        @_domCancel = @constructor.createButton([
             'ct-ignition__button',
             'ct-ignition__button--cancel'
-            ])
+            ],
+            {
+                'aria-label': 'Cancel'
+            })
+
+        # @_domCancel = @constructor.createDiv([
+        #     'ct-ignition__button',
+        #     'ct-ignition__button--cancel'
+        #     ])
         @_domElement.appendChild(@_domCancel)
 
         # Busy
@@ -147,15 +172,15 @@ class ContentTools.IgnitionUI extends ContentTools.WidgetUI
 
         # Start editing
         @_domEdit.addEventListener 'click', (ev) =>
-            ev.preventDefault()
+            # ev.preventDefault()
             @edit()
 
         # Stop editing - Confirm changes
         @_domConfirm.addEventListener 'click', (ev) =>
-            ev.preventDefault()
+            # ev.preventDefault()
             @confirm()
 
         # Stop editing - Cancel changes
         @_domCancel.addEventListener 'click', (ev) =>
-            ev.preventDefault()
+            # ev.preventDefault()
             @cancel()
