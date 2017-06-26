@@ -31,9 +31,9 @@
         /**
          * Position of the switch on the page
          */
-        left: 16px;
         position: fixed;
-        top: 16px;
+        left: 0;
+        top: 0;
 
 
         /**
@@ -48,13 +48,13 @@
         &--editing {
             .ct-ignition__button--confirm,
             .ct-ignition__button--cancel {
-                display: block;
+                display: inline-block;
             }
         }
 
         &--ready {
             .ct-ignition__button--edit {
-                display: block;
+                display: inline-block;
             }
         }
 
@@ -64,7 +64,7 @@
                 display: none;
 
                 &--busy {
-                    display: block;
+                    display: inline-block;
                 }
             }
         }
@@ -84,18 +84,27 @@
             border-radius: $buttonSize / 2;
             content: '';
             cursor: pointer;
-            display: block;
+            display: inline-block;
             height: $buttonSize;
             line-height: $buttonSize;
             opacity: 0.9;
-            position: absolute;
             text-align: center;
-            @include type-icons($font-size: 24px);
+            @include type-icons($font-size: $buttonSize / 2);
             width: $buttonSize;
+            margin-left: 16px;
+            margin-top: 16px;
 
             // Each button displays an icon
             &:before {
                 color: white;
+            }
+
+            @media (max-width: 580px) {
+                border-radius: $buttonSize / 3;
+                width: $buttonSize * 2 / 3;
+                height: $buttonSize * 2 / 3;
+                line-height: $buttonSize * 2 / 3;
+                @include type-icons($font-size: $buttonSize / 3);
             }
 
             /* Busy button */
@@ -129,7 +138,6 @@
             /* Cancel button */
             &--cancel {
                 background: $cancel-action-color;
-                left: $buttonSize + 16;
 
                 &:before {
                     content: '\ea0f';

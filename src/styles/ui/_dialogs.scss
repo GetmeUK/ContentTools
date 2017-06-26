@@ -33,18 +33,28 @@
     $dialogWidth: 700px;
     $dialogHeight: 480px;
 
-    &.ct-dialog {
+    &.ct-dialog-wrapper {
+        position: fixed;
+        top: 0;
+        left: 1em;
+        right: 1em;
+        bottom: 0;
+        z-index: $base-z-index + 100;
+    }
+
+    .ct-dialog {
+        position: relative;
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+        max-width: $dialogWidth;
+        margin-left: auto;
+        margin-right: auto;
+        overflow: hidden;
         background: white;
         box-shadow: 0 8px 8px $shadow-color;
         border-radius: 2px;
-        height: $dialogHeight;
-        left: 50%;
-        margin-left: -($dialogWidth / 2);
-        margin-top: -($dialogHeight / 2);
-        position: fixed;
-        top: 50%;
-        width: $dialogWidth;
-        z-index: $base-z-index + 100;
 
         /**
          * The `busy` modifier maybe programatically applied to a dialog to
@@ -59,9 +69,6 @@
                 opacity: 0.1;
             }
         }
-    }
-
-    .ct-dialog {
 
         /**
          * The `header`, `caption` and `close` components of the dialog make up
@@ -92,7 +99,7 @@
             text-align: center;
             top: 0;
             @include type-icons;
-            width:48px;
+            width: 48px;
 
             &:before {
                 content: '\ea0f';
@@ -112,18 +119,30 @@
          * insert).
          */
         &__body {
-            margin: auto;
-            width: $dialogWidth - 128px;
+            margin: 2.5em 2em 1.5em;
         }
 
         &__view {
-            height: 320px;
-            margin-top: 32px;
+            height: calc(100vh - 18em);
+            max-height: 320px;
+        }
+
+        &__controls-wrap {
+            margin-top: 1.1em;
+            display: table;
+            width: 100%;
+
+            @media (max-width: 450px) {
+                display: block;
+            }
         }
 
         &__controls {
-            @include clearfix;
-            margin-top: 16px;
+            display: table-row;
+
+            @media (max-width: 450px) {
+                display: block;
+            }
         }
 
         /**
@@ -164,11 +183,36 @@
         }
 
         &--left {
-            float: left;
+            display: table-cell;
+            vertical-align: top;
+            text-align: left;
+
+            @media (max-width: 450px) {
+                display: block;
+            }
         }
 
         &--right {
-            float: right;
+            display: table-cell;
+            vertical-align: top;
+            text-align: right;
+            white-space: nowrap;
+            width: 1px;
+
+            @media (max-width: 450px) {
+                display: block;
+                width: 100%;
+                text-align: left;
+            }
+
+            .ct-control:first-child {
+                margin-left: 1em;
+
+                @media (max-width: 450px) {
+                    margin-left: 0;
+                }
+
+            }
         }
     }
 
@@ -291,17 +335,20 @@
             cursor: pointer;
             display: inline-block;
             font-weight: bold;
-            height: 32px;
             overflow: hidden;
-            padding: 0 8px;
+            padding: 0.5em;
             text-align: center;
             text-overflow: ellipsis;
-            @include type-text($line-height: 32px);
+            @include type-text($line-height: normal);
             vertical-align: top;
-            width: 100px;
+            min-width: 100px;
 
             &:hover {
                 background: lighten($bkg-color, 5%);
+            }
+
+            @media (max-width: 450px) {
+                margin-top: 1.1em;
             }
         }
 
@@ -449,7 +496,9 @@
         &--attributes {
 
             .ct-properties-dialog__attributes {
-                display: block;
+                display: table;
+                width: 100%;
+                border-collapse: collapse;
             }
 
         }
@@ -457,7 +506,9 @@
         &--styles {
 
             .ct-properties-dialog__styles {
-                display: block;
+                display: table;
+                width: 100%;
+                border-collapse: collapse;
 
                 &:empty:before {
                     color: lighten($text-color, 25%);
@@ -465,6 +516,7 @@
                     display: block;
                     font-style: italic;
                     margin-top: 20px;
+                    margin-bottom: 20px;
                     text-align: center;
                 }
             }
@@ -475,6 +527,7 @@
 
             .ct-properties-dialog__code {
                 display: block;
+                height: 100%;
             }
 
         }
@@ -501,11 +554,11 @@
             border: none;
             display: block;
             font-family: courier, $monospace;
-            height: 318px;
-            padding: 16px;
+            width: 100%;
+            height: 100%;
+            padding: 1em;
             outline: none;
             resize: none;
-            width: 100%;
 
             &--invalid {
                 color: $cancel-action-color;
@@ -549,6 +602,7 @@
         }
 
         &__input {
+            display: block;
             border: none;
             border-bottom: 1px solid #eee;
             height: 32px;
@@ -557,7 +611,7 @@
             padding: 0 4px;
             @include type-text;
             vertical-align: top;
-            width: 456px;
+            width: 100%;
 
             &:focus {
                 border-bottom: 1px solid darken(#eee, 5%);

@@ -1,4 +1,4 @@
-/*! ContentTools v1.3.1 by Anthony Blackshaw <ant@getme.co.uk> (https://github.com/anthonyjb) */
+/*! ContentTools v1.3.3 by Anthony Blackshaw <ant@getme.co.uk> (https://github.com/anthonyjb) */
 @charset "UTF-8";
 /* Vendor */
 html {
@@ -377,10 +377,10 @@ th {
 body {
   color: #494949;
   font-family: helvetica, sans-serif;
-  -webkit-font-feature-settings: "kern", "liga", "frac", "pnum";
-  -moz-font-feature-settings: "kern", "liga", "frac", "pnum";
-  -ms-font-feature-settings: "kern", "liga", "frac", "pnum";
-  font-feature-settings: "kern", "liga", "frac", "pnum";
+  /**
+   * This causes problems with correctly displaying numbers on some systems.
+      @include font-feature-settings("kern", "liga", "frac", "pnum");
+  */
   -webkit-font-smoothing: antialiased; }
 
 /* Technical article */

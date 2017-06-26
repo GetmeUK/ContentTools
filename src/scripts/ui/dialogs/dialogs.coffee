@@ -137,19 +137,26 @@ class ContentTools.DialogUI extends ContentTools.WidgetUI
             # ~ Anthony Blackshaw <ant@getme.co.uk>, 28th June 2016
             window.getSelection().removeAllRanges()
 
+        # Create the dialog wrapper
+        dialogWrapperCSSClasses = [
+            'ct-widget',
+            'ct-dialog-wrapper'
+            ]
+        @_domElement = @constructor.createDiv(dialogWrapperCSSClasses)
+        @parent().domElement().appendChild(@_domElement)
+
         # Create the dialog
         dialogCSSClasses = [
-            'ct-widget',
             'ct-dialog'
             ]
         if @_busy
             dialogCSSClasses.push('ct-dialog--busy')
-        @_domElement = @constructor.createDiv(dialogCSSClasses)
-        @parent().domElement().appendChild(@_domElement)
+        _domElementInner = @constructor.createDiv(dialogCSSClasses)
+        @_domElement.appendChild(_domElementInner)
 
         # Add the dialog header
         domHeader = @constructor.createDiv(['ct-dialog__header'])
-        @_domElement.appendChild(domHeader)
+        _domElementInner.appendChild(domHeader)
 
         # Caption
         @_domCaption = @constructor.createDiv(['ct-dialog__caption'])
@@ -162,19 +169,21 @@ class ContentTools.DialogUI extends ContentTools.WidgetUI
 
         # Body
         domBody = @constructor.createDiv(['ct-dialog__body'])
-        @_domElement.appendChild(domBody)
+        _domElementInner.appendChild(domBody)
 
         # View
         @_domView = @constructor.createDiv(['ct-dialog__view'])
         domBody.appendChild(@_domView)
 
         # Controls
+        domControlsWrap = @constructor.createDiv(['ct-dialog__controls-wrap'])
+        domBody.appendChild(domControlsWrap)
         @_domControls = @constructor.createDiv(['ct-dialog__controls'])
-        domBody.appendChild(@_domControls)
+        domControlsWrap.appendChild(@_domControls)
 
         # Busy
         @_domBusy = @constructor.createDiv(['ct-dialog__busy'])
-        @_domElement.appendChild(@_domBusy)
+        _domElementInner.appendChild(@_domBusy)
 
     unmount: () ->
         # Unmount the component from the DOM

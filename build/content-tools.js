@@ -5965,12 +5965,15 @@
     }
 
     InspectorUI.prototype.mount = function() {
+      var domInspectorGroup;
       this._domElement = this.constructor.createDiv(['ct-widget', 'ct-inspector']);
       this.parent().domElement().appendChild(this._domElement);
+      domInspectorGroup = this.constructor.createDiv(['ct-inspector__group']);
+      this._domElement.appendChild(domInspectorGroup);
       this._domTags = this.constructor.createDiv(['ct-inspector__tags', 'ct-tags']);
-      this._domElement.appendChild(this._domTags);
+      domInspectorGroup.appendChild(this._domTags);
       this._domCounter = this.constructor.createDiv(['ct-inspector__counter']);
-      this._domElement.appendChild(this._domCounter);
+      domInspectorGroup.appendChild(this._domCounter);
       this.updateCounter();
       this._addDOMEventListeners();
       this._handleFocusChange = (function(_this) {
@@ -5992,7 +5995,7 @@
     };
 
     InspectorUI.prototype.updateCounter = function() {
-      var column, completeText, element, line, lines, region, sub, word_count, _i, _len, _ref;
+      var column, completeText, display, element, line, lines, region, sub, word_count, _i, _len, _ref;
       if (!this.isMounted()) {
         return;
       }
@@ -6013,7 +6016,9 @@
       word_count = word_count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
       element = ContentEdit.Root.get().focused();
       if (!(element && element.type() === 'PreText' && element.selection().isCollapsed())) {
-        this._domCounter.textContent = word_count;
+        if (this._domCounter.textContent !== word_count) {
+          this._domCounter.textContent = word_count;
+        }
         return;
       }
       line = 0;
@@ -6024,7 +6029,10 @@
       column = lines[lines.length - 1].length + 1;
       line = line.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
       column = column.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      return this._domCounter.textContent = "" + word_count + " / " + line + ":" + column;
+      display = "" + word_count + " / " + line + ":" + column;
+      if (this._domCounter.textContent !== display) {
+        return this._domCounter.textContent = display;
+      }
     };
 
     InspectorUI.prototype.updateTags = function() {
@@ -6238,14 +6246,10 @@
     __extends(ToolboxUI, _super);
 
     function ToolboxUI(tools) {
-      this._onStopDragging = __bind(this._onStopDragging, this);
-      this._onStartDragging = __bind(this._onStartDragging, this);
-      this._onDrag = __bind(this._onDrag, this);
       ToolboxUI.__super__.constructor.call(this);
       this._tools = tools;
       this._dragging = false;
       this._draggingOffset = null;
-      this._domGrip = null;
       this._toolUIs = {};
     }
 
@@ -6259,33 +6263,12 @@
     };
 
     ToolboxUI.prototype.mount = function() {
-      var coord, position, restore;
+      ContentEdit.addCSSClass(document.documentElement, 'ct-toolbox--active');
       this._domElement = this.constructor.createDiv(['ct-widget', 'ct-toolbox']);
       this.parent().domElement().appendChild(this._domElement);
-      this._domGrip = this.constructor.createDiv(['ct-toolbox__grip', 'ct-grip']);
-      this._domElement.appendChild(this._domGrip);
-      this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
-      this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
-      this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
       this._domToolGroups = this.constructor.createDiv(['ct-tool-groups']);
       this._domElement.appendChild(this._domToolGroups);
       this.tools(this._tools);
-      restore = window.localStorage.getItem('ct-toolbox-position');
-      if (restore && /^\d+,\d+$/.test(restore)) {
-        position = (function() {
-          var _i, _len, _ref, _results;
-          _ref = restore.split(',');
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            coord = _ref[_i];
-            _results.push(parseInt(coord));
-          }
-          return _results;
-        })();
-        this._domElement.style.left = "" + position[0] + "px";
-        this._domElement.style.top = "" + position[1] + "px";
-        this._contain();
-      }
       return this._addDOMEventListeners();
     };
 
@@ -6352,24 +6335,10 @@
 
     ToolboxUI.prototype.unmount = function() {
       ToolboxUI.__super__.unmount.call(this);
-      return this._domGrip = null;
+      return ContentEdit.removeCSSClass(document.documentElement, 'ct-toolbox--active');
     };
 
     ToolboxUI.prototype._addDOMEventListeners = function() {
-      this._domGrip.addEventListener('mousedown', this._onStartDragging);
-      this._handleResize = (function(_this) {
-        return function(ev) {
-          var containResize;
-          if (_this._resizeTimeout) {
-            clearTimeout(_this._resizeTimeout);
-          }
-          containResize = function() {
-            return _this._contain();
-          };
-          return _this._resizeTimeout = setTimeout(containResize, 250);
-        };
-      })(this);
-      window.addEventListener('resize', this._handleResize);
       this._updateTools = (function(_this) {
         return function() {
           var app, element, name, selection, toolUI, update, _ref, _results;
@@ -6471,72 +6440,9 @@
       return window.addEventListener('keydown', this._handleKeyDown);
     };
 
-    ToolboxUI.prototype._contain = function() {
-      var rect;
-      if (!this.isMounted()) {
-        return;
-      }
-      rect = this._domElement.getBoundingClientRect();
-      if (rect.left + rect.width > window.innerWidth) {
-        this._domElement.style.left = "" + (window.innerWidth - rect.width) + "px";
-      }
-      if (rect.top + rect.height > window.innerHeight) {
-        this._domElement.style.top = "" + (window.innerHeight - rect.height) + "px";
-      }
-      if (rect.left < 0) {
-        this._domElement.style.left = '0px';
-      }
-      if (rect.top < 0) {
-        this._domElement.style.top = '0px';
-      }
-      rect = this._domElement.getBoundingClientRect();
-      return window.localStorage.setItem('ct-toolbox-position', "" + rect.left + "," + rect.top);
-    };
-
     ToolboxUI.prototype._removeDOMEventListeners = function() {
-      if (this.isMounted()) {
-        this._domGrip.removeEventListener('mousedown', this._onStartDragging);
-      }
       window.removeEventListener('keydown', this._handleKeyDown);
-      window.removeEventListener('resize', this._handleResize);
       return clearInterval(this._updateToolsInterval);
-    };
-
-    ToolboxUI.prototype._onDrag = function(ev) {
-      ContentSelect.Range.unselectAll();
-      this._domElement.style.left = "" + (ev.clientX - this._draggingOffset.x) + "px";
-      return this._domElement.style.top = "" + (ev.clientY - this._draggingOffset.y) + "px";
-    };
-
-    ToolboxUI.prototype._onStartDragging = function(ev) {
-      var rect;
-      ev.preventDefault();
-      if (this.isDragging()) {
-        return;
-      }
-      this._dragging = true;
-      this.addCSSClass('ct-toolbox--dragging');
-      rect = this._domElement.getBoundingClientRect();
-      this._draggingOffset = {
-        x: ev.clientX - rect.left,
-        y: ev.clientY - rect.top
-      };
-      document.addEventListener('mousemove', this._onDrag);
-      document.addEventListener('mouseup', this._onStopDragging);
-      return ContentEdit.addCSSClass(document.body, 'ce--dragging');
-    };
-
-    ToolboxUI.prototype._onStopDragging = function(ev) {
-      if (!this.isDragging()) {
-        return;
-      }
-      this._contain();
-      document.removeEventListener('mousemove', this._onDrag);
-      document.removeEventListener('mouseup', this._onStopDragging);
-      this._draggingOffset = null;
-      this._dragging = false;
-      this.removeCSSClass('ct-toolbox--dragging');
-      return ContentEdit.removeCSSClass(document.body, 'ce--dragging');
     };
 
     return ToolboxUI;
@@ -6753,32 +6659,37 @@
     };
 
     DialogUI.prototype.mount = function() {
-      var dialogCSSClasses, domBody, domHeader;
+      var dialogCSSClasses, dialogWrapperCSSClasses, domBody, domControlsWrap, domHeader, _domElementInner;
       if (document.activeElement) {
         document.activeElement.blur();
         window.getSelection().removeAllRanges();
       }
-      dialogCSSClasses = ['ct-widget', 'ct-dialog'];
+      dialogWrapperCSSClasses = ['ct-widget', 'ct-dialog-wrapper'];
+      this._domElement = this.constructor.createDiv(dialogWrapperCSSClasses);
+      this.parent().domElement().appendChild(this._domElement);
+      dialogCSSClasses = ['ct-dialog'];
       if (this._busy) {
         dialogCSSClasses.push('ct-dialog--busy');
       }
-      this._domElement = this.constructor.createDiv(dialogCSSClasses);
-      this.parent().domElement().appendChild(this._domElement);
+      _domElementInner = this.constructor.createDiv(dialogCSSClasses);
+      this._domElement.appendChild(_domElementInner);
       domHeader = this.constructor.createDiv(['ct-dialog__header']);
-      this._domElement.appendChild(domHeader);
+      _domElementInner.appendChild(domHeader);
       this._domCaption = this.constructor.createDiv(['ct-dialog__caption']);
       domHeader.appendChild(this._domCaption);
       this.caption(this._caption);
       this._domClose = this.constructor.createDiv(['ct-dialog__close']);
       domHeader.appendChild(this._domClose);
       domBody = this.constructor.createDiv(['ct-dialog__body']);
-      this._domElement.appendChild(domBody);
+      _domElementInner.appendChild(domBody);
       this._domView = this.constructor.createDiv(['ct-dialog__view']);
       domBody.appendChild(this._domView);
+      domControlsWrap = this.constructor.createDiv(['ct-dialog__controls-wrap']);
+      domBody.appendChild(domControlsWrap);
       this._domControls = this.constructor.createDiv(['ct-dialog__controls']);
-      domBody.appendChild(this._domControls);
+      domControlsWrap.appendChild(this._domControls);
       this._domBusy = this.constructor.createDiv(['ct-dialog__busy']);
-      return this._domElement.appendChild(this._domBusy);
+      return _domElementInner.appendChild(this._domBusy);
     };
 
     DialogUI.prototype.unmount = function() {
@@ -7618,7 +7529,7 @@
     };
 
     StyleUI.prototype.mount = function(domParent, before) {
-      var label;
+      var label, switchWrap;
       if (before == null) {
         before = null;
       }
@@ -7629,7 +7540,9 @@
       label = this.constructor.createDiv(['ct-section__label']);
       label.textContent = this.style.name();
       this._domElement.appendChild(label);
-      this._domElement.appendChild(this.constructor.createDiv(['ct-section__switch']));
+      switchWrap = this.constructor.createDiv(['ct-section__switch-wrap']);
+      switchWrap.appendChild(this.constructor.createDiv(['ct-section__switch']));
+      this._domElement.appendChild(switchWrap);
       return StyleUI.__super__.mount.call(this, domParent, before);
     };
 
@@ -7776,7 +7689,7 @@
     }
 
     TableDialog.prototype.mount = function() {
-      var cfg, domBodyLabel, domControlGroup, domFootLabel, domHeadLabel, footCSSClasses, headCSSClasses;
+      var cfg, domBodyInputWrap, domBodyLabel, domControlGroup, domFootLabel, domHeadLabel, footCSSClasses, headCSSClasses, sectionWrap, switchWrap;
       TableDialog.__super__.mount.call(this);
       cfg = {
         columns: 3,
@@ -7792,40 +7705,48 @@
       }
       ContentEdit.addCSSClass(this._domElement, 'ct-table-dialog');
       ContentEdit.addCSSClass(this._domView, 'ct-table-dialog__view');
+      sectionWrap = this.constructor.createDiv(['ct-section-wrap']);
+      this._domView.appendChild(sectionWrap);
       headCSSClasses = ['ct-section'];
       if (cfg.head) {
         headCSSClasses.push('ct-section--applied');
       }
       this._domHeadSection = this.constructor.createDiv(headCSSClasses);
-      this._domView.appendChild(this._domHeadSection);
+      sectionWrap.appendChild(this._domHeadSection);
       domHeadLabel = this.constructor.createDiv(['ct-section__label']);
       domHeadLabel.textContent = ContentEdit._('Table head');
       this._domHeadSection.appendChild(domHeadLabel);
+      switchWrap = this.constructor.createDiv(['ct-section__switch-wrap']);
       this._domHeadSwitch = this.constructor.createDiv(['ct-section__switch']);
-      this._domHeadSection.appendChild(this._domHeadSwitch);
+      switchWrap.appendChild(this._domHeadSwitch);
+      this._domHeadSection.appendChild(switchWrap);
       this._domBodySection = this.constructor.createDiv(['ct-section', 'ct-section--applied', 'ct-section--contains-input']);
-      this._domView.appendChild(this._domBodySection);
+      sectionWrap.appendChild(this._domBodySection);
       domBodyLabel = this.constructor.createDiv(['ct-section__label']);
       domBodyLabel.textContent = ContentEdit._('Table body (columns)');
       this._domBodySection.appendChild(domBodyLabel);
+      domBodyInputWrap = this.constructor.createDiv(['ct-section__input-wrap']);
+      this._domBodySection.appendChild(domBodyInputWrap);
       this._domBodyInput = document.createElement('input');
       this._domBodyInput.setAttribute('class', 'ct-section__input');
       this._domBodyInput.setAttribute('maxlength', '2');
       this._domBodyInput.setAttribute('name', 'columns');
       this._domBodyInput.setAttribute('type', 'text');
       this._domBodyInput.setAttribute('value', cfg.columns);
-      this._domBodySection.appendChild(this._domBodyInput);
+      domBodyInputWrap.appendChild(this._domBodyInput);
       footCSSClasses = ['ct-section'];
       if (cfg.foot) {
         footCSSClasses.push('ct-section--applied');
       }
       this._domFootSection = this.constructor.createDiv(footCSSClasses);
-      this._domView.appendChild(this._domFootSection);
+      sectionWrap.appendChild(this._domFootSection);
       domFootLabel = this.constructor.createDiv(['ct-section__label']);
       domFootLabel.textContent = ContentEdit._('Table foot');
       this._domFootSection.appendChild(domFootLabel);
+      switchWrap = this.constructor.createDiv(['ct-section__switch-wrap']);
       this._domFootSwitch = this.constructor.createDiv(['ct-section__switch']);
-      this._domFootSection.appendChild(this._domFootSwitch);
+      switchWrap.appendChild(this._domFootSwitch);
+      this._domFootSection.appendChild(switchWrap);
       domControlGroup = this.constructor.createDiv(['ct-control-group', 'ct-control-group--right']);
       this._domControls.appendChild(domControlGroup);
       this._domApply = this.constructor.createDiv(['ct-control', 'ct-control--text', 'ct-control--apply']);
@@ -7923,7 +7844,7 @@
       VideoDialog.__super__.mount.call(this);
       ContentEdit.addCSSClass(this._domElement, 'ct-video-dialog');
       ContentEdit.addCSSClass(this._domView, 'ct-video-dialog__preview');
-      domControlGroup = this.constructor.createDiv(['ct-control-group']);
+      domControlGroup = this.constructor.createDiv(['ct-control-group', 'ct-control-group--left']);
       this._domControls.appendChild(domControlGroup);
       this._domInput = document.createElement('input');
       this._domInput.setAttribute('class', 'ct-video-dialog__input');
@@ -7931,6 +7852,8 @@
       this._domInput.setAttribute('placeholder', ContentEdit._('Paste YouTube or Vimeo URL') + '...');
       this._domInput.setAttribute('type', 'text');
       domControlGroup.appendChild(this._domInput);
+      domControlGroup = this.constructor.createDiv(['ct-control-group', 'ct-control-group--right']);
+      this._domControls.appendChild(domControlGroup);
       this._domButton = this.constructor.createDiv(['ct-control', 'ct-control--text', 'ct-control--insert', 'ct-control--muted']);
       this._domButton.textContent = ContentEdit._('Insert');
       domControlGroup.appendChild(this._domButton);

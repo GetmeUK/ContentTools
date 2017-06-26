@@ -506,7 +506,9 @@ class StyleUI extends ContentTools.AnchoredComponentUI
         @_domElement.appendChild(label)
 
         # Switch
-        @_domElement.appendChild(@constructor.createDiv(['ct-section__switch']))
+        switchWrap = @constructor.createDiv(['ct-section__switch-wrap'])
+        switchWrap.appendChild(@constructor.createDiv(['ct-section__switch']))
+        @_domElement.appendChild(switchWrap)
 
         super(domParent, before)
 

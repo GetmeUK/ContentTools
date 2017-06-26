@@ -17,16 +17,20 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         @_domElement = @constructor.createDiv(['ct-widget', 'ct-inspector'])
         @parent().domElement().appendChild(@_domElement)
 
+        # Inspector group
+        domInspectorGroup = @constructor.createDiv(['ct-inspector__group'])
+        @_domElement.appendChild(domInspectorGroup)
+
         # Tags
         @_domTags = @constructor.createDiv([
             'ct-inspector__tags',
             'ct-tags'
             ])
-        @_domElement.appendChild(@_domTags)
+        domInspectorGroup.appendChild(@_domTags)
 
         # Counter
         @_domCounter = @constructor.createDiv(['ct-inspector__counter'])
-        @_domElement.appendChild(@_domCounter)
+        domInspectorGroup.appendChild(@_domCounter)
         @updateCounter()
 
         # Add interaction handlers
@@ -105,7 +109,8 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         unless element and
                 element.type() == 'PreText' and
                 element.selection().isCollapsed()
-            @_domCounter.textContent = word_count
+            if @_domCounter.textContent != word_count
+                @_domCounter.textContent = word_count
             return
 
         # Line/Column
@@ -122,7 +127,9 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         line = line.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
         column = column.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
-        @_domCounter.textContent = "#{word_count} / #{line}:#{column}"
+        display = "#{word_count} / #{line}:#{column}"
+        if @_domCounter.textContent != display
+            @_domCounter.textContent = display
 
     updateTags: () ->
         # Update the tags based on the current selection
@@ -162,7 +169,7 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
     _addDOMEventListeners: () ->
         # Add DOM event listeners for the widget
 
-        # Update the counter every 4 times a second
+        # Update the counter every 1/4 second
         @_updateCounterInterval = setInterval(
             () => @updateCounter(),
             250
