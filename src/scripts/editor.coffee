@@ -296,8 +296,14 @@ class _EditorApp extends ContentTools.ComponentUI
             @_handlePreviousRegionTransition
             )
 
+        # Remove any event listeners attached to the editor
+        @removeEventListener()
+
         # Unmount the editor
         @unmount()
+
+        # Clear the list of children for the editor
+        @_children = []
 
     highlightRegions: (highlight) ->
         # Highlight (or stop highlighting) editiable regions within the page
@@ -438,6 +444,10 @@ class _EditorApp extends ContentTools.ComponentUI
         # Check the editor is mounted
         if not @isMounted()
             return
+
+        # Unmount all children
+        for child in @_children
+            child.unmount()
 
         # Remove the DOM element
         @_domElement.parentNode.removeChild(@_domElement)

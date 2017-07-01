@@ -8261,7 +8261,9 @@
       ContentEdit.Root.get().unbind('paste', this._handleClipboardPaste);
       ContentEdit.Root.get().unbind('next-region', this._handleNextRegionTransition);
       ContentEdit.Root.get().unbind('previous-region', this._handlePreviousRegionTransition);
-      return this.unmount();
+      this.removeEventListener();
+      this.unmount();
+      return this._children = [];
     };
 
     _EditorApp.prototype.highlightRegions = function(highlight) {
@@ -8367,8 +8369,14 @@
     };
 
     _EditorApp.prototype.unmount = function() {
+      var child, _i, _len, _ref;
       if (!this.isMounted()) {
         return;
+      }
+      _ref = this._children;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        child = _ref[_i];
+        child.unmount();
       }
       this._domElement.parentNode.removeChild(this._domElement);
       this._domElement = null;
