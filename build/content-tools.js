@@ -4153,6 +4153,119 @@
 
   ContentEdit.TagNames.get().register(ContentEdit.Image, 'img');
 
+  ContentEdit.ImageFixture = (function(_super) {
+    __extends(ImageFixture, _super);
+
+    function ImageFixture(tagName, attributes, src, alt) {
+      ImageFixture.__super__.constructor.call(this, tagName, attributes);
+      this._src = src;
+      this._alt = alt;
+    }
+
+    ImageFixture.prototype.cssTypeName = function() {
+      return 'image-fixture';
+    };
+
+    ImageFixture.prototype.type = function() {
+      return 'ImageFixture';
+    };
+
+    ImageFixture.prototype.typeName = function() {
+      return 'ImageFixture';
+    };
+
+    ImageFixture.prototype.alt = function(alt) {
+      if (alt === void 0) {
+        return this._alt;
+      }
+      this._alt = alt.toLowerCase();
+      if (this.isMounted()) {
+        this.unmount();
+        this.mount();
+      }
+      return this.taint();
+    };
+
+    ImageFixture.prototype.html = function(indent) {
+      var attributes, img, le;
+      if (indent == null) {
+        indent = '';
+      }
+      le = ContentEdit.LINE_ENDINGS;
+      attributes = this._attributesToString();
+      img = "" + indent + "<img src=\"" + (this.src()) + "\" alt=\"" + (this.alt()) + "\">";
+      return ("" + indent + "<" + (this.tagName()) + " " + attributes + ">" + le) + ("" + ContentEdit.INDENT + img + le) + ("" + indent + "</" + (this.tagName()) + ">");
+    };
+
+    ImageFixture.prototype.mount = function() {
+      var classes, style;
+      this._domElement = document.createElement(this.tagName());
+      classes = '';
+      if (this.a && this.a['class']) {
+        classes += ' ' + this.a['class'];
+      }
+      if (this._attributes['class']) {
+        classes += ' ' + this._attributes['class'];
+      }
+      this._domElement.setAttribute('class', classes);
+      style = this._attributes['style'] ? this._attributes['style'] : '';
+      style += "background-image:url('" + (this.src()) + "');";
+      this._domElement.setAttribute('style', style);
+      return ImageFixture.__super__.mount.call(this);
+    };
+
+    ImageFixture.prototype.src = function(src) {
+      if (src === void 0) {
+        return this._src;
+      }
+      this._src = src.toLowerCase();
+      if (this.isMounted()) {
+        this.unmount();
+        this.mount();
+      }
+      return this.taint();
+    };
+
+    ImageFixture.droppers = {
+      'ImageFixture': ContentEdit.Element._dropVert,
+      'Image': ContentEdit.Element._dropVert,
+      'PreText': ContentEdit.Element._dropVert,
+      'Text': ContentEdit.Element._dropVert
+    };
+
+    ImageFixture.fromDOMElement = function(domElement) {
+      var alt, attributes, c, childNode, childNodes, src, tagName, _i, _len;
+      tagName = domElement.tagName;
+      attributes = this.getDOMElementAttributes(domElement);
+      src = '';
+      alt = '';
+      childNodes = (function() {
+        var _i, _len, _ref, _results;
+        _ref = domElement.childNodes;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          c = _ref[_i];
+          _results.push(c);
+        }
+        return _results;
+      })();
+      for (_i = 0, _len = childNodes.length; _i < _len; _i++) {
+        childNode = childNodes[_i];
+        if (childNode.nodeType === 1 && childNode.tagName.toLowerCase() === 'img') {
+          src = childNode.getAttribute('src') || '';
+          alt = childNode.getAttribute('alt') || '';
+          break;
+        }
+      }
+      return new this(domElement.tagName, this.getDOMElementAttributes(domElement), src, alt);
+    };
+
+    return ImageFixture;
+
+  })(ContentEdit.Element);
+
+  ContentEdit.TagNames.get().register(ContentEdit.ImageFixture, 'img-fixture');
+
   ContentEdit.Video = (function(_super) {
     __extends(Video, _super);
 
@@ -4327,6 +4440,7 @@
 
     List.droppers = {
       'Image': ContentEdit.Element._dropBoth,
+      'ImageFixture': ContentEdit.Element._dropVert,
       'List': ContentEdit.Element._dropVert,
       'PreText': ContentEdit.Element._dropVert,
       'Static': ContentEdit.Element._dropVert,
@@ -4889,6 +5003,7 @@
 
     Table.droppers = {
       'Image': ContentEdit.Element._dropBoth,
+      'ImageFixture': ContentEdit.Element._dropVert,
       'List': ContentEdit.Element._dropVert,
       'PreText': ContentEdit.Element._dropVert,
       'Static': ContentEdit.Element._dropVert,
@@ -9954,7 +10069,12 @@
     Image.icon = 'image';
 
     Image.canApply = function(element, selection) {
-      return !element.isFixed();
+      if (element.isFixed()) {
+        if (element.type() !== 'ImageFixture') {
+          return false;
+        }
+      }
+      return true;
     };
 
     Image.apply = function(element, selection, callback) {
@@ -9996,10 +10116,14 @@
           imageAttrs.height = imageSize[1];
           imageAttrs.src = imageURL;
           imageAttrs.width = imageSize[0];
-          image = new ContentEdit.Image(imageAttrs);
-          _ref = _this._insertAt(element), node = _ref[0], index = _ref[1];
-          node.parent().attach(image, index);
-          image.focus();
+          if (element.type() === 'ImageFixture') {
+            element.src(imageURL);
+          } else {
+            image = new ContentEdit.Image(imageAttrs);
+            _ref = _this._insertAt(element), node = _ref[0], index = _ref[1];
+            node.parent().attach(image, index);
+            image.focus();
+          }
           modal.hide();
           dialog.hide();
           callback(true);

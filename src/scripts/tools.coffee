@@ -1093,7 +1093,10 @@ class ContentTools.Tools.Image extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        return not element.isFixed()
+        if element.isFixed()
+            unless element.type() is 'ImageFixture'
+                return false
+        return true
 
     @apply: (element, selection, callback) ->
 
@@ -1145,15 +1148,20 @@ class ContentTools.Tools.Image extends ContentTools.Tool
             imageAttrs.src = imageURL
             imageAttrs.width = imageSize[0]
 
-            # Create the new image
-            image = new ContentEdit.Image(imageAttrs)
+            if element.type() is 'ImageFixture'
+                # Configure the image source against the fixture
+                element.src(imageURL)
 
-            # Find insert position
-            [node, index] = @_insertAt(element)
-            node.parent().attach(image, index)
+            else
+                # Create the new image
+                image = new ContentEdit.Image(imageAttrs)
 
-            # Focus the new image
-            image.focus()
+                # Find insert position
+                [node, index] = @_insertAt(element)
+                node.parent().attach(image, index)
+
+                # Focus the new image
+                image.focus()
 
             modal.hide()
             dialog.hide()

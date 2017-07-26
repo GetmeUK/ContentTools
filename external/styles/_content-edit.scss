@@ -247,7 +247,6 @@ $highlight-color: #f39c12 !default;
                 center / auto 32px
                 repeat;
         }
-
     }
 
     /**
@@ -264,6 +263,7 @@ $highlight-color: #f39c12 !default;
          * appearance.
          */
         &.ce-element--type-image,
+        &.ce-element--type-image-fixture,
         &.ce-element--type-video {
             background-color: #333;
             outline: 4px solid rgba($highlight-color, 0.35);
