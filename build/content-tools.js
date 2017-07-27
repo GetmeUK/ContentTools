@@ -7103,6 +7103,9 @@
         return function(ev) {
           var file;
           file = ev.target.files[0];
+          if (!file) {
+            return;
+          }
           ev.target.value = '';
           if (ev.target.value) {
             ev.target.type = 'text';
