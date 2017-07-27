@@ -6555,19 +6555,19 @@
           redo = false;
           undo = false;
           switch (os) {
-            case 'linux':
+            case 'linux' && !ev.altKey:
               if (ev.keyCode === 90 && ev.ctrlKey) {
                 redo = ev.shiftKey;
                 undo = !redo;
               }
               break;
-            case 'mac':
+            case 'mac' && !(ev.altKey || ev.ctrlKey):
               if (ev.keyCode === 90 && ev.metaKey) {
                 redo = ev.shiftKey;
                 undo = !redo;
               }
               break;
-            case 'windows':
+            case 'windows' && !ev.altKey || ev.shiftKey:
               if (ev.keyCode === 89 && ev.ctrlKey) {
                 redo = true;
               }
