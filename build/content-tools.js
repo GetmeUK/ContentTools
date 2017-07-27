@@ -6811,17 +6811,22 @@
     };
 
     AnchoredDialogUI.prototype._contain = function() {
-      var halfWidth, pageWidth;
+      var halfWidth, pageWidth, rect;
       if (!this.isMounted()) {
         return;
       }
-      halfWidth = this._domElement.getBoundingClientRect().width / 2 + 5;
+      rect = this._domElement.getBoundingClientRect();
+      halfWidth = rect.width / 2 + 5;
       pageWidth = document.documentElement.clientWidth || document.body.clientWidth;
-      if ((this._position[0] + halfWidth) > (pageWidth - halfWidth)) {
+      console.log(pageWidth, this._position[0], halfWidth);
+      if ((this._position[0] + halfWidth) > pageWidth) {
         this._position[0] = pageWidth - halfWidth;
       }
       if (this._position[0] < halfWidth) {
-        return this._position[0] = halfWidth;
+        this._position[0] = halfWidth;
+      }
+      if (this._position[1] + rect.top < 5) {
+        return this._position[1] = Math.abs(rect.top) + 5;
       }
     };
 
