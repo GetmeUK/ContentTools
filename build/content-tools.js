@@ -6818,7 +6818,6 @@
       rect = this._domElement.getBoundingClientRect();
       halfWidth = rect.width / 2 + 5;
       pageWidth = document.documentElement.clientWidth || document.body.clientWidth;
-      console.log(pageWidth, this._position[0], halfWidth);
       if ((this._position[0] + halfWidth) > pageWidth) {
         this._position[0] = pageWidth - halfWidth;
       }

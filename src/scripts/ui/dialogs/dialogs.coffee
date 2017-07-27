@@ -64,8 +64,6 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
         pageWidth = document.documentElement.clientWidth or
             document.body.clientWidth
 
-        console.log pageWidth, @_position[0], halfWidth
-
         # Adjust the position to be contained (if necessary)
         if (@_position[0] + halfWidth) > pageWidth
             @_position[0] = pageWidth - halfWidth
@@ -74,11 +72,8 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
             @_position[0] = halfWidth
 
         # Make sure the dialog does't get placed above the page
-
         if @_position[1] + rect.top < 5
              @_position[1] = Math.abs(rect.top) + 5
-
-        # console.log @_position[1], rect.height
 
 
 class ContentTools.DialogUI extends ContentTools.WidgetUI
