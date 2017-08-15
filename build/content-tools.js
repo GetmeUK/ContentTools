@@ -3472,13 +3472,9 @@
         this._lastCached = Date.now();
         this._cached = content.html();
       }
-      if (this.isFixed()) {
-        return this._cached;
-      } else {
-        le = ContentEdit.LINE_ENDINGS;
-        attributes = this._attributesToString();
-        return ("" + indent + "<" + this._tagName + attributes + ">" + le) + ("" + indent + ContentEdit.INDENT + this._cached + le) + ("" + indent + "</" + this._tagName + ">");
-      }
+      le = ContentEdit.LINE_ENDINGS;
+      attributes = this._attributesToString();
+      return ("" + indent + "<" + this._tagName + attributes + ">" + le) + ("" + indent + ContentEdit.INDENT + this._cached + le) + ("" + indent + "</" + this._tagName + ">");
     };
 
     Text.prototype.mount = function() {
@@ -4104,7 +4100,7 @@
     Image.placements = ['above', 'below', 'left', 'right', 'center'];
 
     Image.fromDOMElement = function(domElement) {
-      var a, attributes, c, childNode, childNodes, _i, _len;
+      var a, attributes, c, childNode, childNodes, height, width, _i, _len;
       a = null;
       if (domElement.tagName.toLowerCase() === 'a') {
         a = this.getDOMElementAttributes(domElement);
@@ -4130,20 +4126,24 @@
         }
       }
       attributes = this.getDOMElementAttributes(domElement);
+      width = attributes['width'];
+      height = attributes['height'];
       if (attributes['width'] === void 0) {
         if (attributes['height'] === void 0) {
-          attributes['width'] = domElement.naturalWidth;
+          width = domElement.naturalWidth;
         } else {
-          attributes['width'] = domElement.clientWidth;
+          width = domElement.clientWidth;
         }
       }
       if (attributes['height'] === void 0) {
         if (attributes['width'] === void 0) {
-          attributes['height'] = domElement.naturalHeight;
+          height = domElement.naturalHeight;
         } else {
-          attributes['height'] = domElement.clientHeight;
+          height = domElement.clientHeight;
         }
       }
+      attributes['width'] = width;
+      attributes['height'] = height;
       return new this(attributes, a);
     };
 
@@ -4209,8 +4209,9 @@
       }
       this._domElement.setAttribute('class', classes);
       style = this._attributes['style'] ? this._attributes['style'] : '';
-      style += "background-image:url('" + (this.src()) + "');";
-      this._domElement.setAttribute('style', style);
+      style = style.replace(/background-image:.+?(;|$)/i, '');
+      style = [style.trim(), "background-image:url('" + (this.src()) + "');"].join(' ');
+      this._domElement.setAttribute('style', style.trim());
       return ImageFixture.__super__.mount.call(this);
     };
 
@@ -4224,6 +4225,33 @@
         this.mount();
       }
       return this.taint();
+    };
+
+    ImageFixture.prototype.unmount = function() {
+      var domElement, wrapper;
+      if (this.isFixed()) {
+        wrapper = document.createElement('div');
+        wrapper.innerHTML = this.html();
+        domElement = wrapper.firstElementChild;
+        this._domElement.parentNode.replaceChild(domElement, this._domElement);
+        this._domElement = domElement;
+        return this.parent()._domElement = this._domElement;
+      } else {
+        return ImageFixture.__super__.unmount.call(this);
+      }
+    };
+
+    ImageFixture.prototype._attributesToString = function() {
+      var style;
+      if (this._attributes['style']) {
+        style = this._attributes['style'] ? this._attributes['style'] : '';
+        style = style.replace(/background-image:.+?(;|$)/i, '');
+        style = [style.trim(), "background-image:url('" + (this.src()) + "');"].join(' ');
+        this._attributes['style'] = style.trim();
+      } else {
+        this._attributes['style'] = "background-image:url('" + (this.src()) + "');";
+      }
+      return ImageFixture.__super__._attributesToString.call(this);
     };
 
     ImageFixture.droppers = {
@@ -5680,11 +5708,6 @@
         return;
       }
       return this._children.splice(componentIndex, 1);
-    };
-
-    ComponentUI.prototype.detatch = function(component) {
-      console.log('Please call detach, detatch will be removed in release 1.4.x');
-      return this.detach(component);
     };
 
     ComponentUI.prototype.mount = function() {};
@@ -8557,7 +8580,7 @@
     };
 
     _EditorApp.prototype.save = function(passive) {
-      var child, html, modifiedRegions, name, region, root, _i, _len, _ref, _ref1;
+      var child, html, modifiedRegions, name, region, root, wrapper, _i, _len, _ref, _ref1;
       if (!this.dispatchEvent(this.createEvent('save', {
         passive: passive
       }))) {
@@ -8588,7 +8611,13 @@
             child = _ref1[_i];
             child.unmount();
           }
-          region.domElement().innerHTML = html;
+          if (region.children.length === 1 && region.children[0].isFixed()) {
+            wrapper = this.constructor.createDiv();
+            wrapper.innerHTML = html;
+            region.domElement().parentNode.replaceChild(wrapper.firstElementChild, region.domElement());
+          } else {
+            region.domElement().innerHTML = html;
+          }
         }
         if (region.lastModified() === this._regionsLastModified[name]) {
           continue;

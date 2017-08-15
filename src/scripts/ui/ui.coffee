@@ -67,15 +67,6 @@ class ContentTools.ComponentUI
         # Remove the component from the components children
         @_children.splice(componentIndex, 1)
 
-    detatch: (component) ->
-        # Misspelling present in earlier versions, retain until the next minor
-        # release so that a patch can be provided without breaking backward
-        # compatability.
-        console.log(
-            'Please call detach, detatch will be removed in release 1.4.x'
-            )
-        @detach(component)
-
     mount: () ->
         # Mount the component to the DOM
 

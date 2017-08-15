@@ -554,7 +554,15 @@ class _EditorApp extends ContentTools.ComponentUI
                 for child in region.children
                     child.unmount()
 
-                region.domElement().innerHTML = html
+                if region.children.length is 1 and region.children[0].isFixed()
+                    wrapper = @constructor.createDiv()
+                    wrapper.innerHTML = html
+                    region.domElement().parentNode.replaceChild(
+                        wrapper.firstElementChild,
+                        region.domElement()
+                        )
+                else
+                    region.domElement().innerHTML = html
 
             # Check the region has been modified, if not we don't include it in
             # the output.
@@ -867,10 +875,6 @@ class ContentTools.EditorApp
     # The `ContentTools.EditorApp` class is a singleton, this code provides
     # access to the singleton instance of the protected `_EditorApp` class which
     # is initialized the first time the class method `get` is called.
-
-    # Constants
-
-    # A set of possible states for the editor.
 
     # Storage for the singleton instance that will be created for the editor app
     instance = null
