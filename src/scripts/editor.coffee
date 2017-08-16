@@ -471,12 +471,11 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Check if there are any changes, and if there are make the user confirm
         # they want to lose them.
-        confirmMessage = ContentEdit._(
-            'Your changes have not been saved, do you really want to lose them?'
-            )
-        if ContentEdit.Root.get().lastModified() > @_rootLastModified and
-                not window.confirm(confirmMessage)
-            return false
+        if ContentTools.CANCEL_MESSAGE
+            confirmMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
+            if ContentEdit.Root.get().lastModified() > @_rootLastModified and
+                    not window.confirm(confirmMessage)
+                return false
 
         # Revert the page to it's initial state
         @revertToSnapshot(@history.goTo(0), false)
@@ -755,7 +754,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # When unloading the page we check to see if the user is currently
         # editing and if so ask them to confirm the action.
         @_handleBeforeUnload = (ev) =>
-            if @_state is 'editing'
+            if @_state is 'editing' and ContentTools.CANCEL_MESSAGE
                 cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
                 (ev or window.event).returnValue = cancelMessage
                 return cancelMessage

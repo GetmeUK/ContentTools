@@ -4156,10 +4156,9 @@
   ContentEdit.ImageFixture = (function(_super) {
     __extends(ImageFixture, _super);
 
-    function ImageFixture(tagName, attributes, src, alt) {
+    function ImageFixture(tagName, attributes, src) {
       ImageFixture.__super__.constructor.call(this, tagName, attributes);
       this._src = src;
-      this._alt = alt;
     }
 
     ImageFixture.prototype.cssTypeName = function() {
@@ -4174,32 +4173,32 @@
       return 'ImageFixture';
     };
 
-    ImageFixture.prototype.alt = function(alt) {
-      if (alt === void 0) {
-        return this._alt;
-      }
-      this._alt = alt.toLowerCase();
-      if (this.isMounted()) {
-        this.unmount();
-        this.mount();
-      }
-      return this.taint();
-    };
-
     ImageFixture.prototype.html = function(indent) {
-      var attributes, img, le;
+      var alt, attributes, img, le;
       if (indent == null) {
         indent = '';
       }
       le = ContentEdit.LINE_ENDINGS;
       attributes = this._attributesToString();
-      img = "" + indent + "<img src=\"" + (this.src()) + "\" alt=\"" + (this.alt()) + "\">";
+      alt = '';
+      if (this._attributes['alt']) {
+        alt = "alt=\"" + this._attributes['alt'] + "\"";
+      }
+      img = "" + indent + "<img src=\"" + (this.src()) + "\"" + alt + ">";
       return ("" + indent + "<" + (this.tagName()) + " " + attributes + ">" + le) + ("" + ContentEdit.INDENT + img + le) + ("" + indent + "</" + (this.tagName()) + ">");
     };
 
     ImageFixture.prototype.mount = function() {
-      var classes, style;
+      var classes, name, style, value, _ref;
       this._domElement = document.createElement(this.tagName());
+      _ref = this._attributes;
+      for (name in _ref) {
+        value = _ref[name];
+        if (name === 'alt' || name === 'style') {
+          continue;
+        }
+        this._domElement.setAttribute(name, value);
+      }
       classes = '';
       if (this.a && this.a['class']) {
         classes += ' ' + this.a['class'];
@@ -4242,7 +4241,7 @@
     };
 
     ImageFixture.prototype._attributesToString = function() {
-      var style;
+      var attributes, k, style, v, _ref;
       if (this._attributes['style']) {
         style = this._attributes['style'] ? this._attributes['style'] : '';
         style = style.replace(/background-image:.+?(;|$)/i, '');
@@ -4251,7 +4250,16 @@
       } else {
         this._attributes['style'] = "background-image:url('" + (this.src()) + "');";
       }
-      return ImageFixture.__super__._attributesToString.call(this);
+      attributes = {};
+      _ref = this._attributes;
+      for (k in _ref) {
+        v = _ref[k];
+        if (k === 'alt') {
+          continue;
+        }
+        attributes[k] = v;
+      }
+      return ' ' + ContentEdit.attributesToString(attributes);
     };
 
     ImageFixture.droppers = {
@@ -4285,7 +4293,11 @@
           break;
         }
       }
-      return new this(domElement.tagName, this.getDOMElementAttributes(domElement), src, alt);
+      attributes = this.getDOMElementAttributes(domElement);
+      if (alt) {
+        attributes['alt'] = alt;
+      }
+      return new this(domElement.tagName, attributes, src);
     };
 
     return ImageFixture;
@@ -6184,9 +6196,6 @@
       for (_j = 0, _len1 = elements.length; _j < _len1; _j++) {
         element = elements[_j];
         if (ContentTools.INSPECTOR_IGNORED_ELEMENTS.indexOf(element.type()) !== -1) {
-          continue;
-        }
-        if (element.isFixed()) {
           continue;
         }
         tag = new ContentTools.TagUI(element);
@@ -8536,9 +8545,11 @@
       if (!this.dispatchEvent(this.createEvent('revert'))) {
         return;
       }
-      confirmMessage = ContentEdit._('Your changes have not been saved, do you really want to lose them?');
-      if (ContentEdit.Root.get().lastModified() > this._rootLastModified && !window.confirm(confirmMessage)) {
-        return false;
+      if (ContentTools.CANCEL_MESSAGE) {
+        confirmMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE);
+        if (ContentEdit.Root.get().lastModified() > this._rootLastModified && !window.confirm(confirmMessage)) {
+          return false;
+        }
       }
       this.revertToSnapshot(this.history.goTo(0), false);
       return true;
@@ -8762,7 +8773,7 @@
       this._handleBeforeUnload = (function(_this) {
         return function(ev) {
           var cancelMessage;
-          if (_this._state === 'editing') {
+          if (_this._state === 'editing' && ContentTools.CANCEL_MESSAGE) {
             cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE);
             (ev || window.event).returnValue = cancelMessage;
             return cancelMessage;
