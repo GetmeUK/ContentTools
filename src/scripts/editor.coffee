@@ -494,7 +494,16 @@ class _EditorApp extends ContentTools.ComponentUI
             for child in region.children
                 child.unmount()
 
-            region.domElement().innerHTML = snapshot.regions[name]
+            # Handle fixtures vs. standard regions
+            if region.children.length is 1 and region.children[0].isFixed()
+                wrapper = @constructor.createDiv()
+                wrapper.innerHTML = snapshot.regions[name]
+                region.domElement().parentNode.replaceChild(
+                    wrapper.firstElementChild,
+                    region.domElement()
+                    )
+            else
+                region.domElement().innerHTML = snapshot.regions[name]
 
         # Check to see if we need to restore the regions to an editable state
         if restoreEditable
@@ -553,6 +562,7 @@ class _EditorApp extends ContentTools.ComponentUI
                 for child in region.children
                     child.unmount()
 
+                # Handle fixtures vs. standard regions
                 if region.children.length is 1 and region.children[0].isFixed()
                     wrapper = @constructor.createDiv()
                     wrapper.innerHTML = html

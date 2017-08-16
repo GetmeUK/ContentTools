@@ -8556,7 +8556,7 @@
     };
 
     _EditorApp.prototype.revertToSnapshot = function(snapshot, restoreEditable) {
-      var child, name, region, _i, _len, _ref, _ref1, _ref2;
+      var child, name, region, wrapper, _i, _len, _ref, _ref1, _ref2;
       if (restoreEditable == null) {
         restoreEditable = true;
       }
@@ -8568,7 +8568,13 @@
           child = _ref1[_i];
           child.unmount();
         }
-        region.domElement().innerHTML = snapshot.regions[name];
+        if (region.children.length === 1 && region.children[0].isFixed()) {
+          wrapper = this.constructor.createDiv();
+          wrapper.innerHTML = snapshot.regions[name];
+          region.domElement().parentNode.replaceChild(wrapper.firstElementChild, region.domElement());
+        } else {
+          region.domElement().innerHTML = snapshot.regions[name];
+        }
       }
       if (restoreEditable) {
         if (ContentEdit.Root.get().focused()) {
