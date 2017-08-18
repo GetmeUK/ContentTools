@@ -9283,6 +9283,8 @@
         if (element.a) {
           return element.a[attrName];
         }
+      } else if (element.isFixed() && element.tagName() === 'a') {
+        return element.attr(attrName);
       } else {
         _ref = selection.get(), from = _ref[0], to = _ref[1];
         selectedContent = element.content.slice(from, to);
@@ -9308,6 +9310,8 @@
       var character;
       if (element.type() === 'Image') {
         return true;
+      } else if (element.isFixed() && element.tagName() === 'a') {
+        return true;
       } else {
         if (!element.content) {
           return false;
@@ -9328,6 +9332,8 @@
     Link.isApplied = function(element, selection) {
       if (element.type() === 'Image') {
         return element.a;
+      } else if (element.isFixed() && element.tagName() === 'a') {
+        return true;
       } else {
         return Link.__super__.constructor.isApplied.call(this, element, selection);
       }
@@ -9345,6 +9351,8 @@
       }
       applied = false;
       if (element.type() === 'Image') {
+        rect = element.domElement().getBoundingClientRect();
+      } else if (element.isFixed() && element.tagName() === 'a') {
         rect = element.domElement().getBoundingClientRect();
       } else {
         if (selection.isCollapsed()) {
@@ -9429,6 +9437,8 @@
           }
           element.unmount();
           element.mount();
+        } else if (element.isFixed() && element.tagName() === 'a') {
+          element.attr('href', detail.href);
         } else {
           element.content = element.content.unformat(from, to, 'a');
           if (detail.href) {
