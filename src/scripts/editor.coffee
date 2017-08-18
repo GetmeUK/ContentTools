@@ -566,6 +566,7 @@ class _EditorApp extends ContentTools.ComponentUI
                 if region.children.length is 1 and region.children[0].isFixed()
                     wrapper = @constructor.createDiv()
                     wrapper.innerHTML = html
+                    console.log html, region.domElement()
                     region.domElement().parentNode.replaceChild(
                         wrapper.firstElementChild,
                         region.domElement()
