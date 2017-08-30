@@ -182,6 +182,10 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             if element.a
                 return element.a[attrName]
 
+        # Fixtures
+        else if element.isFixed() and element.tagName() is 'a'
+            return element.attr(attrName)
+
         # Text
         else
             # Find the first character in the selected text that has an `a` tag
@@ -202,6 +206,8 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         # Return true if the tool can be applied to the current
         # element/selection.
         if element.type() is 'Image'
+            return true
+        else if element.isFixed() and element.tagName() is 'a'
             return true
         else
             # Must support content
@@ -226,6 +232,8 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         # element/selection.
         if element.type() is 'Image'
             return element.a
+        else if element.isFixed() and element.tagName() is 'a'
+            return true
         else
             return super(element, selection)
 
@@ -244,6 +252,10 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
         # Prepare text elements for adding a link
         if element.type() is 'Image'
             # Images
+            rect = element.domElement().getBoundingClientRect()
+
+        else if element.isFixed() and element.tagName() is 'a'
+            # Fixtures
             rect = element.domElement().getBoundingClientRect()
 
         else
@@ -370,6 +382,10 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
 
                 element.unmount()
                 element.mount()
+
+            else if element.isFixed() and element.tagName() is 'a'
+                # Fixtures
+                element.attr('href', detail.href)
 
             else
                 # Text elements
@@ -1093,7 +1109,10 @@ class ContentTools.Tools.Image extends ContentTools.Tool
     @canApply: (element, selection) ->
         # Return true if the tool can be applied to the current
         # element/selection.
-        return not element.isFixed()
+        if element.isFixed()
+            unless element.type() is 'ImageFixture'
+                return false
+        return true
 
     @apply: (element, selection, callback) ->
 
@@ -1145,15 +1164,20 @@ class ContentTools.Tools.Image extends ContentTools.Tool
             imageAttrs.src = imageURL
             imageAttrs.width = imageSize[0]
 
-            # Create the new image
-            image = new ContentEdit.Image(imageAttrs)
+            if element.type() is 'ImageFixture'
+                # Configure the image source against the fixture
+                element.src(imageURL)
 
-            # Find insert position
-            [node, index] = @_insertAt(element)
-            node.parent().attach(image, index)
+            else
+                # Create the new image
+                image = new ContentEdit.Image(imageAttrs)
 
-            # Focus the new image
-            image.focus()
+                # Find insert position
+                [node, index] = @_insertAt(element)
+                node.parent().attach(image, index)
+
+                # Focus the new image
+                image.focus()
 
             modal.hide()
             dialog.hide()

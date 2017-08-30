@@ -43,10 +43,17 @@ window.onload = () ->
 
     # Handle tools available to fixtures
     FIXTURE_TOOLS = [['undo', 'redo', 'remove']]
+    IMAGE_FIXTURE_TOOLS = [['undo', 'redo', 'image']]
+    LINK_FIXTURE_TOOLS = [['undo', 'redo', 'link']]
     ContentEdit.Root.get().bind 'focus', (element) ->
         # Determine what tools should be available to the user
         if element.isFixed()
-            tools = FIXTURE_TOOLS
+            if element.type() is 'ImageFixture'
+                tools = IMAGE_FIXTURE_TOOLS
+            else if element.tagName() == 'a'
+                tools = LINK_FIXTURE_TOOLS
+            else
+                tools = FIXTURE_TOOLS
         else
             tools = ContentTools.DEFAULT_TOOLS
 

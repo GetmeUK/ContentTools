@@ -138,7 +138,7 @@
   window.ImageUploader = ImageUploader;
 
   window.onload = function() {
-    var FIXTURE_TOOLS, editor, req;
+    var FIXTURE_TOOLS, IMAGE_FIXTURE_TOOLS, LINK_FIXTURE_TOOLS, editor, req;
     ContentTools.IMAGE_UPLOADER = ImageUploader.createImageUploader;
     ContentTools.StylePalette.add([new ContentTools.Style('By-line', 'article__by-line', ['p']), new ContentTools.Style('Caption', 'article__caption', ['p']), new ContentTools.Style('Example', 'example', ['pre']), new ContentTools.Style('Example + Good', 'example--good', ['pre']), new ContentTools.Style('Example + Bad', 'example--bad', ['pre'])]);
     editor = ContentTools.EditorApp.get();
@@ -159,10 +159,18 @@
       return setTimeout(saved, 2000);
     });
     FIXTURE_TOOLS = [['undo', 'redo', 'remove']];
+    IMAGE_FIXTURE_TOOLS = [['undo', 'redo', 'image']];
+    LINK_FIXTURE_TOOLS = [['undo', 'redo', 'link']];
     ContentEdit.Root.get().bind('focus', function(element) {
       var tools;
       if (element.isFixed()) {
-        tools = FIXTURE_TOOLS;
+        if (element.type() === 'ImageFixture') {
+          tools = IMAGE_FIXTURE_TOOLS;
+        } else if (element.tagName() === 'a') {
+          tools = LINK_FIXTURE_TOOLS;
+        } else {
+          tools = FIXTURE_TOOLS;
+        }
       } else {
         tools = ContentTools.DEFAULT_TOOLS;
       }

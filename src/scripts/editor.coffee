@@ -296,8 +296,14 @@ class _EditorApp extends ContentTools.ComponentUI
             @_handlePreviousRegionTransition
             )
 
+        # Remove any event listeners attached to the editor
+        @removeEventListener()
+
         # Unmount the editor
         @unmount()
+
+        # Clear the list of children for the editor
+        @_children = []
 
     highlightRegions: (highlight) ->
         # Highlight (or stop highlighting) editiable regions within the page
@@ -439,6 +445,10 @@ class _EditorApp extends ContentTools.ComponentUI
         if not @isMounted()
             return
 
+        # Unmount all children
+        for child in @_children
+            child.unmount()
+
         # Remove the DOM element
         @_domElement.parentNode.removeChild(@_domElement)
         @_domElement = null
@@ -461,12 +471,11 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Check if there are any changes, and if there are make the user confirm
         # they want to lose them.
-        confirmMessage = ContentEdit._(
-            'Your changes have not been saved, do you really want to lose them?'
-            )
-        if ContentEdit.Root.get().lastModified() > @_rootLastModified and
-                not window.confirm(confirmMessage)
-            return false
+        if ContentTools.CANCEL_MESSAGE
+            confirmMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
+            if ContentEdit.Root.get().lastModified() > @_rootLastModified and
+                    not window.confirm(confirmMessage)
+                return false
 
         # Revert the page to it's initial state
         @revertToSnapshot(@history.goTo(0), false)
@@ -485,7 +494,16 @@ class _EditorApp extends ContentTools.ComponentUI
             for child in region.children
                 child.unmount()
 
-            region.domElement().innerHTML = snapshot.regions[name]
+            # Handle fixtures vs. standard regions
+            if region.children.length is 1 and region.children[0].isFixed()
+                wrapper = @constructor.createDiv()
+                wrapper.innerHTML = snapshot.regions[name]
+                region.domElement().parentNode.replaceChild(
+                    wrapper.firstElementChild,
+                    region.domElement()
+                    )
+            else
+                region.domElement().innerHTML = snapshot.regions[name]
 
         # Check to see if we need to restore the regions to an editable state
         if restoreEditable
@@ -544,7 +562,17 @@ class _EditorApp extends ContentTools.ComponentUI
                 for child in region.children
                     child.unmount()
 
-                region.domElement().innerHTML = html
+                # Handle fixtures vs. standard regions
+                if region.children.length is 1 and region.children[0].isFixed()
+                    wrapper = @constructor.createDiv()
+                    wrapper.innerHTML = html
+                    console.log html, region.domElement()
+                    region.domElement().parentNode.replaceChild(
+                        wrapper.firstElementChild,
+                        region.domElement()
+                        )
+                else
+                    region.domElement().innerHTML = html
 
             # Check the region has been modified, if not we don't include it in
             # the output.
@@ -737,7 +765,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # When unloading the page we check to see if the user is currently
         # editing and if so ask them to confirm the action.
         @_handleBeforeUnload = (ev) =>
-            if @_state is 'editing'
+            if @_state is 'editing' and ContentTools.CANCEL_MESSAGE
                 cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
                 (ev or window.event).returnValue = cancelMessage
                 return cancelMessage
@@ -857,10 +885,6 @@ class ContentTools.EditorApp
     # The `ContentTools.EditorApp` class is a singleton, this code provides
     # access to the singleton instance of the protected `_EditorApp` class which
     # is initialized the first time the class method `get` is called.
-
-    # Constants
-
-    # A set of possible states for the editor.
 
     # Storage for the singleton instance that will be created for the editor app
     instance = null
