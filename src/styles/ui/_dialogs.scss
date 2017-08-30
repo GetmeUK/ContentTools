@@ -628,32 +628,39 @@
      * Anchored dialogs are a special type of dialog that are appear at a fixed
      * position with the page, for example above a selection of text. They are
      * used to support simple task (such as inserting a link) in a less
-     * intrusive mannor than full dialogs.
-     *
-     * Anchored dialogs support an single text input and a confirm button only.
+     * intrusive manner than full dialogs.
      */
     &.ct-anchored-dialog {
         $bkg-color: #27ae60;
 
-        border-bottom: 2px solid $bkg-color;
-        box-shadow: 0 3px 3px $shadow-color;
         font-size: 0;
-        height: 34px;
         left: 0;
-        margin-left: -160px;
-        margin-top: -48px;
         position: absolute;
         top: 0;
         width: 320px;
+        transform: translate(-50%, calc(-100% + 3px));
         z-index: $base-z-index + 100;
 
         &:after {
             border: 16px solid rgba(white, 0);
             border-top-color: $bkg-color;
             content: '';
-            left: 144px;
-            position: absolute;
-            top: 34px;
+            left: calc(50% - 16px);
+            position: relative;
+            top: 6px;
+        }
+
+        &__move-size-buttons {
+            width: 224px;
+        }
+
+        &__move-buttons {
+            width: 96px;
+        }
+
+        .ct-anchored-dialog-inner {
+            border-bottom: 2px solid $bkg-color;
+            box-shadow: 0 3px 3px $shadow-color;
         }
     }
 
@@ -681,12 +688,15 @@
 
             &:before {
                 color: white;
-                content: '\ea10';
             }
 
             &:hover {
                 background: lighten($confirm-action-color, 5%);
             }
+        }
+
+        &__confirm-button:before {
+            content: '\ea10';
         }
 
         &__target-button {
@@ -724,6 +734,45 @@
                 &:hover:before {
                     color: lighten($confirm-action-color, 5%);
                 }
+            }
+        }
+
+        &__move-up-left-button:before {
+            content: '\ea31';
+        }
+
+        &__move-up-button:before {
+            content: '\ea32';
+        }
+
+        &__move-up-right-button:before {
+            content: '\ea33';
+        }
+
+        &__move-down-left-button:before {
+            content: '\ea37';
+        }
+
+        &__move-down-button:before {
+            content: '\ea36';
+        }
+
+        &__move-down-right-button:before {
+            content: '\ea35';
+        }
+
+        &__size-input {
+            border: none;
+            color: $text-color;
+            height: 32px;
+            outline: none;
+            @include type-text($line-height: 32px);
+            padding: 0 8px 0 16px;
+            vertical-align: top;
+            width: 128px;
+
+            &-first {
+                border-bottom: 1px solid #27ae60;
             }
         }
 

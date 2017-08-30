@@ -6,7 +6,7 @@
 html {
     &.ct-toolbox--active {
         /**
-         * Apply a special right margin override to
+         * Apply a special margin override to better isolate the main content area.
          */
         margin-right: 138px;
 

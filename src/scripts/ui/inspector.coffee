@@ -13,6 +13,9 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
     mount: () ->
         # Mount the widget to the DOM
 
+        # Body transformation
+        ContentEdit.addCSSClass(document.documentElement, 'ct-inspector--active')
+
         # Inspector
         @_domElement = @constructor.createDiv(['ct-widget', 'ct-inspector'])
         @parent().domElement().appendChild(@_domElement)
@@ -58,6 +61,9 @@ class ContentTools.InspectorUI extends ContentTools.WidgetUI
         ContentEdit.Root.get().unbind('blur', @_handleFocusChange)
         ContentEdit.Root.get().unbind('focus', @_handleFocusChange)
         ContentEdit.Root.get().unbind('mount', @_handleFocusChange)
+
+        # Body transformation
+        ContentEdit.removeCSSClass(document.documentElement, 'ct-inspector--active')
 
     updateCounter: () ->
         # Update the counter displaying the number of words in the editable
@@ -190,6 +196,10 @@ class ContentTools.TagUI extends ContentTools.AnchoredComponentUI
     constructor: (@element) ->
         super()
 
+        # Timer tracker for determining dialog type.
+        @_clickTimer = null
+        @_clickIgnoreTimer = null
+
     # Methods
 
     mount: (domParent, before=null) ->
@@ -205,13 +215,77 @@ class ContentTools.TagUI extends ContentTools.AnchoredComponentUI
     _addDOMEventListeners: () ->
         # Add DOM event listeners for the widget
         @_domElement.addEventListener('mousedown', @_onMouseDown)
+        @_domElement.addEventListener('touchstart', @_onMouseDown)
+        @_domElement.addEventListener('click', @_onClick)
+
+    _clearIgnoreTimer: () =>
+        @_clickIgnoreTimer = null
+
+    _inlineMoveSize: () =>
+        # Open an inline move/size dialog for the associated element.
+
+        # Prevent additional calls of this function and onclick from firing.
+        @_clickTimer = null
+
+        if not @element.can('drag')
+            return
+
+        @_clickIgnoreTimer = setTimeout(
+            () => @_clearIgnoreTimer(),
+            750
+            )
+
+        app = ContentTools.EditorApp.get()
+
+        # Dispatch `move-size` event
+        if not app.dispatchEvent(app.createEvent('move-size', { 'element': @element }))
+            return
+
+        # Modal
+        modal = new ContentTools.ModalUI(transparent=true, allowScrolling=true)
+
+        # When the modal is clicked on the dialog should close
+        modal.addEventListener 'click', () ->
+            @unmount()
+            dialog.hide()
+
+        # Dialog
+        dialog = new ContentTools.MoveSizeDialog(
+            @element
+            )
+
+        app.attach(modal)
+        app.attach(dialog)
+        modal.show()
+        dialog.show()
 
     _onMouseDown: (ev) =>
-        # Open a properties dialog for the associated element
+        # Start a timer to decide which dialog to display if the element can be moved.
+        if @element.typeName() == 'Element'
+            # Dummy handler to allow the click to always be processed.
+            @_clickTimer = setTimeout(
+                () => @_clearIgnoreTimer(),
+                ContentEdit.DRAG_HOLD_DURATION
+                )
+        else if not @_clickTimer and not @_clickIgnoreTimer
+            @_clickTimer = setTimeout(
+                () => @_inlineMoveSize(),
+                ContentEdit.DRAG_HOLD_DURATION
+                )
+        else if not @_clickIgnoreTimer
+            ev.preventDefault()
 
-        # We don't want to lose selected elements focus so prevent the event's
-        # default behaviour.
-        ev.preventDefault()
+    _onClick: (ev) =>
+        # Open a properties dialog for the associated element.
+
+        # Ignore spurious clicks from releasing after long pressing/clicking.
+        if not @_clickTimer
+            ev.preventDefault()
+            return
+
+        # Clear the timer to stop the other dialog from showing.
+        clearTimeout(@_clickTimer)
+        @_clickTimer = null
 
         # If supported allow store the state for restoring once the dialog is
         # cancelled.

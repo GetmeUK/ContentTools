@@ -27,6 +27,12 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
             ])
         @parent().domElement().appendChild(@_domElement)
 
+        # Create the main mount element
+        @_domElementInner = @constructor.createDiv([
+            'ct-anchored-dialog-inner'
+            ])
+        @_domElement.appendChild(@_domElementInner);
+
         # Set the position of the dialog
         @_contain()
         @_domElement.style.top = "#{ @_position[1] }px"
@@ -54,6 +60,7 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
         # dialog off the page or not.
         if not @isMounted()
             return
+
         # Calculate half the width of the anchored dialog (as anchored dialogs
         # are displayed centrally) and add a 5 pixel buffer so we don't bump
         # right up to the edge.

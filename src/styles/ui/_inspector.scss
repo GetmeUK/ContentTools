@@ -6,6 +6,17 @@
  * elements which typically can't be directly selected using the editor to be
  * modified.
  */
+
+html {
+    &.ct-inspector--active {
+        /**
+         * Apply a special padding override to better isolate the main content area.
+         */
+        box-sizing: border-box;
+        padding-bottom: 34px;
+    }
+}
+
 .ct-widget {
 
     &.ct-inspector {
@@ -38,6 +49,12 @@
             position: relative;
             white-space: nowrap;
             padding-right: 1.5em;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
 
             &:before {
                 color: $icon-color;
