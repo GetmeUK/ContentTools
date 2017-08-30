@@ -7,15 +7,18 @@
 
 .ct-widget {
 
+    .ct-section-wrap {
+        display: table;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
     .ct-section {
-        border-bottom: 1px solid #eee;
-        @include clearfix;
+        display: table-row;
         color: lighten($text-color, 35%);
         cursor: pointer;
         font-style: italic;
-        height: 48px;
-        padding: 0 16px;
-        @include type-text($font-size: 16px, $line-height: 48px);
+        @include type-text($font-size: 16px, $line-height: normal);
 
         &:hover {
             background: #f6f6f6;
@@ -43,25 +46,22 @@
         }
 
         /**
-         * If the section contains an input field the `contains-input` modifier
-         * is set.
-         */
-        &--contains-input {
-            .ct-section__label {
-                width: 75%;
-            }
-        }
-
-        /**
          * Each section has a label describing the purpose of the switch or
          * input within the section.
          */
         &__label {
-            float: left;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 472px;
-            white-space: nowrap;
+            display: table-cell;
+            padding: 0.85em 1em;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        &__switch-wrap {
+            display: table-cell;
+            border-bottom: 1px solid #eee;
+            padding: 0.85em 1em;
+            width: 48px;
+            vertical-align: middle;
         }
 
         &__switch {
@@ -69,16 +69,16 @@
             border: 1px solid darken(#ccc, 10%);
             border-radius: 12px;
             box-shadow: inset 0px 0 2px rgba(black, 0.1);
-            float: right;
-            height: 24px;
-            margin-top: 12px;
             position: relative;
+            float: right;
             width: 48px;
+            height: 24px;
 
             &:before {
                 background: white;
                 border-radius: 10px;
                 content: '';
+                width: 20px;
                 height: 20px;
                 left: 1px;
                 position: absolute;
@@ -86,21 +86,29 @@
                 @include transition-property(left);
                 @include transition-duration(0.1s);
                 @include transition-timing-function(ease-in);
-                width:20px;
             }
         }
 
-        &__input {
-            background: white;
-            border: none;
-            color: $text-color;
-            float: right;
-            height: 47px;
-            outline: none;
-            padding: 0 16px;
-            text-align: right;
-            @include type-text($line-height: 48px);
+        &__input-wrap {
+            display: table-cell;
+            position: relative;
+            border-bottom: 1px solid #eee;
             width: 25%;
+        }
+
+        &__input {
+            display: block;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            border: none;
+            padding: 0.85em 1em;
+            background: white;
+            color: $text-color;
+            width: 100%;
+            height: 100%;
+            outline: none;
+            text-align: right;
 
             /**
              * If the contents of the sections input is invalid then the

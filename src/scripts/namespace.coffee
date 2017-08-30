@@ -91,6 +91,13 @@ ContentTools =
         'iframe': ['height', 'width']
         }
 
+    # Scroll a parent scrollable element when using the move/size anchored
+    # dialog such that the dialog remains at roughly the same position on the
+    # screen.
+    #
+    # This feature is disabled by default.
+    MOVE_SIZE_AUTO_SCROLL: false
+
     # Utility functions
 
     getEmbedVideoURL: (url) ->
