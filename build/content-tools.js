@@ -4181,7 +4181,7 @@
       le = ContentEdit.LINE_ENDINGS;
       attributes = this._attributesToString();
       alt = '';
-      if (this._attributes['alt']) {
+      if (this._attributes['alt'] !== void 0) {
         alt = "alt=\"" + this._attributes['alt'] + "\"";
       }
       img = "" + indent + "<img src=\"" + (this.src()) + "\"" + alt + ">";
@@ -4294,9 +4294,7 @@
         }
       }
       attributes = this.getDOMElementAttributes(domElement);
-      if (alt) {
-        attributes['alt'] = alt;
-      }
+      attributes['alt'] = alt;
       return new this(domElement.tagName, attributes, src);
     };
 
