@@ -377,10 +377,10 @@ th {
 body {
   color: #494949;
   font-family: helvetica, sans-serif;
-  -webkit-font-feature-settings: "kern", "liga", "frac", "pnum";
-  -moz-font-feature-settings: "kern", "liga", "frac", "pnum";
-  -ms-font-feature-settings: "kern", "liga", "frac", "pnum";
-  font-feature-settings: "kern", "liga", "frac", "pnum";
+  /**
+   * This causes problems with correctly displaying numbers on some systems.
+      @include font-feature-settings("kern", "liga", "frac", "pnum");
+  */
   -webkit-font-smoothing: antialiased; }
 
 /* Technical article */

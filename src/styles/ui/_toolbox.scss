@@ -3,6 +3,19 @@
  * content of the page.
  */
 
+html {
+    &.ct-toolbox--active {
+        /**
+         * Apply a special margin override to better isolate the main content area.
+         */
+        margin-right: 138px;
+
+        @media (max-width: 820px) {
+            margin-right: 56px;
+        }
+    }
+}
+
 .ct-widget {
     /**
      * Define the spacing for the toolbox:
@@ -21,40 +34,23 @@
 
     &.ct-toolbox {
         /**
-         * The position of the toolbox is typically determined by the position
-         * the user last placed it (this information is stored in local
-         * storage). However we set a default position for the first time the
-         * toolbox is displayed.
+         * Affix the toolbox to the right side of the screen with a hidden scrollbar.
          */
         background: rgba($in-page-background, 0.9);
         border: 1px solid rgba(lighten($in-page-background, 10%), 0.5);
-        box-shadow: 0 3px 3px $shadow-color;
-        left: 128px;
+        box-shadow: 0 -1px 3px $shadow-color;
         padding: $spacing;
         position: fixed;
-        top: 128px;
-        width: 138px;
+        top: 0;
+        width: 188px;
+        right: -50px;
+        padding-right: 42px;
+        height: calc(100% - 34px);
+        overflow-x: hidden;
+        overflow-y: scroll;
 
-        /**
-         * When the toolbox is being dragged to a new position by the user the
-         * dragging modifier is applied. Whilst being dragged we reduce the
-         * opacity of the toolbox to make it easier for the user to see the
-         * content being dragged over.
-         */
-        &--dragging {
-            opacity: 0.5;
-        }
-    }
-
-
-    /**
-     * The grip is positioned at the top of the toolbox. If the user clicks and
-     * holds the mouse down whilst over the grip then the toolbox will be
-     * draggable until they release the mouse button.
-     */
-    .ct-toolbox {
-        &__grip {
-            padding: $spacing 0;
+        @media (max-width: 820px) {
+            width: 106px;
         }
     }
 

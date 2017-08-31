@@ -28,13 +28,13 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
             )
         @_domInput.setAttribute('type', 'text')
         @_domInput.setAttribute('value', @_href)
-        @_domElement.appendChild(@_domInput)
+        @_domElementInner.appendChild(@_domInput)
 
         # Create a toggle button to allow users to toogle between no target and
         # TARGET (open in a new window).
         @_domTargetButton = @constructor.createDiv([
             'ct-anchored-dialog__target-button'])
-        @_domElement.appendChild(@_domTargetButton)
+        @_domElementInner.appendChild(@_domTargetButton)
 
         # Check if the new window target has already been set for the link
         if @_target == NEW_WINDOW_TARGET
@@ -44,8 +44,11 @@ class ContentTools.LinkDialog extends ContentTools.AnchoredDialogUI
             )
 
         # Create the confirm button
-        @_domButton = @constructor.createDiv(['ct-anchored-dialog__button'])
-        @_domElement.appendChild(@_domButton)
+        @_domButton = @constructor.createDiv([
+            'ct-anchored-dialog__button',
+            'ct-anchored-dialog__confirm-button',
+            ])
+        @_domElementInner.appendChild(@_domButton)
 
         # Add interaction handlers
         @_addDOMEventListeners()
