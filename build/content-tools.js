@@ -8629,7 +8629,6 @@
           if (region.children.length === 1 && region.children[0].isFixed()) {
             wrapper = this.constructor.createDiv();
             wrapper.innerHTML = html;
-            console.log(html, region.domElement());
             region.domElement().parentNode.replaceChild(wrapper.firstElementChild, region.domElement());
           } else {
             region.domElement().innerHTML = html;
