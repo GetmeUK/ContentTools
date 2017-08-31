@@ -6,16 +6,27 @@
  * elements which typically can't be directly selected using the editor to be
  * modified.
  */
+
+html {
+    &.ct-inspector--active {
+        /**
+         * Apply a special padding override to better isolate the main content area.
+         */
+        box-sizing: border-box;
+        padding-bottom: 34px;
+    }
+}
+
 .ct-widget {
 
     &.ct-inspector {
-        background: rgba($in-page-background, 0.2);
-        border-top: 1px solid rgba(lighten($in-page-background, 10%), 0.1);
+        background: rgba($in-page-background, 0.8);
+/*        border-top: 1px solid rgba(lighten($in-page-background, 10%), 0.1); */
         bottom: 0;
-        height: 32px;
         left: 0;
         overflow: hidden;
-        padding: 3px 16px 0;
+        padding: 4px 1em;
+        display: table;
         position: fixed;
         width: 100%;
     }
@@ -29,15 +40,42 @@
      * table > tbody > tr > td
      */
     .ct-inspector {
+        &__group {
+            display: table-row;
+        }
+
         &__tags {
-            @include clearfix;
-            width: calc(100% - 128px);
+            display: table-cell;
+            position: relative;
+            white-space: nowrap;
+            padding-right: 1.5em;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
 
             &:before {
                 color: $icon-color;
                 content: '\ea80';
-                display: block;
-                float: left;
+                display: inline-block;
+                height: 24px;
+                line-height: 24px;
+                margin-right: 16px;
+                text-align: center;
+                @include type-icons;
+                width: 24px;
+
+                @media (max-width: 580px) {
+                    display: none;
+                }
+            }
+
+            &:empty:before {
+                color: $icon-color;
+                content: '\ea80';
+                display: inline-block;
                 height: 24px;
                 line-height: 24px;
                 margin-right: 16px;
@@ -48,15 +86,17 @@
         }
 
         &__counter {
-            border-left: 1px solid rgba(0, 0, 0, 0.1);
-            height: 24px;
-            line-height: 24px;
-            margin-right: 16px;
-            position: absolute;
-            right: 0;
+            display: table-cell;
+            border-left: 1px solid rgba(0, 0, 0, 0.15);
+            padding-left: 1em;
             text-align: right;
-            top: 3px;
             width: 128px;
+            white-space: nowrap;
+            line-height: 24px;
+
+            @media (max-width: 410px) {
+                display: none;
+            }
         }
     }
 
@@ -67,7 +107,7 @@
         border-radius: 2px 0 0 2px;
         color: white;
         cursor: pointer;
-        float: left;
+        display: inline-block;
         font-weight: bold;
         height: $tag-height;
         line-height: $tag-height;
@@ -90,7 +130,7 @@
             position: absolute;
             width: $tag-height;
 
-            // HACK: Fix for appearance of border in FireFox
+            // HACK: Fix for appearance of border in Firefox
             -moz-transform: scale(.9999);
         }
 

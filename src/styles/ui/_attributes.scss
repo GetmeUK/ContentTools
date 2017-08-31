@@ -7,9 +7,7 @@
 .ct-widget {
 
     .ct-attribute {
-        border-bottom: 1px solid #eee;
-        @include clearfix;
-        height: 48px;
+        display: table-row;
         vertical-align: top;
 
         /**
@@ -17,15 +15,20 @@
          * modified.
          */
         &__name {
+            display: table-cell;
             background: #f6f6f6;
             border: none;
+            border-bottom: 1px solid #eee;
             color: $text-color;
-            float: left;
-            height: 47px;
             outline: none;
-            padding: 0 16px;
-            @include type-text($line-height: 48px);
+            padding: 1em;
+            @include type-text($line-height: normal);
             width: 25%;
+
+            @media (max-width: 500px) {
+                padding: 0.7em;
+                width: 40%;
+            }
 
             /**
              * If the the attributes name is invalid then the `invalid` modifier
@@ -37,19 +40,20 @@
         }
 
         &__value {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-
+            display: table-cell;
             background: white;
             border: none;
+            border-bottom: 1px solid #eee;
             color: $text-color;
-            float: right;
-            height: 47px;
             outline: none;
-            padding: 0 16px;
-            @include type-text($line-height: 48px);
+            padding: 1em;
+            @include type-text($line-height: normal);
             width: 75%;
+
+            @media (max-width: 500px) {
+                padding: 0.7em;
+                width: 60%;
+            }
         }
     }
 }
