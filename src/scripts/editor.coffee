@@ -486,6 +486,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # Revert the page to the specified snapshot (the snapshot should be a
         # map of regions and the associated HTML).
 
+        domRegions = []
         for name, region of @_regions
             # Apply the changes made to the DOM (affectively reseting the DOM to
             # a non-editable state).
@@ -498,12 +499,18 @@ class _EditorApp extends ContentTools.ComponentUI
             if region.children.length is 1 and region.children[0].isFixed()
                 wrapper = @constructor.createDiv()
                 wrapper.innerHTML = snapshot.regions[name]
+                domRegions.push(wrapper.firstElementChild)
                 region.domElement().parentNode.replaceChild(
                     wrapper.firstElementChild,
                     region.domElement()
                     )
             else
+                domRegions.push(region.domElement())
                 region.domElement().innerHTML = snapshot.regions[name]
+
+        # Resync the DOM regions, this is required as fixture will replace the
+        # existing DOM region element (regions wont).
+        @_domRegions = domRegions
 
         # Check to see if we need to restore the regions to an editable state
         if restoreEditable
@@ -546,6 +553,7 @@ class _EditorApp extends ContentTools.ComponentUI
             return
 
         # Build a map of the modified regions
+        domRegions = []
         modifiedRegions = {}
         for name, region of @_regions
             # Check for regions that contain only a place holder
@@ -566,12 +574,13 @@ class _EditorApp extends ContentTools.ComponentUI
                 if region.children.length is 1 and region.children[0].isFixed()
                     wrapper = @constructor.createDiv()
                     wrapper.innerHTML = html
-
+                    domRegions.push(wrapper.firstElementChild)
                     region.domElement().parentNode.replaceChild(
                         wrapper.firstElementChild,
                         region.domElement()
                     )
                 else
+                    domRegions.push(region.domElement())
                     region.domElement().innerHTML = html
 
             # Check the region has been modified, if not we don't include it in
@@ -583,6 +592,10 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Set the region back to not modified
             @_regionsLastModified[name] = region.lastModified()
+
+        # Resync the DOM regions, this is required as fixture will replace the
+        # existing DOM region element (regions wont).
+        @_domRegions = domRegions
 
         # Trigger the saved event with a region HTML map for the changed
         # content.
@@ -626,6 +639,8 @@ class _EditorApp extends ContentTools.ComponentUI
         @_inspector.show()
 
         @busy(false)
+
+        @dispatchEvent(@createEvent('started'))
 
     stop: (save) ->
         # Stop editing the page
@@ -672,7 +687,7 @@ class _EditorApp extends ContentTools.ComponentUI
             @_allowEmptyRegions () =>
                 ContentEdit.Root.get().focused().blur()
 
-        return
+        @dispatchEvent(@createEvent('stopped'))
 
     syncRegions: (regionQuery, restoring) ->
         # Sync the editor with the page in order to map out the regions/fixtures
@@ -831,6 +846,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # Initialize DOM regions within the page
 
         found = {}
+        domRegions = []
         @_orderedRegions = []
         for domRegion, i in @_domRegions
 
@@ -859,11 +875,16 @@ class _EditorApp extends ContentTools.ComponentUI
                 @_regions[name] = new ContentEdit.Fixture(domRegion)
             else
                 @_regions[name] = new ContentEdit.Region(domRegion)
+            domRegions.push(@_regions[name].domElement())
 
             # Store the date at which the region was last modified so we can
             # check for changes on save.
             if not restoring
                 @_regionsLastModified[name] = @_regions[name].lastModified()
+
+        # Resync the DOM regions, this is required as fixture will replace the
+        # existing DOM region element (regions wont).
+        @_domRegions = domRegions
 
         # Remove any regions no longer part of the page
         for name, region of @_regions
