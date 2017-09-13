@@ -8614,7 +8614,7 @@
       for (name in _ref) {
         region = _ref[name];
         html = region.html();
-        if (region.children.length === 1) {
+        if (region.children.length === 1 && !region.type() === 'Fixture') {
           child = region.children[0];
           if (child.content && !child.content.html()) {
             html = '';

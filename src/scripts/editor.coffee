@@ -550,7 +550,7 @@ class _EditorApp extends ContentTools.ComponentUI
         for name, region of @_regions
             # Check for regions that contain only a place holder
             html = region.html()
-            if region.children.length == 1
+            if region.children.length == 1 and not region.type() is 'Fixture'
                 child = region.children[0]
                 if child.content and not child.content.html()
                     html = ''
@@ -566,10 +566,11 @@ class _EditorApp extends ContentTools.ComponentUI
                 if region.children.length is 1 and region.children[0].isFixed()
                     wrapper = @constructor.createDiv()
                     wrapper.innerHTML = html
+
                     region.domElement().parentNode.replaceChild(
                         wrapper.firstElementChild,
                         region.domElement()
-                        )
+                    )
                 else
                     region.domElement().innerHTML = html
 
@@ -587,7 +588,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # content.
         @dispatchEvent(
             @createEvent('saved', {regions: modifiedRegions, passive: passive})
-            )
+        )
 
     setRegionOrder: (regionNames) ->
         # Set the navigation order of regions on the page to the order set in
