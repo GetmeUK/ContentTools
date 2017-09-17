@@ -543,8 +543,12 @@ class _EditorApp extends ContentTools.ComponentUI
         if not @dispatchEvent(@createEvent('save', {passive: passive}))
             return
 
-        # Check the document has changed, if not we don't need do anything
+        # Blur any active element to ensure we empty elements are not retained
         root = ContentEdit.Root.get()
+        if root.focused()
+            root.focused().blur()
+
+        # Check the document has changed, if not we don't need do anything
         if root.lastModified() == @_rootLastModified and passive
             # Trigger the saved event early with no modified regions,
             @dispatchEvent(

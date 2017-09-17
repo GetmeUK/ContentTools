@@ -8606,6 +8606,9 @@
         return;
       }
       root = ContentEdit.Root.get();
+      if (root.focused()) {
+        root.focused().blur();
+      }
       if (root.lastModified() === this._rootLastModified && passive) {
         this.dispatchEvent(this.createEvent('saved', {
           regions: {},
