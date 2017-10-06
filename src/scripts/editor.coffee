@@ -107,7 +107,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Return the busy flag
         if busy == undefined
-            @_busy = busy
+            return @_busy
 
         # Set the busy flag
         @_busy = busy
