@@ -8554,10 +8554,11 @@
     };
 
     _EditorApp.prototype.revertToSnapshot = function(snapshot, restoreEditable) {
-      var child, name, region, wrapper, _i, _len, _ref, _ref1, _ref2;
+      var child, domRegions, name, region, wrapper, _i, _len, _ref, _ref1, _ref2;
       if (restoreEditable == null) {
         restoreEditable = true;
       }
+      domRegions = [];
       _ref = this._regions;
       for (name in _ref) {
         region = _ref[name];
@@ -8569,11 +8570,14 @@
         if (region.children.length === 1 && region.children[0].isFixed()) {
           wrapper = this.constructor.createDiv();
           wrapper.innerHTML = snapshot.regions[name];
+          domRegions.push(wrapper.firstElementChild);
           region.domElement().parentNode.replaceChild(wrapper.firstElementChild, region.domElement());
         } else {
+          domRegions.push(region.domElement());
           region.domElement().innerHTML = snapshot.regions[name];
         }
       }
+      this._domRegions = domRegions;
       if (restoreEditable) {
         if (ContentEdit.Root.get().focused()) {
           ContentEdit.Root.get().focused().blur();
@@ -8595,13 +8599,16 @@
     };
 
     _EditorApp.prototype.save = function(passive) {
-      var child, html, modifiedRegions, name, region, root, wrapper, _i, _len, _ref, _ref1;
+      var child, domRegions, html, modifiedRegions, name, region, root, wrapper, _i, _len, _ref, _ref1;
       if (!this.dispatchEvent(this.createEvent('save', {
         passive: passive
       }))) {
         return;
       }
       root = ContentEdit.Root.get();
+      if (root.focused()) {
+        root.focused().blur();
+      }
       if (root.lastModified() === this._rootLastModified && passive) {
         this.dispatchEvent(this.createEvent('saved', {
           regions: {},
@@ -8609,12 +8616,13 @@
         }));
         return;
       }
+      domRegions = [];
       modifiedRegions = {};
       _ref = this._regions;
       for (name in _ref) {
         region = _ref[name];
         html = region.html();
-        if (region.children.length === 1) {
+        if (region.children.length === 1 && !region.type() === 'Fixture') {
           child = region.children[0];
           if (child.content && !child.content.html()) {
             html = '';
@@ -8629,8 +8637,10 @@
           if (region.children.length === 1 && region.children[0].isFixed()) {
             wrapper = this.constructor.createDiv();
             wrapper.innerHTML = html;
+            domRegions.push(wrapper.firstElementChild);
             region.domElement().parentNode.replaceChild(wrapper.firstElementChild, region.domElement());
           } else {
+            domRegions.push(region.domElement());
             region.domElement().innerHTML = html;
           }
         }
@@ -8640,6 +8650,7 @@
         modifiedRegions[name] = html;
         this._regionsLastModified[name] = region.lastModified();
       }
+      this._domRegions = domRegions;
       return this.dispatchEvent(this.createEvent('saved', {
         regions: modifiedRegions,
         passive: passive
@@ -8664,7 +8675,8 @@
       this._state = 'editing';
       this._toolbox.show();
       this._inspector.show();
-      return this.busy(false);
+      this.busy(false);
+      return this.dispatchEvent(this.createEvent('started'));
     };
 
     _EditorApp.prototype.stop = function(save) {
@@ -8698,6 +8710,7 @@
           };
         })(this));
       }
+      return this.dispatchEvent(this.createEvent('stopped'));
     };
 
     _EditorApp.prototype.syncRegions = function(regionQuery, restoring) {
@@ -8836,11 +8849,12 @@
     };
 
     _EditorApp.prototype._initRegions = function(restoring) {
-      var domRegion, found, i, index, name, region, _i, _len, _ref, _ref1, _results;
+      var domRegion, domRegions, found, i, index, name, region, _i, _len, _ref, _ref1, _results;
       if (restoring == null) {
         restoring = false;
       }
       found = {};
+      domRegions = [];
       this._orderedRegions = [];
       _ref = this._domRegions;
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
@@ -8859,10 +8873,12 @@
         } else {
           this._regions[name] = new ContentEdit.Region(domRegion);
         }
+        domRegions.push(this._regions[name].domElement());
         if (!restoring) {
           this._regionsLastModified[name] = this._regions[name].lastModified();
         }
       }
+      this._domRegions = domRegions;
       _ref1 = this._regions;
       _results = [];
       for (name in _ref1) {
