@@ -8262,7 +8262,7 @@
 
     _EditorApp.prototype.busy = function(busy) {
       if (busy === void 0) {
-        this._busy = busy;
+        return this._busy;
       }
       this._busy = busy;
       if (this._ignition) {
@@ -8339,12 +8339,17 @@
           var clipboardData;
           clipboardData = null;
           if (ev.clipboardData) {
-            clipboardData = ev.clipboardData.getData('text/plain');
+            if (ev.clipboardData.getData('text/html')) {
+              _this.pasteHTML(element, ev.clipboardData.getData('text/html'));
+            } else {
+              _this.pasteText(element, ev.clipboardData.getData('text/plain'));
+            }
+            return;
           }
           if (window.clipboardData) {
             clipboardData = window.clipboardData.getData('TEXT');
+            return _this.pasteText(element, window.clipboardData.getData('TEXT'));
           }
-          return _this.paste(element, clipboardData);
         };
       })(this);
       this._handleNextRegionTransition = (function(_this) {
@@ -8439,9 +8444,28 @@
       return this._addDOMEventListeners();
     };
 
-    _EditorApp.prototype.paste = function(element, clipboardData) {
-      var character, content, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, replaced, selection, spawn, tags, tail, tip, type, _i, _len;
-      content = clipboardData;
+    _EditorApp.prototype.unmount = function() {
+      var child, _i, _len, _ref;
+      if (!this.isMounted()) {
+        return;
+      }
+      _ref = this._children;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        child = _ref[_i];
+        child.unmount();
+      }
+      this._domElement.parentNode.removeChild(this._domElement);
+      this._domElement = null;
+      this._removeDOMEventListeners();
+      this._ignition = null;
+      this._inspector = null;
+      return this._toolbox = null;
+    };
+
+    _EditorApp.prototype.pasteHTML = function(element, content) {};
+
+    _EditorApp.prototype.pasteText = function(element, content) {
+      var character, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, replaced, selection, spawn, tags, tail, tip, type, _i, _len;
       lines = content.split('\n');
       lines = lines.filter(function(line) {
         return line.trim() !== '';
@@ -8518,24 +8542,6 @@
         selection.set(cursor, cursor);
         return element.selection(selection);
       }
-    };
-
-    _EditorApp.prototype.unmount = function() {
-      var child, _i, _len, _ref;
-      if (!this.isMounted()) {
-        return;
-      }
-      _ref = this._children;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        child = _ref[_i];
-        child.unmount();
-      }
-      this._domElement.parentNode.removeChild(this._domElement);
-      this._domElement = null;
-      this._removeDOMEventListeners();
-      this._ignition = null;
-      this._inspector = null;
-      return this._toolbox = null;
     };
 
     _EditorApp.prototype.revert = function() {

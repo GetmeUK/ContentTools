@@ -201,13 +201,17 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Non-IE browsers
             if ev.clipboardData
-              clipboardData = ev.clipboardData.getData('text/plain')
+                if ev.clipboardData.getData('text/html')
+                    @pasteHTML(element, ev.clipboardData.getData('text/html'))
+                else
+                    @pasteText(element, ev.clipboardData.getData('text/plain'))
+
+                return
 
             # IE browsers
             if window.clipboardData
-              clipboardData = window.clipboardData.getData('TEXT')
-
-            @paste(element, clipboardData)
+                clipboardData = window.clipboardData.getData('TEXT')
+                @pasteText(element, window.clipboardData.getData('TEXT'))
 
         @_handleNextRegionTransition = (region) =>
             # Is there a next region?
@@ -319,12 +323,38 @@ class _EditorApp extends ContentTools.ComponentUI
         document.body.insertBefore(@_domElement, null)
         @_addDOMEventListeners()
 
-    paste: (element, clipboardData) ->
-        # Paste content into the given element
-        content = clipboardData
+    unmount: () ->
+        # Unmount the widget from the DOM
 
-        # Extract the content of the clipboard
-        # content = clipboardData.getData('text/plain')
+        # Check the editor is mounted
+        if not @isMounted()
+            return
+
+        # Unmount all children
+        for child in @_children
+            child.unmount()
+
+        # Remove the DOM element
+        @_domElement.parentNode.removeChild(@_domElement)
+        @_domElement = null
+
+        # Remove any DOM event bindings
+        @_removeDOMEventListeners()
+
+        # Reset child component handles
+        @_ignition = null
+        @_inspector = null
+        @_toolbox = null
+
+    # Page state methods
+
+    pasteHTML: (element, content) ->
+        # Paste HTML into/after the given element
+
+
+
+    pasteText: (element, content) ->
+        # Paste text into/after the given element
 
         # Convert the content into a series of lines to be inserted
         lines = content.split('\n')
@@ -437,31 +467,6 @@ class _EditorApp extends ContentTools.ComponentUI
             # Restore the selection
             selection.set(cursor, cursor)
             element.selection(selection)
-
-    unmount: () ->
-        # Unmount the widget from the DOM
-
-        # Check the editor is mounted
-        if not @isMounted()
-            return
-
-        # Unmount all children
-        for child in @_children
-            child.unmount()
-
-        # Remove the DOM element
-        @_domElement.parentNode.removeChild(@_domElement)
-        @_domElement = null
-
-        # Remove any DOM event bindings
-        @_removeDOMEventListeners()
-
-        # Reset child component handles
-        @_ignition = null
-        @_inspector = null
-        @_toolbox = null
-
-    # Page state methods
 
     revert: () ->
         # Revert the page to it's previous state before we started editing
