@@ -357,9 +357,66 @@ class _EditorApp extends ContentTools.ComponentUI
         wrapper = sandbox.createElement('div')
         wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim())
 
+        # Remove any undefined nodes
+        childNodes = (n for n in wrapper.childNodes when n)
+        unless childNodes.length
+            return
+
         # Paste the HTML
-        if wrapper.childNodes.length == 1
-            # @@ HANDLE SINGLE TEXT ELEMENT PASTES
+        inlineTags = [
+            'a',
+            'address',
+            'b',
+            'code',
+            'del',
+            'em',
+            'i',
+            'ins',
+            'span',
+            'strong',
+            'sup',
+            'u'
+        ]
+        firstNode = childNodes[0].nodeName.toLowerCase()
+        lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase()
+        if inlineTags.indexOf(firstNode) > -1 and
+                inlineTags.indexOf(lastNode) > -1
+
+            content = new HTMLString.String(wrapper.innerHTML)
+
+            # Insert the content into the element's existing content
+            selection = element.selection()
+            cursor = selection.get()[0] + content.length()
+            tip = element.content.substring(0, selection.get()[0])
+            tail = element.content.substring(selection.get()[1])
+
+            # Format the string using tags for the first character it is
+            # replacing (if any).
+            replaced = element.content.substring(
+                selection.get()[0],
+                selection.get()[1]
+                )
+            if replaced.length()
+                character = replaced.characters[0]
+                tags = character.tags()
+
+                if character.isTag()
+                    tags.shift()
+
+                if tags.length >= 1
+                    content = content.format(0, content.length(), tags...)
+
+            element.content = tip.concat(content)
+            element.content = element.content.concat(tail, false)
+            element.updateInnerHTML()
+
+            # Mark the element as tainted
+            element.taint()
+
+            # Restore the selection
+            selection.set(cursor, cursor)
+            element.selection(selection)
+
             return
 
         # If the element isn't a text element find the nearest top level
@@ -404,12 +461,26 @@ class _EditorApp extends ContentTools.ComponentUI
             i += 1
 
         # Focus on the last focusable element inserted
-        lastElement = newElement
-        while not lastElement.focus
-            # @@ SUPPORT FOR FOCUS ON LAST FOCUSABLE ELEMENT
-            lastElement = newElement
+        if newElement.focus
+            newElement.focus()
 
-        lastElement.focus()
+        else if newElement.nextSibling()
+            newElement = newElement.nextSibling().previousWithTest (node) ->
+                if node.focus
+                    return node
+
+            if newElement
+                newElement.focus()
+
+        else
+            newElement = newElement.nextWithTest (node) ->
+                if node.focus
+                    return node
+
+            if newElement
+                newElement.focus()
+            else
+                originalElement.focus()
 
     pasteText: (element, content) ->
         # Paste text into/after the given element

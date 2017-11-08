@@ -77,7 +77,17 @@ class ContentTools.HTMLCleaner
             # the exception of text or <br> tags.
             unless nodeName == '#text'
                 if node.textContent.trim() == ''
-                    node.remove()
+                    if node.textContent == '' or node.parentNode == wrapper
+                        # If the element is empty or top level remove it...
+                        node.remove()
+
+                    else
+                        # ...replace it with a space
+                        node.parentNode.replaceChild(
+                            sandbox.createTextNode(' '),
+                            node
+                        )
+
                     continue
 
             # Remove paragraphs from table cells and list items (we see this
@@ -89,8 +99,6 @@ class ContentTools.HTMLCleaner
             if nodeName == 'td' or nodeName == 'th' or nodeName == 'li'
                 if node.querySelector('p')
                     node.innerHTML = node.textContent
-
-            # @@ CATER FOR <span>&nbsp;</span>
 
             # Remove any non-whilelisted attributes
             if node.attributes

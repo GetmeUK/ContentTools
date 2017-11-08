@@ -8218,7 +8218,11 @@
         }
         if (nodeName !== '#text') {
           if (node.textContent.trim() === '') {
-            node.remove();
+            if (node.textContent === '' || node.parentNode === wrapper) {
+              node.remove();
+            } else {
+              node.parentNode.replaceChild(sandbox.createTextNode(' '), node);
+            }
             continue;
           }
         }
@@ -8557,12 +8561,52 @@
     };
 
     _EditorApp.prototype.pasteHTML = function(element, content) {
-      var elementCls, i, lastElement, newElement, node, originalElement, p, region, sandbox, tagNames, wrapper, _i, _len, _ref;
+      var character, childNodes, cursor, elementCls, firstNode, i, inlineTags, lastNode, n, newElement, node, originalElement, p, region, replaced, sandbox, selection, tagNames, tags, tail, tip, wrapper, _i, _len, _ref;
       tagNames = ContentEdit.TagNames.get();
       sandbox = document.implementation.createHTMLDocument();
       wrapper = sandbox.createElement('div');
       wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim());
-      if (wrapper.childNodes.length === 1) {
+      childNodes = (function() {
+        var _i, _len, _ref, _results;
+        _ref = wrapper.childNodes;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          n = _ref[_i];
+          if (n) {
+            _results.push(n);
+          }
+        }
+        return _results;
+      })();
+      if (!childNodes.length) {
+        return;
+      }
+      inlineTags = ['a', 'address', 'b', 'code', 'del', 'em', 'i', 'ins', 'span', 'strong', 'sup', 'u'];
+      firstNode = childNodes[0].nodeName.toLowerCase();
+      lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase();
+      if (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1) {
+        content = new HTMLString.String(wrapper.innerHTML);
+        selection = element.selection();
+        cursor = selection.get()[0] + content.length();
+        tip = element.content.substring(0, selection.get()[0]);
+        tail = element.content.substring(selection.get()[1]);
+        replaced = element.content.substring(selection.get()[0], selection.get()[1]);
+        if (replaced.length()) {
+          character = replaced.characters[0];
+          tags = character.tags();
+          if (character.isTag()) {
+            tags.shift();
+          }
+          if (tags.length >= 1) {
+            content = content.format.apply(content, [0, content.length()].concat(__slice.call(tags)));
+          }
+        }
+        element.content = tip.concat(content);
+        element.content = element.content.concat(tail, false);
+        element.updateInnerHTML();
+        element.taint();
+        selection.set(cursor, cursor);
+        element.selection(selection);
         return;
       }
       originalElement = element;
@@ -8594,11 +8638,29 @@
         region.attach(newElement, region.children.indexOf(element) + (1 + i));
         i += 1;
       }
-      lastElement = newElement;
-      while (!lastElement.focus) {
-        lastElement = newElement;
+      if (newElement.focus) {
+        return newElement.focus();
+      } else if (newElement.nextSibling()) {
+        newElement = newElement.nextSibling().previousWithTest(function(node) {
+          if (node.focus) {
+            return node;
+          }
+        });
+        if (newElement) {
+          return newElement.focus();
+        }
+      } else {
+        newElement = newElement.nextWithTest(function(node) {
+          if (node.focus) {
+            return node;
+          }
+        });
+        if (newElement) {
+          return newElement.focus();
+        } else {
+          return originalElement.focus();
+        }
       }
-      return lastElement.focus();
     };
 
     _EditorApp.prototype.pasteText = function(element, content) {
