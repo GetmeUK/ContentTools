@@ -5635,6 +5635,9 @@
       }
       return null;
     },
+    getHTMLCleaner: function() {
+      return new ContentTools.HTMLCleaner();
+    },
     getRestrictedAtributes: function(tagName) {
       var restricted;
       restricted = [];
@@ -8178,6 +8181,92 @@
 
   })(ContentTools.DialogUI);
 
+  ContentTools.HTMLCleaner = (function() {
+    HTMLCleaner.DEFAULT_TAG_WHITELIST = ['a', 'address', 'b', 'blockquote', 'code', 'del', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'i', 'ins', 'li', 'ol', 'p', 'pre', 'span', 'strong', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul', '#text'];
+
+    HTMLCleaner.DEFAULT_ATTRIBUTE_WHITELIST = {
+      'a': ['href'],
+      'td': ['colspan']
+    };
+
+    function HTMLCleaner(tagWhitelist, attributeWhitelist) {
+      this.tagWhitelist = tagWhitelist || this.constructor.DEFAULT_TAG_WHITELIST;
+      this.attributeWhitelist = attributeWhitelist || this.constructor.DEFAULT_ATTRIBUTE_WHITELIST;
+    }
+
+    HTMLCleaner.prototype.clean = function(html) {
+      var a, attribute, c, node, nodeName, rawAttributes, safeAttributes, sandbox, stack, value, wrapper, _i, _len;
+      sandbox = document.implementation.createHTMLDocument();
+      wrapper = sandbox.createElement('div');
+      wrapper.innerHTML = html;
+      stack = (function() {
+        var _i, _len, _ref, _results;
+        _ref = wrapper.childNodes;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          c = _ref[_i];
+          _results.push(c);
+        }
+        return _results;
+      })();
+      while (stack.length > 0) {
+        node = stack.shift();
+        nodeName = node.nodeName.toLowerCase();
+        if (this.tagWhitelist.indexOf(nodeName) < 0) {
+          node.remove();
+          continue;
+        }
+        if (nodeName !== '#text') {
+          if (node.textContent.trim() === '') {
+            node.remove();
+            continue;
+          }
+        }
+        if (node.attributes) {
+          safeAttributes = this.attributeWhitelist[nodeName] || [];
+          rawAttributes = (function() {
+            var _i, _len, _ref, _results;
+            _ref = node.attributes;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              a = _ref[_i];
+              _results.push(a);
+            }
+            return _results;
+          })();
+          for (_i = 0, _len = rawAttributes.length; _i < _len; _i++) {
+            attribute = rawAttributes[_i];
+            if (safeAttributes.indexOf(attribute.name.toLowerCase()) < 0) {
+              node.removeAttribute(attribute.name);
+              continue;
+            }
+            if (attribute.name.toLowerCase() === 'href') {
+              value = node.getAttribute(attribute.name);
+              if (value.startsWith('javascript:')) {
+                node.removeAttribute(attribute.name);
+                continue;
+              }
+            }
+          }
+        }
+        stack.push.apply(stack, (function() {
+          var _j, _len1, _ref, _results;
+          _ref = node.childNodes;
+          _results = [];
+          for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+            c = _ref[_j];
+            _results.push(c);
+          }
+          return _results;
+        })());
+      }
+      return wrapper.innerHTML;
+    };
+
+    return HTMLCleaner;
+
+  })();
+
   _EditorApp = (function(_super) {
     __extends(_EditorApp, _super);
 
@@ -8462,7 +8551,37 @@
       return this._toolbox = null;
     };
 
-    _EditorApp.prototype.pasteHTML = function(element, content) {};
+    _EditorApp.prototype.pasteHTML = function(element, content) {
+      var elementCls, i, newElement, node, p, region, tagNames, wrapper, _i, _len, _ref, _results;
+      tagNames = ContentEdit.TagNames.get();
+      wrapper = document.createElement('div');
+      wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content);
+      if (wrapper.childNodes.length === 1) {
+        return;
+      }
+      if (element.parent().type() !== 'Region') {
+        element = element.closest(function(node) {
+          return node.parent().type() === 'Region';
+        });
+      }
+      region = element.parent();
+      _ref = wrapper.childNodes;
+      _results = [];
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        node = _ref[i];
+        console.log(node);
+        elementCls = tagNames.match(node.nodeName);
+        if (elementCls === ContentEdit.Static) {
+          p = document.createElement('p');
+          p.appendChild(node);
+          node = p;
+          elementCls = ContentEdit.Text;
+        }
+        newElement = elementCls.fromDOMElement(node);
+        _results.push(region.attach(newElement, region.children.indexOf(element) + (1 + i)));
+      }
+      return _results;
+    };
 
     _EditorApp.prototype.pasteText = function(element, content) {
       var character, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, replaced, selection, spawn, tags, tail, tip, type, _i, _len;

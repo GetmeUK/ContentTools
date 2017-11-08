@@ -14,7 +14,7 @@ module.exports = (grunt) ->
             build:
                 files:
                     'src/tmp/content-tools.js': [
-                        'src/scripts/namespace.coffee'
+                        'src/scripts/namespace.coffee',
 
                         # UI
                         'src/scripts/ui/ui.coffee'
@@ -34,6 +34,7 @@ module.exports = (grunt) ->
                         'src/scripts/ui/dialogs/video.coffee'
 
                         # Other
+                        'src/scripts/clean-html.coffee'
                         'src/scripts/editor.coffee'
                         'src/scripts/history.coffee'
                         'src/scripts/styles.coffee'

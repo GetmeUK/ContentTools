@@ -162,6 +162,10 @@ ContentTools =
 
         return null
 
+    getHTMLCleaner: () ->
+        # Return the HTML cleaner that will be
+        return new ContentTools.HTMLCleaner()
+
     getRestrictedAtributes: (tagName) ->
         # Return a list of restricted attributes for the given `tagName`. This
         # will include restricted attributes defined against all tags using '*'

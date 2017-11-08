@@ -350,8 +350,47 @@ class _EditorApp extends ContentTools.ComponentUI
 
     pasteHTML: (element, content) ->
         # Paste HTML into/after the given element
+        tagNames = ContentEdit.TagNames.get()
 
+        # Clean the HTML
+        wrapper = document.createElement('div')
+        wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content)
 
+        # Paste the HTML
+        if wrapper.childNodes.length == 1
+            # @@ Handle single element pastes differently
+            return
+
+        # If the element isn't a text element find the nearest top level
+        # node that we can insert the pasted content after.
+        if element.parent().type() != 'Region'
+            element = element.closest (node) ->
+                return node.parent().type() is 'Region'
+
+        region = element.parent()
+
+        for node, i in wrapper.childNodes
+
+            # Attempt to convert the node to a ContentEdit element
+            console.log node
+            elementCls = tagNames.match(node.nodeName)
+
+            # We assume nodes that don't match an element are inline and so we
+            # wrap then in a paragraph tag for insertion.
+            if elementCls == ContentEdit.Static
+                p = document.createElement('p')
+                p.appendChild(node)
+                node = p
+                elementCls = ContentEdit.Text
+
+            # Create the new element
+            newElement = elementCls.fromDOMElement(node)
+
+            # Insert the new element into the page
+            region.attach(
+                newElement,
+                region.children.indexOf(element) + (1 + i)
+            )
 
     pasteText: (element, content) ->
         # Paste text into/after the given element
