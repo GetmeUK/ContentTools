@@ -8222,6 +8222,11 @@
             continue;
           }
         }
+        if (nodeName === 'td' || nodeName === 'th' || nodeName === 'li') {
+          if (node.querySelector('p')) {
+            node.innerHTML = node.textContent;
+          }
+        }
         if (node.attributes) {
           safeAttributes = this.attributeWhitelist[nodeName] || [];
           rawAttributes = (function() {
@@ -8552,24 +8557,32 @@
     };
 
     _EditorApp.prototype.pasteHTML = function(element, content) {
-      var elementCls, i, newElement, node, p, region, tagNames, wrapper, _i, _len, _ref, _results;
+      var elementCls, i, lastElement, newElement, node, originalElement, p, region, sandbox, tagNames, wrapper, _i, _len, _ref;
       tagNames = ContentEdit.TagNames.get();
-      wrapper = document.createElement('div');
-      wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content);
+      sandbox = document.implementation.createHTMLDocument();
+      wrapper = sandbox.createElement('div');
+      wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim());
       if (wrapper.childNodes.length === 1) {
         return;
       }
+      originalElement = element;
       if (element.parent().type() !== 'Region') {
         element = element.closest(function(node) {
           return node.parent().type() === 'Region';
         });
       }
       region = element.parent();
+      i = 0;
+      newElement = originalElement;
       _ref = wrapper.childNodes;
-      _results = [];
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        node = _ref[i];
-        console.log(node);
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        node = _ref[_i];
+        if (!node) {
+          continue;
+        }
+        if (node.nodeName = '#text' && node.textContent.trim() === '') {
+          continue;
+        }
         elementCls = tagNames.match(node.nodeName);
         if (elementCls === ContentEdit.Static) {
           p = document.createElement('p');
@@ -8578,9 +8591,14 @@
           elementCls = ContentEdit.Text;
         }
         newElement = elementCls.fromDOMElement(node);
-        _results.push(region.attach(newElement, region.children.indexOf(element) + (1 + i)));
+        region.attach(newElement, region.children.indexOf(element) + (1 + i));
+        i += 1;
       }
-      return _results;
+      lastElement = newElement;
+      while (!lastElement.focus) {
+        lastElement = newElement;
+      }
+      return lastElement.focus();
     };
 
     _EditorApp.prototype.pasteText = function(element, content) {

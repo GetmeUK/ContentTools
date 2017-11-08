@@ -353,26 +353,35 @@ class _EditorApp extends ContentTools.ComponentUI
         tagNames = ContentEdit.TagNames.get()
 
         # Clean the HTML
-        wrapper = document.createElement('div')
-        wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content)
+        sandbox = document.implementation.createHTMLDocument()
+        wrapper = sandbox.createElement('div')
+        wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim())
 
         # Paste the HTML
         if wrapper.childNodes.length == 1
-            # @@ Handle single element pastes differently
+            # @@ HANDLE SINGLE TEXT ELEMENT PASTES
             return
 
         # If the element isn't a text element find the nearest top level
         # node that we can insert the pasted content after.
+        originalElement = element
         if element.parent().type() != 'Region'
             element = element.closest (node) ->
                 return node.parent().type() is 'Region'
 
         region = element.parent()
 
-        for node, i in wrapper.childNodes
+        i = 0
+        newElement = originalElement
+        for node in wrapper.childNodes
+            unless node
+                continue
+
+            # Skip whitespace text elements
+            if node.nodeName = '#text' and node.textContent.trim() == ''
+                continue
 
             # Attempt to convert the node to a ContentEdit element
-            console.log node
             elementCls = tagNames.match(node.nodeName)
 
             # We assume nodes that don't match an element are inline and so we
@@ -391,6 +400,16 @@ class _EditorApp extends ContentTools.ComponentUI
                 newElement,
                 region.children.indexOf(element) + (1 + i)
             )
+
+            i += 1
+
+        # Focus on the last focusable element inserted
+        lastElement = newElement
+        while not lastElement.focus
+            # @@ SUPPORT FOR FOCUS ON LAST FOCUSABLE ELEMENT
+            lastElement = newElement
+
+        lastElement.focus()
 
     pasteText: (element, content) ->
         # Paste text into/after the given element

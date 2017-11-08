@@ -80,6 +80,18 @@ class ContentTools.HTMLCleaner
                     node.remove()
                     continue
 
+            # Remove paragraphs from table cells and list items (we see this
+            # when copying in from LibreOffice office documents).
+            #
+            # We use a rather unforgiving approach to resolve the problem
+            # simply setting the inner HTML of the table cell to the text
+            # content value.
+            if nodeName == 'td' or nodeName == 'th' or nodeName == 'li'
+                if node.querySelector('p')
+                    node.innerHTML = node.textContent
+
+            # @@ CATER FOR <span>&nbsp;</span>
+
             # Remove any non-whilelisted attributes
             if node.attributes
 
