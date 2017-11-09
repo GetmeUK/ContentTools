@@ -5551,8 +5551,9 @@
     DEFAULT_VIDEO_HEIGHT: 300,
     DEFAULT_VIDEO_WIDTH: 400,
     HIGHLIGHT_HOLD_DURATION: 2000,
-    INSPECTOR_IGNORED_ELEMENTS: ['Fixture', 'ListItemText', 'Region', 'TableCellText'],
     IMAGE_UPLOADER: null,
+    INLINE_TAGS: ['a', 'address', 'b', 'code', 'del', 'em', 'i', 'ins', 'span', 'strong', 'sup', 'u'],
+    INSPECTOR_IGNORED_ELEMENTS: ['Fixture', 'ListItemText', 'Region', 'TableCellText'],
     MIN_CROP: 10,
     RESTRICTED_ATTRIBUTES: {
       '*': ['style'],
@@ -8437,7 +8438,7 @@
           var clipboardData;
           clipboardData = null;
           if (ev.clipboardData) {
-            if (ev.clipboardData.getData('text/html')) {
+            if (ev.clipboardData.getData('text/html') && element.type() !== 'PreText') {
               _this.pasteHTML(element, ev.clipboardData.getData('text/html'));
             } else {
               _this.pasteText(element, ev.clipboardData.getData('text/plain'));
@@ -8581,33 +8582,37 @@
       if (!childNodes.length) {
         return;
       }
-      inlineTags = ['a', 'address', 'b', 'code', 'del', 'em', 'i', 'ins', 'span', 'strong', 'sup', 'u'];
+      inlineTags = ContentTools.INLINE_TAGS;
       firstNode = childNodes[0].nodeName.toLowerCase();
       lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase();
       if (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1) {
         content = new HTMLString.String(wrapper.innerHTML);
-        selection = element.selection();
-        cursor = selection.get()[0] + content.length();
-        tip = element.content.substring(0, selection.get()[0]);
-        tail = element.content.substring(selection.get()[1]);
-        replaced = element.content.substring(selection.get()[0], selection.get()[1]);
-        if (replaced.length()) {
-          character = replaced.characters[0];
-          tags = character.tags();
-          if (character.isTag()) {
-            tags.shift();
+        if (element.content) {
+          selection = element.selection();
+          cursor = selection.get()[0] + content.length();
+          tip = element.content.substring(0, selection.get()[0]);
+          tail = element.content.substring(selection.get()[1]);
+          replaced = element.content.substring(selection.get()[0], selection.get()[1]);
+          if (replaced.length()) {
+            character = replaced.characters[0];
+            tags = character.tags();
+            if (character.isTag()) {
+              tags.shift();
+            }
+            if (tags.length >= 1) {
+              content = content.format.apply(content, [0, content.length()].concat(__slice.call(tags)));
+            }
           }
-          if (tags.length >= 1) {
-            content = content.format.apply(content, [0, content.length()].concat(__slice.call(tags)));
-          }
+          element.content = tip.concat(content);
+          element.content = element.content.concat(tail, false);
+          element.updateInnerHTML();
+          element.taint();
+          selection.set(cursor, cursor);
+          element.selection(selection);
+          return;
+        } else {
+          wrapper.innerHTML = '<p>' + content.html() + '</p>';
         }
-        element.content = tip.concat(content);
-        element.content = element.content.concat(tail, false);
-        element.updateInnerHTML();
-        element.taint();
-        selection.set(cursor, cursor);
-        element.selection(selection);
-        return;
       }
       originalElement = element;
       if (element.parent().type() !== 'Region') {
@@ -8665,7 +8670,11 @@
 
     _EditorApp.prototype.pasteText = function(element, content) {
       var character, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, replaced, selection, spawn, tags, tail, tip, type, _i, _len;
-      lines = content.split('\n');
+      if (element.type() !== 'PreText') {
+        lines = lines.split('\n');
+      } else {
+        lines = [content];
+      }
       lines = lines.filter(function(line) {
         return line.trim() !== '';
       });

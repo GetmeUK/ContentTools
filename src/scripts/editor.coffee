@@ -201,7 +201,8 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Non-IE browsers
             if ev.clipboardData
-                if ev.clipboardData.getData('text/html')
+                if ev.clipboardData.getData('text/html') and
+                        element.type() != 'PreText'
                     @pasteHTML(element, ev.clipboardData.getData('text/html'))
                 else
                     @pasteText(element, ev.clipboardData.getData('text/plain'))
@@ -363,20 +364,7 @@ class _EditorApp extends ContentTools.ComponentUI
             return
 
         # Paste the HTML
-        inlineTags = [
-            'a',
-            'address',
-            'b',
-            'code',
-            'del',
-            'em',
-            'i',
-            'ins',
-            'span',
-            'strong',
-            'sup',
-            'u'
-        ]
+        inlineTags = ContentTools.INLINE_TAGS
         firstNode = childNodes[0].nodeName.toLowerCase()
         lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase()
         if inlineTags.indexOf(firstNode) > -1 and
@@ -384,40 +372,48 @@ class _EditorApp extends ContentTools.ComponentUI
 
             content = new HTMLString.String(wrapper.innerHTML)
 
-            # Insert the content into the element's existing content
-            selection = element.selection()
-            cursor = selection.get()[0] + content.length()
-            tip = element.content.substring(0, selection.get()[0])
-            tail = element.content.substring(selection.get()[1])
+            # Check we can paste in to the selected element
+            if element.content
 
-            # Format the string using tags for the first character it is
-            # replacing (if any).
-            replaced = element.content.substring(
-                selection.get()[0],
-                selection.get()[1]
-                )
-            if replaced.length()
-                character = replaced.characters[0]
-                tags = character.tags()
+                # Insert the content into the element's existing content
+                selection = element.selection()
+                cursor = selection.get()[0] + content.length()
+                tip = element.content.substring(0, selection.get()[0])
+                tail = element.content.substring(selection.get()[1])
 
-                if character.isTag()
-                    tags.shift()
+                # Format the string using tags for the first character it is
+                # replacing (if any).
+                replaced = element.content.substring(
+                    selection.get()[0],
+                    selection.get()[1]
+                    )
+                if replaced.length()
+                    character = replaced.characters[0]
+                    tags = character.tags()
 
-                if tags.length >= 1
-                    content = content.format(0, content.length(), tags...)
+                    if character.isTag()
+                        tags.shift()
 
-            element.content = tip.concat(content)
-            element.content = element.content.concat(tail, false)
-            element.updateInnerHTML()
+                    if tags.length >= 1
+                        content = content.format(0, content.length(), tags...)
 
-            # Mark the element as tainted
-            element.taint()
+                element.content = tip.concat(content)
+                element.content = element.content.concat(tail, false)
+                element.updateInnerHTML()
 
-            # Restore the selection
-            selection.set(cursor, cursor)
-            element.selection(selection)
+                # Mark the element as tainted
+                element.taint()
 
-            return
+                # Restore the selection
+                selection.set(cursor, cursor)
+                element.selection(selection)
+
+                return
+
+            else
+                # Can't paste content into the selected element so update the
+                # wrapper to contain a single paragraph.
+                wrapper.innerHTML = '<p>' + content.html() + '</p>'
 
         # If the element isn't a text element find the nearest top level
         # node that we can insert the pasted content after.
@@ -486,7 +482,10 @@ class _EditorApp extends ContentTools.ComponentUI
         # Paste text into/after the given element
 
         # Convert the content into a series of lines to be inserted
-        lines = content.split('\n')
+        if element.type() != 'PreText'
+            lines = lines.split('\n')
+        else
+            lines = [content]
 
         # Filter out any blank (whitespace only) lines
         lines = lines.filter (line) ->
