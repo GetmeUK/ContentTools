@@ -8671,7 +8671,7 @@
     _EditorApp.prototype.pasteText = function(element, content) {
       var character, cursor, encodeHTML, i, insertAt, insertIn, insertNode, item, itemText, lastItem, line, lineLength, lines, replaced, selection, spawn, tags, tail, tip, type, _i, _len;
       if (element.type() !== 'PreText') {
-        lines = lines.split('\n');
+        lines = content.split('\n');
       } else {
         lines = [content];
       }

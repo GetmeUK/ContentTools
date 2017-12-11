@@ -483,7 +483,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Convert the content into a series of lines to be inserted
         if element.type() != 'PreText'
-            lines = lines.split('\n')
+            lines = content.split('\n')
         else
             lines = [content]
 
