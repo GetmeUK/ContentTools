@@ -8820,7 +8820,7 @@
         return;
       }
       root = ContentEdit.Root.get();
-      if (root.focused()) {
+      if (root.focused() && !passive) {
         root.focused().blur();
       }
       if (root.lastModified() === this._rootLastModified && passive) {

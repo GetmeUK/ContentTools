@@ -676,9 +676,9 @@ class _EditorApp extends ContentTools.ComponentUI
         if not @dispatchEvent(@createEvent('save', {passive: passive}))
             return
 
-        # Blur any active element to ensure we empty elements are not retained
+        # Blur any active element to ensure empty elements are not retained
         root = ContentEdit.Root.get()
-        if root.focused()
+        if root.focused() and not passive
             root.focused().blur()
 
         # Check the document has changed, if not we don't need do anything
