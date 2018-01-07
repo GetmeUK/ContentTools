@@ -367,10 +367,31 @@ class _EditorApp extends ContentTools.ComponentUI
         inlineTags = ContentTools.INLINE_TAGS
         firstNode = childNodes[0].nodeName.toLowerCase()
         lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase()
-        if inlineTags.indexOf(firstNode) > -1 and
-                inlineTags.indexOf(lastNode) > -1
 
-            content = new HTMLString.String(wrapper.innerHTML)
+        # Cater for a single line of HTML being pasted, or pasting into a
+        # fixture.
+        if element.isFixed() or (inlineTags.indexOf(firstNode) > -1 and
+                inlineTags.indexOf(lastNode) > -1)
+
+            # If we merging multiple block level elements into one we strip
+            # HTML before doing so.
+            #
+            # HACK: This isn't the long term plan, where we're resolving here
+            # is an issue where pasting multiple paragraphs into a fixture
+            # causes issues because fixtures typically don't cater for block
+            # level elements as children. Long term this needs to be improved
+            # to cater for merging the text elements within to produce a
+            # single text element (retaining the HTML tags) that can be pasted
+            # into the fixture.
+            #
+            # ~ Anthony Blackshaw <ant@getme.co.uk>, 7 Jan 2018
+            #
+            if (inlineTags.indexOf(firstNode) > -1 and
+                    inlineTags.indexOf(lastNode) > -1)
+                content = new HTMLString.String(wrapper.innerHTML)
+
+            else
+                content = new HTMLString.String(wrapper.textContent)
 
             # Check we can paste in to the selected element
             if element.content

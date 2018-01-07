@@ -69,7 +69,19 @@ class ContentTools.HTMLCleaner
             nodeName = node.nodeName.toLowerCase()
 
             # Remove any non-whitelisted tags
+            console.log '----'
             if @tagWhitelist.indexOf(nodeName) < 0
+
+                # Add the children of the tag to the stack to be processed
+                for childNode in node.childNodes
+                    unless childNode
+                        continue
+
+                    childNode = childNode.cloneNode(true)
+                    node.parentNode.insertBefore(childNode, node)
+                    stack.push(childNode)
+
+                console.log nodeName, node.innerHTML
                 node.remove()
                 continue
 

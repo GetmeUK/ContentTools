@@ -8196,7 +8196,7 @@
     }
 
     HTMLCleaner.prototype.clean = function(html) {
-      var a, attribute, c, node, nodeName, rawAttributes, safeAttributes, sandbox, stack, value, wrapper, _i, _len;
+      var a, attribute, c, childNode, node, nodeName, rawAttributes, safeAttributes, sandbox, stack, value, wrapper, _i, _j, _len, _len1, _ref;
       sandbox = document.implementation.createHTMLDocument();
       wrapper = sandbox.createElement('div');
       wrapper.innerHTML = html;
@@ -8213,7 +8213,19 @@
       while (stack.length > 0) {
         node = stack.shift();
         nodeName = node.nodeName.toLowerCase();
+        console.log('----');
         if (this.tagWhitelist.indexOf(nodeName) < 0) {
+          _ref = node.childNodes;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            childNode = _ref[_i];
+            if (!childNode) {
+              continue;
+            }
+            childNode = childNode.cloneNode(true);
+            node.parentNode.insertBefore(childNode, node);
+            stack.push(childNode);
+          }
+          console.log(nodeName, node.innerHTML);
           node.remove();
           continue;
         }
@@ -8235,17 +8247,17 @@
         if (node.attributes) {
           safeAttributes = this.attributeWhitelist[nodeName] || [];
           rawAttributes = (function() {
-            var _i, _len, _ref, _results;
-            _ref = node.attributes;
+            var _j, _len1, _ref1, _results;
+            _ref1 = node.attributes;
             _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              a = _ref[_i];
+            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+              a = _ref1[_j];
               _results.push(a);
             }
             return _results;
           })();
-          for (_i = 0, _len = rawAttributes.length; _i < _len; _i++) {
-            attribute = rawAttributes[_i];
+          for (_j = 0, _len1 = rawAttributes.length; _j < _len1; _j++) {
+            attribute = rawAttributes[_j];
             if (safeAttributes.indexOf(attribute.name.toLowerCase()) < 0) {
               node.removeAttribute(attribute.name);
               continue;
@@ -8260,11 +8272,11 @@
           }
         }
         stack.push.apply(stack, (function() {
-          var _j, _len1, _ref, _results;
-          _ref = node.childNodes;
+          var _k, _len2, _ref1, _results;
+          _ref1 = node.childNodes;
           _results = [];
-          for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-            c = _ref[_j];
+          for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+            c = _ref1[_k];
             _results.push(c);
           }
           return _results;
@@ -8585,8 +8597,12 @@
       inlineTags = ContentTools.INLINE_TAGS;
       firstNode = childNodes[0].nodeName.toLowerCase();
       lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase();
-      if (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1) {
-        content = new HTMLString.String(wrapper.innerHTML);
+      if (element.isFixed() || (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1)) {
+        if (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1) {
+          content = new HTMLString.String(wrapper.innerHTML);
+        } else {
+          content = new HTMLString.String(wrapper.textContent);
+        }
         if (element.content) {
           selection = element.selection();
           cursor = selection.get()[0] + content.length();
