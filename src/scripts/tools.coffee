@@ -972,7 +972,7 @@ class ContentTools.Tools.Table extends ContentTools.Tool
         # Add any new sections
         if tableCfg.head and not table.thead()
             head = @_createTableSection('thead', 'th', tableCfg.columns)
-            table.attach(head)
+            table.attach(head, 0)
 
         if tableCfg.foot and not table.tfoot()
             foot = @_createTableSection('tfoot', 'td', tableCfg.columns)

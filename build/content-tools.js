@@ -8183,12 +8183,14 @@
   })(ContentTools.DialogUI);
 
   ContentTools.HTMLCleaner = (function() {
-    HTMLCleaner.DEFAULT_TAG_WHITELIST = ['a', 'address', 'b', 'blockquote', 'code', 'del', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'i', 'ins', 'li', 'ol', 'p', 'pre', 'span', 'strong', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul', '#text'];
-
     HTMLCleaner.DEFAULT_ATTRIBUTE_WHITELIST = {
       'a': ['href'],
       'td': ['colspan']
     };
+
+    HTMLCleaner.DEFAULT_TAG_WHITELIST = ['a', 'address', 'b', 'blockquote', 'code', 'del', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'i', 'ins', 'li', 'ol', 'p', 'pre', 'strong', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul', '#text'];
+
+    HTMLCleaner.NO_CONTENT_TAGS = ['head', 'meta', 'style', 'script', 'title'];
 
     function HTMLCleaner(tagWhitelist, attributeWhitelist) {
       this.tagWhitelist = tagWhitelist || this.constructor.DEFAULT_TAG_WHITELIST;
@@ -8196,7 +8198,7 @@
     }
 
     HTMLCleaner.prototype.clean = function(html) {
-      var a, attribute, c, childNode, node, nodeName, rawAttributes, safeAttributes, sandbox, stack, value, wrapper, _i, _j, _len, _len1, _ref;
+      var a, attribute, c, childNode, childNodeName, node, nodeName, rawAttributes, safeAttributes, sandbox, stack, value, wrapper, _i, _j, _len, _len1, _ref;
       sandbox = document.implementation.createHTMLDocument();
       wrapper = sandbox.createElement('div');
       wrapper.innerHTML = html;
@@ -8213,8 +8215,11 @@
       while (stack.length > 0) {
         node = stack.shift();
         nodeName = node.nodeName.toLowerCase();
-        console.log('----');
         if (this.tagWhitelist.indexOf(nodeName) < 0) {
+          if (this.constructor.NO_CONTENT_TAGS.indexOf(nodeName) > -1) {
+            node.remove();
+            continue;
+          }
           _ref = node.childNodes;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             childNode = _ref[_i];
@@ -8222,10 +8227,10 @@
               continue;
             }
             childNode = childNode.cloneNode(true);
+            childNodeName = childNode.nodeName.toLowerCase();
             node.parentNode.insertBefore(childNode, node);
             stack.push(childNode);
           }
-          console.log(nodeName, node.innerHTML);
           node.remove();
           continue;
         }
@@ -10242,7 +10247,7 @@
       }
       if (tableCfg.head && !table.thead()) {
         head = this._createTableSection('thead', 'th', tableCfg.columns);
-        table.attach(head);
+        table.attach(head, 0);
       }
       if (tableCfg.foot && !table.tfoot()) {
         foot = this._createTableSection('tfoot', 'td', tableCfg.columns);

@@ -12,6 +12,12 @@ class ContentTools.HTMLCleaner
     #
     # ~ https://www.quaxio.com/html_white_listed_sanitizer/
 
+    # A table of tags and the list of attributes we consider safe for them
+    @DEFAULT_ATTRIBUTE_WHITELIST = {
+        'a': ['href'],
+        'td': ['colspan']
+    }
+
     # A default list of tags we consider safe
     @DEFAULT_TAG_WHITELIST = [
         'a',
@@ -28,7 +34,6 @@ class ContentTools.HTMLCleaner
         'ol',
         'p',
         'pre',
-        'span',
         'strong',
         'sup',
         'table',
@@ -43,11 +48,13 @@ class ContentTools.HTMLCleaner
         '#text'
     ]
 
-    # A table of tags and the list of attributes we consider safe for them
-    @DEFAULT_ATTRIBUTE_WHITELIST = {
-        'a': ['href'],
-        'td': ['colspan']
-    }
+    @NO_CONTENT_TAGS = [
+        'head',
+        'meta',
+        'style',
+        'script',
+        'title'
+    ]
 
     constructor: (tagWhitelist, attributeWhitelist) ->
         # List of tags we consider safe
@@ -69,8 +76,11 @@ class ContentTools.HTMLCleaner
             nodeName = node.nodeName.toLowerCase()
 
             # Remove any non-whitelisted tags
-            console.log '----'
             if @tagWhitelist.indexOf(nodeName) < 0
+
+                if @constructor.NO_CONTENT_TAGS.indexOf(nodeName) > -1
+                    node.remove()
+                    continue
 
                 # Add the children of the tag to the stack to be processed
                 for childNode in node.childNodes
@@ -78,10 +88,10 @@ class ContentTools.HTMLCleaner
                         continue
 
                     childNode = childNode.cloneNode(true)
+                    childNodeName = childNode.nodeName.toLowerCase()
                     node.parentNode.insertBefore(childNode, node)
                     stack.push(childNode)
 
-                console.log nodeName, node.innerHTML
                 node.remove()
                 continue
 
