@@ -358,13 +358,24 @@ class _EditorApp extends ContentTools.ComponentUI
         wrapper = sandbox.createElement('div')
         wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim())
 
-        # Remove any undefined nodes
-        childNodes = (n for n in wrapper.childNodes when n)
+        # Remove any undefined nodes or empty #text nodes
+        childNodes = []
+        for childNode in wrapper.childNodes
+            unless childNode
+                continue
+
+            if childNode.nodeName.toLowerCase() == '#text'
+                if childNode.textContent.trim() == ''
+                    continue
+
+            childNodes.push(childNode)
+
         unless childNodes.length
             return
 
         # Paste the HTML
-        inlineTags = ContentTools.INLINE_TAGS
+        inlineTags = ContentTools.INLINE_TAGS.slice()
+        inlineTags.push('#text')
         firstNode = childNodes[0].nodeName.toLowerCase()
         lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase()
 
@@ -391,7 +402,10 @@ class _EditorApp extends ContentTools.ComponentUI
                 content = new HTMLString.String(wrapper.innerHTML)
 
             else
-                content = new HTMLString.String(wrapper.textContent)
+                console.log wrapper.textContent
+                content = new HTMLString.String(
+                    HTMLString.String.encode(wrapper.textContent)
+                )
 
             # Check we can paste in to the selected element
             if element.content
@@ -444,6 +458,17 @@ class _EditorApp extends ContentTools.ComponentUI
                 return node.parent().type() is 'Region'
 
         region = element.parent()
+
+        # If the content starts and ends with an inline tag then we need to
+        # wrap it within a paragraph tag before inserting.
+
+        if (inlineTags.indexOf(firstNode) > -1 and
+                inlineTags.indexOf(lastNode) > -1)
+
+            innerP = wrapper.createElement('p')
+            while wrapper.childNodes.length > 0
+                innerP.appendChild(wrapper.childNodes[0])
+            wrapper.appendChild(innerP)
 
         i = 0
         newElement = originalElement

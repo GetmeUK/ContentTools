@@ -8579,34 +8579,38 @@
     };
 
     _EditorApp.prototype.pasteHTML = function(element, content) {
-      var character, childNodes, cursor, elementCls, firstNode, i, inlineTags, lastNode, n, newElement, node, originalElement, p, region, replaced, sandbox, selection, tagNames, tags, tail, tip, wrapper, _i, _len, _ref;
+      var character, childNode, childNodes, cursor, elementCls, firstNode, i, inlineTags, innerP, lastNode, newElement, node, originalElement, p, region, replaced, sandbox, selection, tagNames, tags, tail, tip, wrapper, _i, _j, _len, _len1, _ref, _ref1;
       tagNames = ContentEdit.TagNames.get();
       sandbox = document.implementation.createHTMLDocument();
       wrapper = sandbox.createElement('div');
       wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim());
-      childNodes = (function() {
-        var _i, _len, _ref, _results;
-        _ref = wrapper.childNodes;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          n = _ref[_i];
-          if (n) {
-            _results.push(n);
+      childNodes = [];
+      _ref = wrapper.childNodes;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        childNode = _ref[_i];
+        if (!childNode) {
+          continue;
+        }
+        if (childNode.nodeName.toLowerCase() === '#text') {
+          if (childNode.textContent.trim() === '') {
+            continue;
           }
         }
-        return _results;
-      })();
+        childNodes.push(childNode);
+      }
       if (!childNodes.length) {
         return;
       }
-      inlineTags = ContentTools.INLINE_TAGS;
+      inlineTags = ContentTools.INLINE_TAGS.slice();
+      inlineTags.push('#text');
       firstNode = childNodes[0].nodeName.toLowerCase();
       lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase();
       if (element.isFixed() || (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1)) {
         if (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1) {
           content = new HTMLString.String(wrapper.innerHTML);
         } else {
-          content = new HTMLString.String(wrapper.textContent);
+          console.log(wrapper.textContent);
+          content = new HTMLString.String(HTMLString.String.encode(wrapper.textContent));
         }
         if (element.content) {
           selection = element.selection();
@@ -8642,11 +8646,18 @@
         });
       }
       region = element.parent();
+      if (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1) {
+        innerP = wrapper.createElement('p');
+        while (wrapper.childNodes.length > 0) {
+          innerP.appendChild(wrapper.childNodes[0]);
+        }
+        wrapper.appendChild(innerP);
+      }
       i = 0;
       newElement = originalElement;
-      _ref = wrapper.childNodes;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        node = _ref[_i];
+      _ref1 = wrapper.childNodes;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        node = _ref1[_j];
         if (!node) {
           continue;
         }
