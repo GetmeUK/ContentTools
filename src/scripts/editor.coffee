@@ -675,7 +675,7 @@ class _EditorApp extends ContentTools.ComponentUI
                 child.unmount()
 
             # Handle fixtures vs. standard regions
-            if region.children.length is 1 and region.children[0].isFixed()
+            if region.children.length is 1 and region.children[0].isFixed() and snapshot.regions[name] != undefined
                 wrapper = @constructor.createDiv()
                 wrapper.innerHTML = snapshot.regions[name]
                 domRegions.push(wrapper.firstElementChild)
