@@ -675,17 +675,21 @@ class _EditorApp extends ContentTools.ComponentUI
                 child.unmount()
 
             # Handle fixtures vs. standard regions
-            if region.children.length is 1 and region.children[0].isFixed() and snapshot.regions[name] != undefined
-                wrapper = @constructor.createDiv()
-                wrapper.innerHTML = snapshot.regions[name]
-                domRegions.push(wrapper.firstElementChild)
-                region.domElement().parentNode.replaceChild(
-                    wrapper.firstElementChild,
-                    region.domElement()
-                    )
+            if snapshot.regions[name] != undefined
+                if region.children.length is 1 and region.children[0].isFixed()
+                    wrapper = @constructor.createDiv()
+                    wrapper.innerHTML = snapshot.regions[name]
+                    domRegions.push(wrapper.firstElementChild)
+                    region.domElement().parentNode.replaceChild(
+                        wrapper.firstElementChild,
+                        region.domElement()
+                        )
+                else
+                    domRegions.push(region.domElement())
+                    region.domElement().innerHTML = snapshot.regions[name]
             else
-                domRegions.push(region.domElement())
-                region.domElement().innerHTML = snapshot.regions[name]
+                region.domElement().remove();
+                delete @_regions[name]
 
         # Resync the DOM regions, this is required as fixture will replace the
         # existing DOM region element (regions wont).
