@@ -51,6 +51,31 @@ ContentTools =
     # key to activate highlighting.
     HIGHLIGHT_HOLD_DURATION: 2000
 
+    # If specified this should be a function that accepts an
+    # `ContentTools.ImageDialog` instance, typically the function then binds a
+    # set of handlers to specific dialog events to implement support for
+    # uploading images asynchronously.
+    IMAGE_UPLOADER: null
+
+    # When a user pastes HTML content into the page if that content consists
+    # of purely inline tags then we attempt to insert as a line in the
+    # existing content and not as a list of additional paragraphs. The
+    # following is a list of tags considered inline.
+    INLINE_TAGS: [
+        'a',
+        'address',
+        'b',
+        'code',
+        'del',
+        'em',
+        'i',
+        'ins',
+        'span',
+        'strong',
+        'sup',
+        'u'
+    ]
+
     # A list of element class names ignored by the inspector, typically because
     # attributes cannot be safely set against them.
     INSPECTOR_IGNORED_ELEMENTS: [
@@ -59,12 +84,6 @@ ContentTools =
         'Region',
         'TableCellText'
         ]
-
-    # If specified this should be a function that accepts an
-    # `ContentTools.ImageDialog` instance, typically the function then binds a
-    # set of handlers to specific dialog events to implement support for
-    # uploading images asynchronously.
-    IMAGE_UPLOADER: null
 
     # The minimum region that can be selected when cropping an image (in pixels)
     MIN_CROP: 10
@@ -161,6 +180,10 @@ ContentTools =
                 return url
 
         return null
+
+    getHTMLCleaner: () ->
+        # Return the HTML cleaner that will be
+        return new ContentTools.HTMLCleaner()
 
     getRestrictedAtributes: (tagName) ->
         # Return a list of restricted attributes for the given `tagName`. This

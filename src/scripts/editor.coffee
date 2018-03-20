@@ -201,13 +201,18 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Non-IE browsers
             if ev.clipboardData
-              clipboardData = ev.clipboardData.getData('text/plain')
+                if ev.clipboardData.getData('text/html') and
+                        element.type() != 'PreText'
+                    @pasteHTML(element, ev.clipboardData.getData('text/html'))
+                else
+                    @pasteText(element, ev.clipboardData.getData('text/plain'))
+
+                return
 
             # IE browsers
             if window.clipboardData
-              clipboardData = window.clipboardData.getData('TEXT')
-
-            @paste(element, clipboardData)
+                clipboardData = window.clipboardData.getData('TEXT')
+                @pasteText(element, window.clipboardData.getData('TEXT'))
 
         @_handleNextRegionTransition = (region) =>
             # Is there a next region?
@@ -319,15 +324,214 @@ class _EditorApp extends ContentTools.ComponentUI
         document.body.insertBefore(@_domElement, null)
         @_addDOMEventListeners()
 
-    paste: (element, clipboardData) ->
-        # Paste content into the given element
-        content = clipboardData
+    unmount: () ->
+        # Unmount the widget from the DOM
 
-        # Extract the content of the clipboard
-        # content = clipboardData.getData('text/plain')
+        # Check the editor is mounted
+        if not @isMounted()
+            return
+
+        # Unmount all children
+        for child in @_children
+            child.unmount()
+
+        # Remove the DOM element
+        @_domElement.parentNode.removeChild(@_domElement)
+        @_domElement = null
+
+        # Remove any DOM event bindings
+        @_removeDOMEventListeners()
+
+        # Reset child component handles
+        @_ignition = null
+        @_inspector = null
+        @_toolbox = null
+
+    # Page state methods
+
+    pasteHTML: (element, content) ->
+        # Paste HTML into/after the given element
+        tagNames = ContentEdit.TagNames.get()
+
+        # Clean the HTML
+        sandbox = document.implementation.createHTMLDocument()
+        wrapper = sandbox.createElement('div')
+        wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim())
+
+        # Remove any undefined nodes or empty #text nodes
+        childNodes = []
+        for childNode in wrapper.childNodes
+            unless childNode
+                continue
+
+            if childNode.nodeName.toLowerCase() == '#text'
+                if childNode.textContent.trim() == ''
+                    continue
+
+            childNodes.push(childNode)
+
+        unless childNodes.length
+            return
+
+        # Paste the HTML
+        inlineTags = ContentTools.INLINE_TAGS.slice()
+        inlineTags.push('#text')
+        firstNode = childNodes[0].nodeName.toLowerCase()
+        lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase()
+
+        # Cater for a single line of HTML being pasted, or pasting into a
+        # fixture.
+        if element.isFixed() or (inlineTags.indexOf(firstNode) > -1 and
+                inlineTags.indexOf(lastNode) > -1)
+
+            # If we merging multiple block level elements into one we strip
+            # HTML before doing so.
+            #
+            # HACK: This isn't the long term plan, where we're resolving here
+            # is an issue where pasting multiple paragraphs into a fixture
+            # causes issues because fixtures typically don't cater for block
+            # level elements as children. Long term this needs to be improved
+            # to cater for merging the text elements within to produce a
+            # single text element (retaining the HTML tags) that can be pasted
+            # into the fixture.
+            #
+            # ~ Anthony Blackshaw <ant@getme.co.uk>, 7 Jan 2018
+            #
+            if (inlineTags.indexOf(firstNode) > -1 and
+                    inlineTags.indexOf(lastNode) > -1)
+                content = new HTMLString.String(wrapper.innerHTML)
+
+            else
+                console.log wrapper.textContent
+                content = new HTMLString.String(
+                    HTMLString.String.encode(wrapper.textContent)
+                )
+
+            # Check we can paste in to the selected element
+            if element.content
+
+                # Insert the content into the element's existing content
+                selection = element.selection()
+                cursor = selection.get()[0] + content.length()
+                tip = element.content.substring(0, selection.get()[0])
+                tail = element.content.substring(selection.get()[1])
+
+                # Format the string using tags for the first character it is
+                # replacing (if any).
+                replaced = element.content.substring(
+                    selection.get()[0],
+                    selection.get()[1]
+                    )
+                if replaced.length()
+                    character = replaced.characters[0]
+                    tags = character.tags()
+
+                    if character.isTag()
+                        tags.shift()
+
+                    if tags.length >= 1
+                        content = content.format(0, content.length(), tags...)
+
+                element.content = tip.concat(content)
+                element.content = element.content.concat(tail, false)
+                element.updateInnerHTML()
+
+                # Mark the element as tainted
+                element.taint()
+
+                # Restore the selection
+                selection.set(cursor, cursor)
+                element.selection(selection)
+
+                return
+
+            else
+                # Can't paste content into the selected element so update the
+                # wrapper to contain a single paragraph.
+                wrapper.innerHTML = '<p>' + content.html() + '</p>'
+
+        # If the element isn't a text element find the nearest top level
+        # node that we can insert the pasted content after.
+        originalElement = element
+        if element.parent().type() != 'Region'
+            element = element.closest (node) ->
+                return node.parent().type() is 'Region'
+
+        region = element.parent()
+
+        # If the content starts and ends with an inline tag then we need to
+        # wrap it within a paragraph tag before inserting.
+
+        if (inlineTags.indexOf(firstNode) > -1 and
+                inlineTags.indexOf(lastNode) > -1)
+
+            innerP = wrapper.createElement('p')
+            while wrapper.childNodes.length > 0
+                innerP.appendChild(wrapper.childNodes[0])
+            wrapper.appendChild(innerP)
+
+        i = 0
+        newElement = originalElement
+        for node in wrapper.childNodes
+            unless node
+                continue
+
+            # Skip whitespace text elements
+            if node.nodeName = '#text' and node.textContent.trim() == ''
+                continue
+
+            # Attempt to convert the node to a ContentEdit element
+            elementCls = tagNames.match(node.nodeName)
+
+            # We assume nodes that don't match an element are inline and so we
+            # wrap then in a paragraph tag for insertion.
+            if elementCls == ContentEdit.Static
+                p = document.createElement('p')
+                p.appendChild(node)
+                node = p
+                elementCls = ContentEdit.Text
+
+            # Create the new element
+            newElement = elementCls.fromDOMElement(node)
+
+            # Insert the new element into the page
+            region.attach(
+                newElement,
+                region.children.indexOf(element) + (1 + i)
+            )
+
+            i += 1
+
+        # Focus on the last focusable element inserted
+        if newElement.focus
+            newElement.focus()
+
+        else if newElement.nextSibling()
+            newElement = newElement.nextSibling().previousWithTest (node) ->
+                if node.focus
+                    return node
+
+            if newElement
+                newElement.focus()
+
+        else
+            newElement = newElement.nextWithTest (node) ->
+                if node.focus
+                    return node
+
+            if newElement
+                newElement.focus()
+            else
+                originalElement.focus()
+
+    pasteText: (element, content) ->
+        # Paste text into/after the given element
 
         # Convert the content into a series of lines to be inserted
-        lines = content.split('\n')
+        if element.type() != 'PreText'
+            lines = content.split('\n')
+        else
+            lines = [content]
 
         # Filter out any blank (whitespace only) lines
         lines = lines.filter (line) ->
@@ -438,31 +642,6 @@ class _EditorApp extends ContentTools.ComponentUI
             selection.set(cursor, cursor)
             element.selection(selection)
 
-    unmount: () ->
-        # Unmount the widget from the DOM
-
-        # Check the editor is mounted
-        if not @isMounted()
-            return
-
-        # Unmount all children
-        for child in @_children
-            child.unmount()
-
-        # Remove the DOM element
-        @_domElement.parentNode.removeChild(@_domElement)
-        @_domElement = null
-
-        # Remove any DOM event bindings
-        @_removeDOMEventListeners()
-
-        # Reset child component handles
-        @_ignition = null
-        @_inspector = null
-        @_toolbox = null
-
-    # Page state methods
-
     revert: () ->
         # Revert the page to it's previous state before we started editing
         # the page.
@@ -496,17 +675,21 @@ class _EditorApp extends ContentTools.ComponentUI
                 child.unmount()
 
             # Handle fixtures vs. standard regions
-            if region.children.length is 1 and region.children[0].isFixed()
-                wrapper = @constructor.createDiv()
-                wrapper.innerHTML = snapshot.regions[name]
-                domRegions.push(wrapper.firstElementChild)
-                region.domElement().parentNode.replaceChild(
-                    wrapper.firstElementChild,
-                    region.domElement()
-                    )
+            if snapshot.regions[name] != undefined
+                if region.children.length is 1 and region.children[0].isFixed()
+                    wrapper = @constructor.createDiv()
+                    wrapper.innerHTML = snapshot.regions[name]
+                    domRegions.push(wrapper.firstElementChild)
+                    region.domElement().parentNode.replaceChild(
+                        wrapper.firstElementChild,
+                        region.domElement()
+                        )
+                else
+                    domRegions.push(region.domElement())
+                    region.domElement().innerHTML = snapshot.regions[name]
             else
-                domRegions.push(region.domElement())
-                region.domElement().innerHTML = snapshot.regions[name]
+                region.domElement().remove();
+                delete @_regions[name]
 
         # Resync the DOM regions, this is required as fixture will replace the
         # existing DOM region element (regions wont).
@@ -543,9 +726,9 @@ class _EditorApp extends ContentTools.ComponentUI
         if not @dispatchEvent(@createEvent('save', {passive: passive}))
             return
 
-        # Blur any active element to ensure we empty elements are not retained
+        # Blur any active element to ensure empty elements are not retained
         root = ContentEdit.Root.get()
-        if root.focused()
+        if root.focused() and not passive
             root.focused().blur()
 
         # Check the document has changed, if not we don't need do anything
