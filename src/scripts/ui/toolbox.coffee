@@ -161,6 +161,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
 
         # Allow the toolbox to be dragged to a new location by the user
         @_domGrip.addEventListener('mousedown', @_onStartDragging)
+        @_domGrip.addEventListener('touchstart', @_onStartDragging)
 
         # Ensure that when the window is resized the toolbox remains in view
         @_handleResize = (ev) =>
@@ -251,6 +252,51 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
                     Paragraph = ContentTools.Tools.Paragraph
                     return Paragraph.apply(element, null, () ->)
 
+                # Support keyboard navigation.
+                if element.navigate
+                    # Add support for left, up, and shift + tab.
+                    if ev.keyCode is 37 or ev.keyCode is 38 or (ev.keyCode is 9 and ev.shiftKey)
+                        ev.preventDefault()
+
+                        # Attempt to find and select the previous navigable element.
+                        previous = element.previousNavigable()
+                        if previous
+                            previous.focus()
+                            if previous.content != undefined
+                                selection = new ContentSelect.Range(
+                                    previous.content.length(),
+                                    previous.content.length()
+                                    )
+                                selection.select(previous.domElement())
+                        else
+                            # If no element was found this must be the last content node found
+                            # so trigger an event for external code to manage a region switch.
+                            ContentEdit.Root.get().trigger(
+                                'previous-region',
+                                element.closest (node) ->
+                                    node.type() is 'Fixture' or node.type() is 'Region'
+                                )
+
+                    # Add support for right, down, and tab.
+                    if ev.keyCode is 39 or ev.keyCode is 40 or (ev.keyCode is 9 and not ev.shiftKey)
+                        ev.preventDefault()
+
+                        # Attempt to find and select the next navigable element.
+                        next = element.nextNavigable()
+                        if next
+                            next.focus()
+                            if next.content != undefined
+                                selection = new ContentSelect.Range(0, 0)
+                                selection.select(next.domElement())
+                        else
+                            # If no element was found this must be the last content node found
+                            # so trigger an event for external code to manage a region switch.
+                            ContentEdit.Root.get().trigger(
+                                'next-region',
+                                element.closest (node) ->
+                                    node.type() is 'Fixture' or node.type() is 'Region'
+                                )
+
             # Undo/Redo key support
             #
             # Windows undo: Ctrl+z
@@ -274,28 +320,27 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
             redo = false
             undo = false
 
-            switch os
-                when 'linux' and not ev.altKey
-                    if ev.keyCode is 90 and ev.ctrlKey
-                        redo = ev.shiftKey
-                        undo = not redo
+            if os == 'linux' and not ev.altKey and ev.keyCode is 90 and ev.ctrlKey
+                redo = ev.shiftKey
+                undo = not redo
 
-                when 'mac' and not (ev.altKey or ev.ctrlKey)
-                    if ev.keyCode is 90 and ev.metaKey
-                        redo = ev.shiftKey
-                        undo = not redo
+            else if os == 'mac' and not ev.altKey and not ev.ctrlKey and ev.keyCode is 90 and ev.metaKey
+                redo = ev.shiftKey
+                undo = not redo
 
-                when 'windows' and not ev.altKey or ev.shiftKey
-                    if ev.keyCode is 89 and ev.ctrlKey
-                        redo = true
-                    if ev.keyCode is 90 and ev.ctrlKey
-                        undo = true
+            else if os == 'windows' and not ev.altKey and not ev.shiftKey and ev.ctrlKey
+                if ev.keyCode is 89
+                    redo = true
+                if ev.keyCode is 90
+                    undo = true
 
             # Perform undo/redo
             if undo and ContentTools.Tools.Undo.canApply(null, null)
+                ev.preventDefault()
                 ContentTools.Tools.Undo.apply(null, null, () ->)
 
             if redo and ContentTools.Tools.Redo.canApply(null, null)
+                ev.preventDefault()
                 ContentTools.Tools.Redo.apply(null, null, () ->)
 
         window.addEventListener('keydown', @_handleKeyDown)
@@ -347,13 +392,18 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
 
     _onDrag: (ev) =>
         # User has dragged the toolbox to a new position
+        ev.preventDefault()
 
         # Prevent content selection while dragging elements
         ContentSelect.Range.unselectAll()
 
         # Reposition the toolbox
-        @_domElement.style.left = "#{ ev.clientX - @_draggingOffset.x }px"
-        @_domElement.style.top = "#{ ev.clientY - @_draggingOffset.y }px"
+        if ev.type == 'touchmove'
+            @_domElement.style.left = "#{ ev.touches[0].clientX - @_draggingOffset.x }px"
+            @_domElement.style.top = "#{ ev.touches[0].clientY - @_draggingOffset.y }px"
+        else
+            @_domElement.style.left = "#{ ev.clientX - @_draggingOffset.x }px"
+            @_domElement.style.top = "#{ ev.clientY - @_draggingOffset.y }px"
 
     _onStartDragging: (ev) =>
         # Start dragging the toolbox
@@ -368,14 +418,24 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
 
         # Calculate the offset of the cursor to the toolbox
         rect = @_domElement.getBoundingClientRect()
-        @_draggingOffset = {
-            x: ev.clientX - rect.left,
-            y: ev.clientY - rect.top
-            }
+        if ev.type == 'touchstart'
+            @_draggingOffset = {
+                x: ev.touches[0].clientX - rect.left,
+                y: ev.touches[0].clientY - rect.top
+                }
 
-        # Setup dragging behaviour for the element
-        document.addEventListener('mousemove', @_onDrag)
-        document.addEventListener('mouseup', @_onStopDragging)
+            # Setup dragging behaviour for the element
+            document.addEventListener('touchmove', @_onDrag)
+            document.addEventListener('touchend', @_onStopDragging)
+        else
+            @_draggingOffset = {
+                x: ev.clientX - rect.left,
+                y: ev.clientY - rect.top
+                }
+
+            # Setup dragging behaviour for the element
+            document.addEventListener('mousemove', @_onDrag)
+            document.addEventListener('mouseup', @_onStopDragging)
 
         # Add dragging class to the body (this class is defined in ContentEdit
         # it disabled content selection via CSS).
@@ -390,6 +450,8 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
         @_contain()
 
         # Remove dragging behaviour
+        document.removeEventListener('touchmove', @_onDrag)
+        document.removeEventListener('touchend', @_onStopDragging)
         document.removeEventListener('mousemove', @_onDrag)
         document.removeEventListener('mouseup', @_onStopDragging)
 

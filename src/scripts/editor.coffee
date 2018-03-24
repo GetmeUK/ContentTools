@@ -227,7 +227,7 @@ class _EditorApp extends ContentTools.ComponentUI
             # Is there a content element to move to?
             element = null
             for child in region.descendants()
-                if child.content != undefined
+                if child.navigate != undefined
                     element = child
                     break
 
@@ -235,7 +235,8 @@ class _EditorApp extends ContentTools.ComponentUI
             # the next region.
             if element
                 element.focus()
-                element.selection(new ContentSelect.Range(0, 0))
+                if element.content != undefined
+                    element.selection(new ContentSelect.Range(0, 0))
                 return
 
             ContentEdit.Root.get().trigger('next-region', region)
@@ -255,16 +256,17 @@ class _EditorApp extends ContentTools.ComponentUI
             descendants = region.descendants()
             descendants.reverse()
             for child in descendants
-                if child.content != undefined
+                if child.navigate != undefined
                     element = child
                     break
 
             # If there is a content child move the selection to it else check
             # the next region.
             if element
-                length = element.content.length()
                 element.focus()
-                element.selection(new ContentSelect.Range(length, length))
+                if element.content != undefined
+                    length = element.content.length()
+                    element.selection(new ContentSelect.Range(length, length))
                 return
 
             ContentEdit.Root.get().trigger('previous-region', region)
