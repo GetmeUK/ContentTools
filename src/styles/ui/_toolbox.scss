@@ -96,7 +96,7 @@
             );
         width: $tool-size;
 
-        // We use the before puesdo element to display the tools associated icon
+        // We use the before pseudo element to display the tools associated icon
         &:before {
             line-height: $tool-size;
         }
@@ -157,7 +157,7 @@
         }
 
         /**
-         * Each of the modifiers below sets the content of the puesdo before
+         * Each of the modifiers below sets the content of the pseudo before
          * element to match the required icon. The list is ordered by the
          * position each tool in the default toolbox (as opposed to
          * alphabetically).
