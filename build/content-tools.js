@@ -9630,13 +9630,13 @@
         }
         element.storeState();
         selectTag = new HTMLString.Tag('span', {
-          'class': 'ct--puesdo-select'
+          'class': 'ct--pseudo-select'
         });
         _ref = selection.get(), from = _ref[0], to = _ref[1];
         element.content = element.content.format(from, to, selectTag);
         element.updateInnerHTML();
         domElement = element.domElement();
-        measureSpan = domElement.getElementsByClassName('ct--puesdo-select');
+        measureSpan = domElement.getElementsByClassName('ct--pseudo-select');
         rect = measureSpan[0].getBoundingClientRect();
       }
       app = ContentTools.EditorApp.get();

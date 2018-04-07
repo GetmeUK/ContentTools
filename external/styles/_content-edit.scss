@@ -63,7 +63,7 @@ $highlight-color: #f39c12 !default;
         z-index: 1;
 
         /**
-         * Image and video elements use puesdo elements to display information
+         * Image and video elements use pseudo elements to display information
          * such as the size of the element and for videos the `src` also.
          */
         &:after,
@@ -150,7 +150,7 @@ $highlight-color: #f39c12 !default;
      * When an element that supports text content is empty (e.g '') some
      * browsers don't provide a height for the element and so it can appear to
      * disappear until the user adds content. To resolve this issue we use a
-     * puesdo element to ensure the element contains content.
+     * pseudo element to ensure the element contains content.
      */
     &--empty {
         &:after {
@@ -311,7 +311,7 @@ $highlight-color: #f39c12 !default;
     z-index: 9;
 
     /**
-     * A puesdo element is used to display the type of element the helper
+     * A pseudo element is used to display the type of element the helper
      * represents.
      */
 
@@ -331,7 +331,7 @@ $highlight-color: #f39c12 !default;
 
     /**
      * For elements that have text content displayed within the helper we clip
-     * the content and use a puesdo element to fade out any verical overflow.
+     * the content and use a pseudo element to fade out any verical overflow.
      */
     &--type-list,
     &--type-list-item-text,

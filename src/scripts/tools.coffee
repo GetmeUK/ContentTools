@@ -283,7 +283,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
 
             # Add a fake selection wrapper to the selected text so that it
             # appears to be selected when the focus is lost by the element.
-            selectTag = new HTMLString.Tag('span', {'class': 'ct--puesdo-select'})
+            selectTag = new HTMLString.Tag('span', {'class': 'ct--pseudo-select'})
             [from, to] = selection.get()
             element.content = element.content.format(from, to, selectTag)
             element.updateInnerHTML()
@@ -291,7 +291,7 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             # Measure a rectangle of the content selected so we can position the
             # dialog centrally.
             domElement = element.domElement()
-            measureSpan = domElement.getElementsByClassName('ct--puesdo-select')
+            measureSpan = domElement.getElementsByClassName('ct--pseudo-select')
             rect = measureSpan[0].getBoundingClientRect()
 
         # Set-up the dialog
