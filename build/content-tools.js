@@ -6589,24 +6589,30 @@
           redo = false;
           undo = false;
           switch (os) {
-            case 'linux' && !ev.altKey:
-              if (ev.keyCode === 90 && ev.ctrlKey) {
-                redo = ev.shiftKey;
-                undo = !redo;
+            case 'linux':
+              if (!ev.altKey) {
+                if (ev.keyCode === 90 && ev.ctrlKey) {
+                  redo = ev.shiftKey;
+                  undo = !redo;
+                }
               }
               break;
-            case 'mac' && !(ev.altKey || ev.ctrlKey):
-              if (ev.keyCode === 90 && ev.metaKey) {
-                redo = ev.shiftKey;
-                undo = !redo;
+            case 'mac':
+              if (!(ev.altKey || ev.ctrlKey)) {
+                if (ev.keyCode === 90 && ev.metaKey) {
+                  redo = ev.shiftKey;
+                  undo = !redo;
+                }
               }
               break;
-            case 'windows' && !ev.altKey || ev.shiftKey:
-              if (ev.keyCode === 89 && ev.ctrlKey) {
-                redo = true;
-              }
-              if (ev.keyCode === 90 && ev.ctrlKey) {
-                undo = true;
+            case 'windows':
+              if (!ev.altKey || ev.shiftKey) {
+                if (ev.keyCode === 89 && ev.ctrlKey) {
+                  redo = true;
+                }
+                if (ev.keyCode === 90 && ev.ctrlKey) {
+                  undo = true;
+                }
               }
           }
           if (undo && ContentTools.Tools.Undo.canApply(null, null)) {
@@ -8661,7 +8667,7 @@
         if (!node) {
           continue;
         }
-        if (node.nodeName = '#text' && node.textContent.trim() === '') {
+        if (node.nodeName === '#text' && node.textContent.trim() === '') {
           continue;
         }
         elementCls = tagNames.match(node.nodeName);
@@ -8813,14 +8819,19 @@
           child = _ref1[_i];
           child.unmount();
         }
-        if (region.children.length === 1 && region.children[0].isFixed()) {
-          wrapper = this.constructor.createDiv();
-          wrapper.innerHTML = snapshot.regions[name];
-          domRegions.push(wrapper.firstElementChild);
-          region.domElement().parentNode.replaceChild(wrapper.firstElementChild, region.domElement());
+        if (snapshot.regions[name] !== void 0) {
+          if (region.children.length === 1 && region.children[0].isFixed()) {
+            wrapper = this.constructor.createDiv();
+            wrapper.innerHTML = snapshot.regions[name];
+            domRegions.push(wrapper.firstElementChild);
+            region.domElement().parentNode.replaceChild(wrapper.firstElementChild, region.domElement());
+          } else {
+            domRegions.push(region.domElement());
+            region.domElement().innerHTML = snapshot.regions[name];
+          }
         } else {
-          domRegions.push(region.domElement());
-          region.domElement().innerHTML = snapshot.regions[name];
+          region.domElement().remove();
+          delete this._regions[name];
         }
       }
       this._domRegions = domRegions;

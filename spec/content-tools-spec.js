@@ -333,7 +333,7 @@
   });
 
   describe('ContentTools.WidgetUI.detach()', function() {
-    return fit('should detach a child widget and unmount it', function() {
+    return it('should detach a child widget and unmount it', function() {
       var child, domElement, parent;
       parent = new ContentTools.WidgetUI();
       child = new ContentTools.WidgetUI();

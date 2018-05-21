@@ -477,7 +477,7 @@ class _EditorApp extends ContentTools.ComponentUI
                 continue
 
             # Skip whitespace text elements
-            if node.nodeName = '#text' and node.textContent.trim() == ''
+            if node.nodeName == '#text' and node.textContent.trim() == ''
                 continue
 
             # Attempt to convert the node to a ContentEdit element

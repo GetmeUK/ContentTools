@@ -275,21 +275,24 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
             undo = false
 
             switch os
-                when 'linux' and not ev.altKey
-                    if ev.keyCode is 90 and ev.ctrlKey
-                        redo = ev.shiftKey
-                        undo = not redo
+                when 'linux'
+                    if not ev.altKey
+                        if ev.keyCode is 90 and ev.ctrlKey
+                            redo = ev.shiftKey
+                            undo = not redo
 
-                when 'mac' and not (ev.altKey or ev.ctrlKey)
-                    if ev.keyCode is 90 and ev.metaKey
-                        redo = ev.shiftKey
-                        undo = not redo
+                when 'mac'
+                    if not (ev.altKey or ev.ctrlKey)
+                        if ev.keyCode is 90 and ev.metaKey
+                            redo = ev.shiftKey
+                            undo = not redo
 
-                when 'windows' and not ev.altKey or ev.shiftKey
-                    if ev.keyCode is 89 and ev.ctrlKey
-                        redo = true
-                    if ev.keyCode is 90 and ev.ctrlKey
-                        undo = true
+                when 'windows'
+                    if not ev.altKey or ev.shiftKey
+                        if ev.keyCode is 89 and ev.ctrlKey
+                            redo = true
+                        if ev.keyCode is 90 and ev.ctrlKey
+                            undo = true
 
             # Perform undo/redo
             if undo and ContentTools.Tools.Undo.canApply(null, null)
