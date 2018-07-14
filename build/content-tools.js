@@ -9019,7 +9019,7 @@
       this._handleHighlightOff = (function(_this) {
         return function(ev) {
           var _ref;
-          if ((_ref = ev.keyCode) === 17 || _ref === 224) {
+          if ((_ref = ev.keyCode) === 17 || _ref === 224 || _ref === 91 || _ref === 93) {
             _this._ctrlDown = false;
             return;
           }

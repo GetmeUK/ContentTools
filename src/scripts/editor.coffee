@@ -942,7 +942,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         @_handleHighlightOff = (ev) =>
             # Ignore repeated key press events
-            if ev.keyCode in [17, 224] # Ctrl/Cmd
+            if ev.keyCode in [17, 224, 91, 93] # Ctrl/Cmd
                 @_ctrlDown = false
                 return
 
