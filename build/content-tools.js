@@ -4210,7 +4210,7 @@
       style = this._attributes['style'] ? this._attributes['style'] : '';
       styleElm = document.createElement('div');
       styleElm.setAttribute('style', style.trim());
-      styleElm.backgroundImage = null;
+      styleElm.style.backgroundImage = null;
       style = styleElm.getAttribute('style');
       style = [style.trim(), "background-image:url('" + (this.src()) + "');"].join(' ');
       this._domElement.setAttribute('style', style.trim());
@@ -4249,7 +4249,7 @@
         style = this._attributes['style'] ? this._attributes['style'] : '';
         styleElm = document.createElement('div');
         styleElm.setAttribute('style', style.trim());
-        styleElm.backgroundImage = null;
+        styleElm.style.backgroundImage = null;
         style = styleElm.getAttribute('style');
         style = [style.trim(), "background-image:url('" + (this.src()) + "');"].join(' ');
         this._attributes['style'] = style.trim();
