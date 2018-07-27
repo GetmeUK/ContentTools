@@ -4189,7 +4189,7 @@
     };
 
     ImageFixture.prototype.mount = function() {
-      var classes, name, style, value, _ref;
+      var classes, name, style, styleElm, value, _ref;
       this._domElement = document.createElement(this.tagName());
       _ref = this._attributes;
       for (name in _ref) {
@@ -4208,7 +4208,10 @@
       }
       this._domElement.setAttribute('class', classes);
       style = this._attributes['style'] ? this._attributes['style'] : '';
-      style = style.replace(/background-image:.+?(;|$)/i, '');
+      styleElm = document.createElement('div');
+      styleElm.setAttribute('style', style.trim());
+      styleElm.backgroundImage = null;
+      style = styleElm.getAttribute('style');
       style = [style.trim(), "background-image:url('" + (this.src()) + "');"].join(' ');
       this._domElement.setAttribute('style', style.trim());
       return ImageFixture.__super__.mount.call(this);
@@ -4241,10 +4244,13 @@
     };
 
     ImageFixture.prototype._attributesToString = function() {
-      var attributes, k, style, v, _ref;
+      var attributes, k, style, styleElm, v, _ref;
       if (this._attributes['style']) {
         style = this._attributes['style'] ? this._attributes['style'] : '';
-        style = style.replace(/background-image:.+?(;|$)/i, '');
+        styleElm = document.createElement('div');
+        styleElm.setAttribute('style', style.trim());
+        styleElm.backgroundImage = null;
+        style = styleElm.getAttribute('style');
         style = [style.trim(), "background-image:url('" + (this.src()) + "');"].join(' ');
         this._attributes['style'] = style.trim();
       } else {
