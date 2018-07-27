@@ -4218,7 +4218,7 @@
       if (src === void 0) {
         return this._src;
       }
-      this._src = src.toLowerCase();
+      this._src = src;
       if (this.isMounted()) {
         this.unmount();
         this.mount();
