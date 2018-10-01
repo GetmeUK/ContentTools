@@ -107,7 +107,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Return the busy flag
         if busy == undefined
-            @_busy = busy
+            return @_busy
 
         # Set the busy flag
         @_busy = busy
@@ -201,13 +201,18 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Non-IE browsers
             if ev.clipboardData
-              clipboardData = ev.clipboardData.getData('text/plain')
+                if ev.clipboardData.getData('text/html') and
+                        element.type() != 'PreText'
+                    @pasteHTML(element, ev.clipboardData.getData('text/html'))
+                else
+                    @pasteText(element, ev.clipboardData.getData('text/plain'))
+
+                return
 
             # IE browsers
             if window.clipboardData
-              clipboardData = window.clipboardData.getData('TEXT')
-
-            @paste(element, clipboardData)
+                clipboardData = window.clipboardData.getData('TEXT')
+                @pasteText(element, window.clipboardData.getData('TEXT'))
 
         @_handleNextRegionTransition = (region) =>
             # Is there a next region?
@@ -296,8 +301,14 @@ class _EditorApp extends ContentTools.ComponentUI
             @_handlePreviousRegionTransition
             )
 
+        # Remove any event listeners attached to the editor
+        @removeEventListener()
+
         # Unmount the editor
         @unmount()
+
+        # Clear the list of children for the editor
+        @_children = []
 
     highlightRegions: (highlight) ->
         # Highlight (or stop highlighting) editiable regions within the page
@@ -313,15 +324,214 @@ class _EditorApp extends ContentTools.ComponentUI
         document.body.insertBefore(@_domElement, null)
         @_addDOMEventListeners()
 
-    paste: (element, clipboardData) ->
-        # Paste content into the given element
-        content = clipboardData
+    unmount: () ->
+        # Unmount the widget from the DOM
 
-        # Extract the content of the clipboard
-        # content = clipboardData.getData('text/plain')
+        # Check the editor is mounted
+        if not @isMounted()
+            return
+
+        # Unmount all children
+        for child in @_children
+            child.unmount()
+
+        # Remove the DOM element
+        @_domElement.parentNode.removeChild(@_domElement)
+        @_domElement = null
+
+        # Remove any DOM event bindings
+        @_removeDOMEventListeners()
+
+        # Reset child component handles
+        @_ignition = null
+        @_inspector = null
+        @_toolbox = null
+
+    # Page state methods
+
+    pasteHTML: (element, content) ->
+        # Paste HTML into/after the given element
+        tagNames = ContentEdit.TagNames.get()
+
+        # Clean the HTML
+        sandbox = document.implementation.createHTMLDocument()
+        wrapper = sandbox.createElement('div')
+        wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim())
+
+        # Remove any undefined nodes or empty #text nodes
+        childNodes = []
+        for childNode in wrapper.childNodes
+            unless childNode
+                continue
+
+            if childNode.nodeName.toLowerCase() == '#text'
+                if childNode.textContent.trim() == ''
+                    continue
+
+            childNodes.push(childNode)
+
+        unless childNodes.length
+            return
+
+        # Paste the HTML
+        inlineTags = ContentTools.INLINE_TAGS.slice()
+        inlineTags.push('#text')
+        firstNode = childNodes[0].nodeName.toLowerCase()
+        lastNode = childNodes[childNodes.length - 1].nodeName.toLowerCase()
+
+        # Cater for a single line of HTML being pasted, or pasting into a
+        # fixture.
+        if element.isFixed() or (inlineTags.indexOf(firstNode) > -1 and
+                inlineTags.indexOf(lastNode) > -1)
+
+            # If we merging multiple block level elements into one we strip
+            # HTML before doing so.
+            #
+            # HACK: This isn't the long term plan, where we're resolving here
+            # is an issue where pasting multiple paragraphs into a fixture
+            # causes issues because fixtures typically don't cater for block
+            # level elements as children. Long term this needs to be improved
+            # to cater for merging the text elements within to produce a
+            # single text element (retaining the HTML tags) that can be pasted
+            # into the fixture.
+            #
+            # ~ Anthony Blackshaw <ant@getme.co.uk>, 7 Jan 2018
+            #
+            if (inlineTags.indexOf(firstNode) > -1 and
+                    inlineTags.indexOf(lastNode) > -1)
+                content = new HTMLString.String(wrapper.innerHTML)
+
+            else
+                console.log wrapper.textContent
+                content = new HTMLString.String(
+                    HTMLString.String.encode(wrapper.textContent)
+                )
+
+            # Check we can paste in to the selected element
+            if element.content
+
+                # Insert the content into the element's existing content
+                selection = element.selection()
+                cursor = selection.get()[0] + content.length()
+                tip = element.content.substring(0, selection.get()[0])
+                tail = element.content.substring(selection.get()[1])
+
+                # Format the string using tags for the first character it is
+                # replacing (if any).
+                replaced = element.content.substring(
+                    selection.get()[0],
+                    selection.get()[1]
+                    )
+                if replaced.length()
+                    character = replaced.characters[0]
+                    tags = character.tags()
+
+                    if character.isTag()
+                        tags.shift()
+
+                    if tags.length >= 1
+                        content = content.format(0, content.length(), tags...)
+
+                element.content = tip.concat(content)
+                element.content = element.content.concat(tail, false)
+                element.updateInnerHTML()
+
+                # Mark the element as tainted
+                element.taint()
+
+                # Restore the selection
+                selection.set(cursor, cursor)
+                element.selection(selection)
+
+                return
+
+            else
+                # Can't paste content into the selected element so update the
+                # wrapper to contain a single paragraph.
+                wrapper.innerHTML = '<p>' + content.html() + '</p>'
+
+        # If the element isn't a text element find the nearest top level
+        # node that we can insert the pasted content after.
+        originalElement = element
+        if element.parent().type() != 'Region'
+            element = element.closest (node) ->
+                return node.parent().type() is 'Region'
+
+        region = element.parent()
+
+        # If the content starts and ends with an inline tag then we need to
+        # wrap it within a paragraph tag before inserting.
+
+        if (inlineTags.indexOf(firstNode) > -1 and
+                inlineTags.indexOf(lastNode) > -1)
+
+            innerP = wrapper.createElement('p')
+            while wrapper.childNodes.length > 0
+                innerP.appendChild(wrapper.childNodes[0])
+            wrapper.appendChild(innerP)
+
+        i = 0
+        newElement = originalElement
+        for node in wrapper.childNodes
+            unless node
+                continue
+
+            # Skip whitespace text elements
+            if node.nodeName == '#text' and node.textContent.trim() == ''
+                continue
+
+            # Attempt to convert the node to a ContentEdit element
+            elementCls = tagNames.match(node.nodeName)
+
+            # We assume nodes that don't match an element are inline and so we
+            # wrap then in a paragraph tag for insertion.
+            if elementCls == ContentEdit.Static
+                p = document.createElement('p')
+                p.appendChild(node)
+                node = p
+                elementCls = ContentEdit.Text
+
+            # Create the new element
+            newElement = elementCls.fromDOMElement(node)
+
+            # Insert the new element into the page
+            region.attach(
+                newElement,
+                region.children.indexOf(element) + (1 + i)
+            )
+
+            i += 1
+
+        # Focus on the last focusable element inserted
+        if newElement.focus
+            newElement.focus()
+
+        else if newElement.nextSibling()
+            newElement = newElement.nextSibling().previousWithTest (node) ->
+                if node.focus
+                    return node
+
+            if newElement
+                newElement.focus()
+
+        else
+            newElement = newElement.nextWithTest (node) ->
+                if node.focus
+                    return node
+
+            if newElement
+                newElement.focus()
+            else
+                originalElement.focus()
+
+    pasteText: (element, content) ->
+        # Paste text into/after the given element
 
         # Convert the content into a series of lines to be inserted
-        lines = content.split('\n')
+        if element.type() != 'PreText'
+            lines = content.split('\n')
+        else
+            lines = [content]
 
         # Filter out any blank (whitespace only) lines
         lines = lines.filter (line) ->
@@ -432,27 +642,6 @@ class _EditorApp extends ContentTools.ComponentUI
             selection.set(cursor, cursor)
             element.selection(selection)
 
-    unmount: () ->
-        # Unmount the widget from the DOM
-
-        # Check the editor is mounted
-        if not @isMounted()
-            return
-
-        # Remove the DOM element
-        @_domElement.parentNode.removeChild(@_domElement)
-        @_domElement = null
-
-        # Remove any DOM event bindings
-        @_removeDOMEventListeners()
-
-        # Reset child component handles
-        @_ignition = null
-        @_inspector = null
-        @_toolbox = null
-
-    # Page state methods
-
     revert: () ->
         # Revert the page to it's previous state before we started editing
         # the page.
@@ -461,12 +650,11 @@ class _EditorApp extends ContentTools.ComponentUI
 
         # Check if there are any changes, and if there are make the user confirm
         # they want to lose them.
-        confirmMessage = ContentEdit._(
-            'Your changes have not been saved, do you really want to lose them?'
-            )
-        if ContentEdit.Root.get().lastModified() > @_rootLastModified and
-                not window.confirm(confirmMessage)
-            return false
+        if ContentTools.CANCEL_MESSAGE
+            confirmMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
+            if ContentEdit.Root.get().lastModified() > @_rootLastModified and
+                    not window.confirm(confirmMessage)
+                return false
 
         # Revert the page to it's initial state
         @revertToSnapshot(@history.goTo(0), false)
@@ -477,6 +665,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # Revert the page to the specified snapshot (the snapshot should be a
         # map of regions and the associated HTML).
 
+        domRegions = []
         for name, region of @_regions
             # Apply the changes made to the DOM (affectively reseting the DOM to
             # a non-editable state).
@@ -485,7 +674,26 @@ class _EditorApp extends ContentTools.ComponentUI
             for child in region.children
                 child.unmount()
 
-            region.domElement().innerHTML = snapshot.regions[name]
+            # Handle fixtures vs. standard regions
+            if snapshot.regions[name] != undefined
+                if region.children.length is 1 and region.children[0].isFixed()
+                    wrapper = @constructor.createDiv()
+                    wrapper.innerHTML = snapshot.regions[name]
+                    domRegions.push(wrapper.firstElementChild)
+                    region.domElement().parentNode.replaceChild(
+                        wrapper.firstElementChild,
+                        region.domElement()
+                        )
+                else
+                    domRegions.push(region.domElement())
+                    region.domElement().innerHTML = snapshot.regions[name]
+            else
+                region.domElement().remove();
+                delete @_regions[name]
+
+        # Resync the DOM regions, this is required as fixture will replace the
+        # existing DOM region element (regions wont).
+        @_domRegions = domRegions
 
         # Check to see if we need to restore the regions to an editable state
         if restoreEditable
@@ -518,8 +726,12 @@ class _EditorApp extends ContentTools.ComponentUI
         if not @dispatchEvent(@createEvent('save', {passive: passive}))
             return
 
-        # Check the document has changed, if not we don't need do anything
+        # Blur any active element to ensure empty elements are not retained
         root = ContentEdit.Root.get()
+        if root.focused() and not passive
+            root.focused().blur()
+
+        # Check the document has changed, if not we don't need do anything
         if root.lastModified() == @_rootLastModified and passive
             # Trigger the saved event early with no modified regions,
             @dispatchEvent(
@@ -528,11 +740,12 @@ class _EditorApp extends ContentTools.ComponentUI
             return
 
         # Build a map of the modified regions
+        domRegions = []
         modifiedRegions = {}
         for name, region of @_regions
             # Check for regions that contain only a place holder
             html = region.html()
-            if region.children.length == 1
+            if region.children.length == 1 and not region.type() is 'Fixture'
                 child = region.children[0]
                 if child.content and not child.content.html()
                     html = ''
@@ -544,7 +757,18 @@ class _EditorApp extends ContentTools.ComponentUI
                 for child in region.children
                     child.unmount()
 
-                region.domElement().innerHTML = html
+                # Handle fixtures vs. standard regions
+                if region.children.length is 1 and region.children[0].isFixed()
+                    wrapper = @constructor.createDiv()
+                    wrapper.innerHTML = html
+                    domRegions.push(wrapper.firstElementChild)
+                    region.domElement().parentNode.replaceChild(
+                        wrapper.firstElementChild,
+                        region.domElement()
+                    )
+                else
+                    domRegions.push(region.domElement())
+                    region.domElement().innerHTML = html
 
             # Check the region has been modified, if not we don't include it in
             # the output.
@@ -556,11 +780,15 @@ class _EditorApp extends ContentTools.ComponentUI
             # Set the region back to not modified
             @_regionsLastModified[name] = region.lastModified()
 
+        # Resync the DOM regions, this is required as fixture will replace the
+        # existing DOM region element (regions wont).
+        @_domRegions = domRegions
+
         # Trigger the saved event with a region HTML map for the changed
         # content.
         @dispatchEvent(
             @createEvent('saved', {regions: modifiedRegions, passive: passive})
-            )
+        )
 
     setRegionOrder: (regionNames) ->
         # Set the navigation order of regions on the page to the order set in
@@ -598,6 +826,8 @@ class _EditorApp extends ContentTools.ComponentUI
         @_inspector.show()
 
         @busy(false)
+
+        @dispatchEvent(@createEvent('started'))
 
     stop: (save) ->
         # Stop editing the page
@@ -644,7 +874,7 @@ class _EditorApp extends ContentTools.ComponentUI
             @_allowEmptyRegions () =>
                 ContentEdit.Root.get().focused().blur()
 
-        return
+        @dispatchEvent(@createEvent('stopped'))
 
     syncRegions: (regionQuery, restoring) ->
         # Sync the editor with the page in order to map out the regions/fixtures
@@ -712,7 +942,7 @@ class _EditorApp extends ContentTools.ComponentUI
 
         @_handleHighlightOff = (ev) =>
             # Ignore repeated key press events
-            if ev.keyCode in [17, 224] # Ctrl/Cmd
+            if ev.keyCode in [17, 224, 91, 93] # Ctrl/Cmd
                 @_ctrlDown = false
                 return
 
@@ -737,7 +967,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # When unloading the page we check to see if the user is currently
         # editing and if so ask them to confirm the action.
         @_handleBeforeUnload = (ev) =>
-            if @_state is 'editing'
+            if @_state is 'editing' and ContentTools.CANCEL_MESSAGE
                 cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
                 (ev or window.event).returnValue = cancelMessage
                 return cancelMessage
@@ -803,6 +1033,7 @@ class _EditorApp extends ContentTools.ComponentUI
         # Initialize DOM regions within the page
 
         found = {}
+        domRegions = []
         @_orderedRegions = []
         for domRegion, i in @_domRegions
 
@@ -831,11 +1062,16 @@ class _EditorApp extends ContentTools.ComponentUI
                 @_regions[name] = new ContentEdit.Fixture(domRegion)
             else
                 @_regions[name] = new ContentEdit.Region(domRegion)
+            domRegions.push(@_regions[name].domElement())
 
             # Store the date at which the region was last modified so we can
             # check for changes on save.
             if not restoring
                 @_regionsLastModified[name] = @_regions[name].lastModified()
+
+        # Resync the DOM regions, this is required as fixture will replace the
+        # existing DOM region element (regions wont).
+        @_domRegions = domRegions
 
         # Remove any regions no longer part of the page
         for name, region of @_regions
@@ -857,10 +1093,6 @@ class ContentTools.EditorApp
     # The `ContentTools.EditorApp` class is a singleton, this code provides
     # access to the singleton instance of the protected `_EditorApp` class which
     # is initialized the first time the class method `get` is called.
-
-    # Constants
-
-    # A set of possible states for the editor.
 
     # Storage for the singleton instance that will be created for the editor app
     instance = null

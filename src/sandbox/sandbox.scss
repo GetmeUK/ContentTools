@@ -144,6 +144,21 @@ body {
 
 }
 
+/* Image fixtures */
+
+.image-fixture {
+    background: #eee;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-radius: 100px;
+    height: 200px;
+    margin: 20px auto;
+    width: 200px;
+
+    img {
+        display: none;
+    }
+}
 
 /* Code examples */
 

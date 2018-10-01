@@ -88,7 +88,7 @@ $highlight-color: rgba(#f39c12, 0.25) !default;
 // Icon font-face
 @font-face {
     font-family: 'icon';
-    src: url('icons.woff');
+    src: url($image-path-prefix + 'icons.woff');
     font-weight: normal;
     font-style: normal;
 }

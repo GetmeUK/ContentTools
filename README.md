@@ -54,11 +54,11 @@ Alternatively you can use `grunt jasmine` to run the tests from the command line
 
 ContentTools is available via the [jsdelivr open source CDN](http://www.jsdelivr.com/), to reference a file from the ContentTools build directory use the following URL format:
 
-`http://cdn.jsdelivr.net/contenttools/{verision}/{file}`
+`http://cdn.jsdelivr.net/npm/ContenTools@{version}/{file}`
 
 For example to access the current primary JavaScript file the URL would be:
 
-`http://cdn.jsdelivr.net/contenttools/1.3.1/content-tools.min.js`
+`https://cdn.jsdelivr.net/npm/ContentTools@1.6.1/build/content-tools.min.js`
 
 As the project's CSS uses relative file paths you will need to either role your own version of CSS from the SASS files (recommended) or [override references to fonts/images within your local CSS](https://gist.github.com/anthonyjb/a6aec8ecfbfe6f875d5c6691687ba43d).
 

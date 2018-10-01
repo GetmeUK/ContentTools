@@ -1,4 +1,4 @@
-/*! ContentTools v1.2.10 by Anthony Blackshaw <ant@getme.co.uk> (https://github.com/anthonyjb) */
+/*! ContentTools v1.5.1 by Anthony Blackshaw <ant@getme.co.uk> (https://github.com/anthonyjb) */
 @charset "UTF-8";
 /* Vendor */
 html {
@@ -474,6 +474,18 @@ body {
         width: 23.23176%; }
         .article__related:last-child {
           margin-right: 0; } }
+
+/* Image fixtures */
+.image-fixture {
+  background: #eee;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 100px;
+  height: 200px;
+  margin: 20px auto;
+  width: 200px; }
+  .image-fixture img {
+    display: none; }
 
 /* Code examples */
 .example {

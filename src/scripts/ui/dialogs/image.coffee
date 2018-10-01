@@ -291,6 +291,12 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             # Get the file uploaded
             file = ev.target.files[0]
 
+            # Ignore empty file changes (this may occur when we change the
+            # value of the input field to '', see issue:
+            # https://github.com/GetmeUK/ContentTools/issues/385
+            unless file
+                return
+
             # Clear the file inputs value so that the same file can be uploaded
             # again if the user cancels the upload or clears it and starts then
             # changes their mind.

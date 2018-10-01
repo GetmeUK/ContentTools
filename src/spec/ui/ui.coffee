@@ -95,14 +95,14 @@ describe 'ContentTools.ComponentUI.addCSSClass()', () ->
         expect(domElement.getAttribute('class')).toBe 'foo'
 
 
-describe 'ContentTools.ComponentUI.detatch()', () ->
+describe 'ContentTools.ComponentUI.detach()', () ->
 
-    it 'should detatch a child component', () ->
+    it 'should detach a child component', () ->
 
         parent = new ContentTools.ComponentUI()
         child = new ContentTools.ComponentUI()
         parent.attach(child)
-        parent.detatch(child)
+        parent.detach(child)
 
         expect(parent.children()).toEqual []
 
@@ -388,9 +388,9 @@ describe 'ContentTools.WidgetUI.attach()', () ->
         expect(child.mount).toHaveBeenCalledWith()
 
 
-describe 'ContentTools.WidgetUI.detatch()', () ->
+describe 'ContentTools.WidgetUI.detach()', () ->
 
-    it 'should detatch a child widget and unmount it', () ->
+    it 'should detach a child widget and unmount it', () ->
 
         parent = new ContentTools.WidgetUI()
         child = new ContentTools.WidgetUI()
@@ -402,7 +402,7 @@ describe 'ContentTools.WidgetUI.detatch()', () ->
         domElement = document.createElement('div')
         document.body.appendChild(domElement)
         parent._domElement = domElement
-        parent.detatch(child)
+        parent.detach(child)
 
         # Check the widget was removed as a child
         expect(parent.children()).toEqual []

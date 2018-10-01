@@ -54,22 +54,26 @@ class ContentTools.AnchoredDialogUI extends ContentTools.WidgetUI
         # dialog off the page or not.
         if not @isMounted()
             return
-
         # Calculate half the width of the anchored dialog (as anchored dialogs
-        # are displayed centrally) amnd add a 5 pixel buffer so we don't bump
+        # are displayed centrally) and add a 5 pixel buffer so we don't bump
         # right up to the edge.
-        halfWidth = (@_domElement.getBoundingClientRect().width / 2 + 5)
+        rect = @_domElement.getBoundingClientRect()
+        halfWidth = (rect.width / 2 + 5)
 
         # Get the width of the document excluding the scroll bars
         pageWidth = document.documentElement.clientWidth or
             document.body.clientWidth
 
         # Adjust the position to be contained (if necessary)
-        if (@_position[0] + halfWidth) > (pageWidth - halfWidth)
+        if (@_position[0] + halfWidth) > pageWidth
             @_position[0] = pageWidth - halfWidth
 
         if @_position[0] < halfWidth
             @_position[0] = halfWidth
+
+        # Make sure the dialog does't get placed above the page
+        if @_position[1] + rect.top < 5
+             @_position[1] = Math.abs(rect.top) + 5
 
 
 class ContentTools.DialogUI extends ContentTools.WidgetUI
