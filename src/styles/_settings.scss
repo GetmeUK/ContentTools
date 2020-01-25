@@ -55,6 +55,7 @@ $highlight-color: rgba(#f39c12, 0.25) !default;
         line-height: $height;
         opacity: 0.0;
         padding: 0 8px;
+        pointer-events: none;
         position: absolute;
         bottom: ($parent-height + $offset-top);
         @include type-text($font-size: 12px, $line-height: $height);
