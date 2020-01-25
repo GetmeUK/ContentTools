@@ -1,7 +1,7 @@
 {
   "name": "ContentTools",
   "description": "A JS library for building WYSIWYG editors for HTML content",
-  "version": "1.6.10",
+  "version": "1.6.11",
   "keywords": [
     "wysiwyg",
     "inline",
