@@ -66,6 +66,15 @@ class ContentTools.HTMLCleaner
 
     clean: (html) ->
         # Return a clean version of the given string of HTML
+
+        # See https://github.com/GetmeUK/ContentTools/issues/542 for details,
+        # thanks to https://github.com/cyclaero for the additional information
+        # and workaround.
+        html = html.replace(
+            /<span( class="Apple-converted-space")?> <\/span>/g,
+            ' '
+        )
+
         sandbox = document.implementation.createHTMLDocument()
         wrapper = sandbox.createElement('div')
         wrapper.innerHTML = html

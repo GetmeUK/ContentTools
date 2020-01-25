@@ -8211,6 +8211,7 @@
 
     HTMLCleaner.prototype.clean = function(html) {
       var a, attribute, c, childNode, childNodeName, node, nodeName, rawAttributes, safeAttributes, sandbox, stack, value, wrapper, _i, _j, _len, _len1, _ref;
+      html = html.replace(/<span( class="Apple-converted-space")?> <\/span>/g, ' ');
       sandbox = document.implementation.createHTMLDocument();
       wrapper = sandbox.createElement('div');
       wrapper.innerHTML = html;

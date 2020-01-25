@@ -181,7 +181,7 @@
     req = new XMLHttpRequest();
     req.overrideMimeType('application/json');
     req.open('GET', 'https://raw.githubusercontent.com/GetmeUK/ContentTools/master/translations/lp.json', true);
-    return req.onreadystatechange = function(ev) {
+    req.onreadystatechange = function(ev) {
       var translations;
       if (ev.target.readyState === 4) {
         translations = JSON.parse(ev.target.responseText);
@@ -189,6 +189,7 @@
         return ContentEdit.LANGUAGE = 'lp';
       }
     };
+    return req.send(null);
   };
 
 }).call(this);
