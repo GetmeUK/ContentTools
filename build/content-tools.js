@@ -9055,9 +9055,11 @@
         return function(ev) {
           var cancelMessage;
           if (_this._state === 'editing' && ContentTools.CANCEL_MESSAGE) {
-            cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE);
-            (ev || window.event).returnValue = cancelMessage;
-            return cancelMessage;
+            if (_this.history && _this.history._snapshotIndex) {
+              cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE);
+              (ev || window.event).returnValue = cancelMessage;
+              return cancelMessage;
+            }
           }
         };
       })(this);

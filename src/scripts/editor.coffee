@@ -968,9 +968,10 @@ class _EditorApp extends ContentTools.ComponentUI
         # editing and if so ask them to confirm the action.
         @_handleBeforeUnload = (ev) =>
             if @_state is 'editing' and ContentTools.CANCEL_MESSAGE
-                cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
-                (ev or window.event).returnValue = cancelMessage
-                return cancelMessage
+                if @history and @history._snapshotIndex
+                    cancelMessage = ContentEdit._(ContentTools.CANCEL_MESSAGE)
+                    (ev or window.event).returnValue = cancelMessage
+                    return cancelMessage
 
         window.addEventListener('beforeunload', @_handleBeforeUnload)
 
