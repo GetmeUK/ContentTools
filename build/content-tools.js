@@ -1663,6 +1663,7 @@
     DEFAULT_MIN_ELEMENT_WIDTH: 80,
     DRAG_HOLD_DURATION: 500,
     DROP_EDGE_SIZE: 50,
+    ENABLE_DRAG_CLONING: false,
     HELPER_CHAR_LIMIT: 250,
     INDENT: '    ',
     LANGUAGE: 'en',
@@ -2237,6 +2238,13 @@
       return this._behaviours[behaviour] = allowed;
     };
 
+    Element.prototype.clone = function() {
+      var wrapper;
+      wrapper = document.createElement('div');
+      wrapper.innerHTML = this.html();
+      return this.constructor.fromDOMElement(wrapper.children[0]);
+    };
+
     Element.prototype.createDraggingDOMElement = function() {
       var helper;
       if (!this.isMounted()) {
@@ -2626,7 +2634,11 @@
 
     Element._dropVert = function(element, target, placement) {
       var insertIndex;
-      element.parent().detach(element);
+      if (ContentEdit.ENABLE_DRAG_CLONING && window.event.altKey) {
+        element = element.clone();
+      } else {
+        element.parent().detach(element);
+      }
       insertIndex = target.parent().children.indexOf(target);
       if (placement[0] === 'below') {
         insertIndex += 1;
@@ -2636,7 +2648,11 @@
 
     Element._dropBoth = function(element, target, placement) {
       var aClassNames, alignLeft, alignRight, className, insertIndex, _i, _len, _ref;
-      element.parent().detach(element);
+      if (ContentEdit.ENABLE_DRAG_CLONING && window.event.altKey) {
+        element = element.clone();
+      } else {
+        element.parent().detach(element);
+      }
       insertIndex = target.parent().children.indexOf(target);
       if (placement[0] === 'below' && placement[1] === 'center') {
         insertIndex += 1;
