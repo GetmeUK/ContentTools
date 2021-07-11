@@ -161,6 +161,7 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
 
         # Allow the toolbox to be dragged to a new location by the user
         @_domGrip.addEventListener('mousedown', @_onStartDragging)
+        @_domGrip.addEventListener('touchstart', @_onStartDragging)
 
         # Ensure that when the window is resized the toolbox remains in view
         @_handleResize = (ev) =>
@@ -350,13 +351,18 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
 
     _onDrag: (ev) =>
         # User has dragged the toolbox to a new position
+        ev.preventDefault()
 
         # Prevent content selection while dragging elements
         ContentSelect.Range.unselectAll()
 
         # Reposition the toolbox
-        @_domElement.style.left = "#{ ev.clientX - @_draggingOffset.x }px"
-        @_domElement.style.top = "#{ ev.clientY - @_draggingOffset.y }px"
+        if ev.type == 'touchmove'
+            @_domElement.style.left = "#{ ev.touches[0].clientX - @_draggingOffset.x }px"
+            @_domElement.style.top = "#{ ev.touches[0].clientY - @_draggingOffset.y }px"
+        else
+            @_domElement.style.left = "#{ ev.clientX - @_draggingOffset.x }px"
+            @_domElement.style.top = "#{ ev.clientY - @_draggingOffset.y }px"
 
     _onStartDragging: (ev) =>
         # Start dragging the toolbox
@@ -371,14 +377,24 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
 
         # Calculate the offset of the cursor to the toolbox
         rect = @_domElement.getBoundingClientRect()
-        @_draggingOffset = {
-            x: ev.clientX - rect.left,
-            y: ev.clientY - rect.top
-            }
+        if ev.type == 'touchstart'
+            @_draggingOffset = {
+                x: ev.touches[0].clientX - rect.left,
+                y: ev.touches[0].clientY - rect.top
+                }
 
-        # Setup dragging behaviour for the element
-        document.addEventListener('mousemove', @_onDrag)
-        document.addEventListener('mouseup', @_onStopDragging)
+            # Setup dragging behaviour for the element
+            document.addEventListener('touchmove', @_onDrag)
+            document.addEventListener('touchend', @_onStopDragging)
+        else
+            @_draggingOffset = {
+                x: ev.clientX - rect.left,
+                y: ev.clientY - rect.top
+                }
+
+            # Setup dragging behaviour for the element
+            document.addEventListener('mousemove', @_onDrag)
+            document.addEventListener('mouseup', @_onStopDragging)
 
         # Add dragging class to the body (this class is defined in ContentEdit
         # it disabled content selection via CSS).
@@ -393,6 +409,8 @@ class ContentTools.ToolboxUI extends ContentTools.WidgetUI
         @_contain()
 
         # Remove dragging behaviour
+        document.removeEventListener('touchmove', @_onDrag)
+        document.removeEventListener('touchend', @_onStopDragging)
         document.removeEventListener('mousemove', @_onDrag)
         document.removeEventListener('mouseup', @_onStopDragging)
 
