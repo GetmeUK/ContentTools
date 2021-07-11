@@ -402,7 +402,6 @@ class _EditorApp extends ContentTools.ComponentUI
                 content = new HTMLString.String(wrapper.innerHTML)
 
             else
-                console.log wrapper.textContent
                 content = new HTMLString.String(
                     HTMLString.String.encode(wrapper.textContent)
                 )

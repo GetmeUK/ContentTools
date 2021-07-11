@@ -8638,7 +8638,6 @@
         if (inlineTags.indexOf(firstNode) > -1 && inlineTags.indexOf(lastNode) > -1) {
           content = new HTMLString.String(wrapper.innerHTML);
         } else {
-          console.log(wrapper.textContent);
           content = new HTMLString.String(HTMLString.String.encode(wrapper.textContent));
         }
         if (element.content) {
@@ -9694,7 +9693,7 @@
       _ref1 = ContentTools.getScrollPosition(), scrollX = _ref1[0], scrollY = _ref1[1];
       dialog.position([rect.left + (rect.width / 2) + scrollX, rect.top + (rect.height / 2) + scrollY]);
       dialog.addEventListener('save', function(ev) {
-        var a, alignmentClassNames, className, detail, linkClasses, _i, _j, _len, _len1;
+        var a, alignmentClassNames, className, detail, firstATag, i, linkClasses, tag, _i, _j, _k, _l, _len, _len1, _len2, _ref2;
         detail = ev.detail();
         applied = true;
         if (element.type() === 'Image') {
@@ -9703,9 +9702,6 @@
             element.a = {
               href: detail.href
             };
-            if (element.a) {
-              element.a["class"] = element.a['class'];
-            }
             if (detail.target) {
               element.a.target = detail.target;
             }
@@ -9736,9 +9732,34 @@
         } else if (element.isFixed() && element.tagName() === 'a') {
           element.attr('href', detail.href);
         } else {
+          firstATag = null;
+          for (i = _k = from; from <= to ? _k < to : _k > to; i = from <= to ? ++_k : --_k) {
+            _ref2 = element.content.characters[i].tags();
+            for (_l = 0, _len2 = _ref2.length; _l < _len2; _l++) {
+              tag = _ref2[_l];
+              if (tag.name() === 'a') {
+                firstATag = tag;
+                break;
+              }
+            }
+            if (firstATag) {
+              break;
+            }
+          }
           element.content = element.content.unformat(from, to, 'a');
           if (detail.href) {
-            a = new HTMLString.Tag('a', detail);
+            if (firstATag) {
+              a = firstATag.copy();
+            } else {
+              a = new HTMLString.Tag('a');
+            }
+            a.attr('href', detail.href);
+            if (detail.target) {
+              a.attr('target', detail.target);
+            } else {
+              a.removeAttr('target');
+            }
+            console.log(a);
             element.content = element.content.format(from, to, a);
             element.content.optimize();
           }

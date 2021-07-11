@@ -358,9 +358,6 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
                 if detail.href
                     element.a = {href: detail.href}
 
-                    if element.a
-                        element.a.class = element.a['class']
-
                     if detail.target
                         element.a.target = detail.target
 
@@ -390,12 +387,36 @@ class ContentTools.Tools.Link extends ContentTools.Tools.Bold
             else
                 # Text elements
 
+                # Attempt to find any existing tag
+                firstATag = null
+                for i in [from...to]
+                    for tag in element.content.characters[i].tags()
+                        if tag.name() == 'a'
+                            firstATag = tag
+                            break
+
+                    if firstATag
+                        break
+
                 # Clear any existing link
                 element.content = element.content.unformat(from, to, 'a')
 
                 # If specified add the new link
                 if detail.href
-                    a = new HTMLString.Tag('a', detail)
+
+                    if firstATag
+                        a = firstATag.copy()
+                    else
+                        a = new HTMLString.Tag('a')
+
+                    a.attr('href', detail.href)
+                    if detail.target
+                        a.attr('target', detail.target)
+                    else
+                        a.removeAttr('target')
+
+                    console.log(a)
+
                     element.content = element.content.format(from, to, a)
                     element.content.optimize()
 
