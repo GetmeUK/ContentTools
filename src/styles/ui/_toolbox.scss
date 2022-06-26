@@ -13,6 +13,7 @@
      * spacing / 2 = the vertical padding around each tool group.
      */
     $spacing: 8px;
+    $spacing-half: 4px;
 
     /**
      * The size of a tool.
@@ -68,7 +69,7 @@
          * children.
          */
         @include clearfix;
-        padding: $spacing / 2 0;
+        padding: $spacing-half 0;
 
         &:first-child {
             padding-top: 0;
@@ -85,7 +86,7 @@
         cursor: pointer;
         float: left;
         height: $tool-size;
-        margin: $spacing / 2;
+        margin: $spacing-half;
         margin-right: 4px;
         position: relative;
         text-align: center;

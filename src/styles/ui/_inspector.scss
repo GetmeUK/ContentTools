@@ -62,6 +62,7 @@
 
     .ct-tag {
         $tag-height: 24px;
+        $tag-height-half: 12px;
 
         background-color: #2980b9;
         border-radius: 2px 0 0 2px;
@@ -78,10 +79,10 @@
 
         &:after {
             border-style: solid;
-            border-bottom: ($tag-height / 2) solid rgba(255, 0, 0, 0);
-            border-left: ($tag-height / 2) solid #2980b9;
+            border-bottom: $tag-height-half solid rgba(255, 0, 0, 0);
+            border-left: $tag-height-half solid #2980b9;
             border-right: none;
-            border-top: ($tag-height / 2) solid rgba(255, 0, 0, 0);
+            border-top: $tag-height-half solid rgba(255, 0, 0, 0);
             content: '';
             display: block;
             height: $tag-height;

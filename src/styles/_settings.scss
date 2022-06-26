@@ -51,7 +51,7 @@ $highlight-color: rgba(#f39c12, 0.25) !default;
         content: attr(data-ct-tooltip);
         display: block;
         @include hyphens(auto);
-        left: -($width - $parent-width) / 2;
+        left: calc(0 - ((#{$width} - #{$parent-width}) / 2));
         line-height: $height;
         opacity: 0.0;
         padding: 0 8px;

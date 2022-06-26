@@ -30,20 +30,22 @@
 
 .ct-widget {
 
-    $dialogWidth: 700px;
-    $dialogHeight: 480px;
+    $dialog-width: 700px;
+    $dialog-width-half: 350px;
+    $dialog-height: 480px;
+    $dialog-height-half: 240px;
 
     &.ct-dialog {
         background: white;
         box-shadow: 0 8px 8px $shadow-color;
         border-radius: 2px;
-        height: $dialogHeight;
+        height: $dialog-height;
         left: 50%;
-        margin-left: -($dialogWidth / 2);
-        margin-top: -($dialogHeight / 2);
+        margin-left: -$dialog-width-half;
+        margin-top: -$dialog-height-half;
         position: fixed;
         top: 50%;
-        width: $dialogWidth;
+        width: $dialog-width;
         z-index: $base-z-index + 100;
 
         /**
@@ -113,7 +115,7 @@
          */
         &__body {
             margin: auto;
-            width: $dialogWidth - 128px;
+            width: $dialog-width - 128px;
         }
 
         &__view {
