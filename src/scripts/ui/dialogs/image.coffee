@@ -37,7 +37,7 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
             ContentTools.IMAGE_UPLOADER(this)
 
     # Read-only properties
-
+	
     cropRegion: () ->
         # Return the defined crop-region (top, left, bottom, right), values are
         # normalized to the range 0.0 - 1.0. If no crop region is defined then
@@ -48,7 +48,39 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
         return [0, 0, 1, 1]
 
     # Methods
+	
+    hideImages: () ->
+        if @_domImagesContainer
+            @_domImagesContainer.parentNode.removeChild(@_domImagesContainer)
+				
+    # show images passed by user and adds event listners to that images
+    showImages: () ->
+        @hideImages
+		
+        if @images
+            @_domImagesContainer = @constructor.createDiv(['ct-image-dialog-images__container'])
 
+            @_domView.appendChild(@_domImagesContainer)
+			
+            _domImages = @constructor.createDiv(['ct-image-dialog-images'])
+            @_domImagesContainer.appendChild(_domImages)
+			
+            for image in @images
+                _domImageDiv = @constructor.createDiv(['ct-image-dialog-images__image'])
+                _domImage = new Image()
+                _domImage.src = image
+				
+                _domImageDiv.appendChild(_domImage)
+                _domImages.appendChild(_domImageDiv)
+	
+                _domImage.addEventListener 'click', (ev) =>
+                    @_imageSelected = {src: ev.target.src, size: [ev.target.naturalWidth, ev.target.naturalHeight]}
+                    @populate(@_imageSelected.src, @_imageSelected.size)
+				
+    # Add URLs of images in array passed by user
+    addImages: (images) ->
+        @images = images			
+			
     addCropMarks: () ->
         # Add crop marks to the current image
         if @_cropMarks
@@ -73,6 +105,8 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
 
         # Set the dialog to empty
         @state('empty')
+		
+        @showImages()
 
     mount: () ->
         # Mount the widget
@@ -185,9 +219,12 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
         @_addDOMEventListeners()
 
         @dispatchEvent(@createEvent('imageuploader.mount'))
+		
+        @showImages()
 
     populate: (imageURL, imageSize) ->
         # Populate the dialog with an image
+        @hideImages()
 
         # Set image attributes
         @_imageURL = imageURL
@@ -230,15 +267,25 @@ class ContentTools.ImageDialog extends ContentTools.DialogUI
 
     save: (imageURL, imageSize, imageAttrs) ->
         # Save and insert the current image
-        @dispatchEvent(
-            @createEvent(
-                'save',
-                {
-                    'imageURL': imageURL,
-                    'imageSize': imageSize,
-                    'imageAttrs': imageAttrs
-                })
-            )
+        if imageURL
+            @dispatchEvent(
+                @createEvent(
+                    'save',
+                    {
+                        'imageURL': imageURL,
+                        'imageSize': imageSize,
+                        'imageAttrs': imageAttrs
+                    })
+                )
+        else if @_imageSelected
+            @dispatchEvent(
+                @createEvent(
+                    'save',
+                    {
+                        'imageURL': @_imageSelected.src,
+                        'imageSize': @_imageSelected.size
+                    })
+                )
 
     state: (state) ->
         # Set/get the state of the dialog (empty, uploading, populated)
