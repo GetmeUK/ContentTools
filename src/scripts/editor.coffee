@@ -201,11 +201,15 @@ class _EditorApp extends ContentTools.ComponentUI
 
             # Non-IE browsers
             if ev.clipboardData
-                if ev.clipboardData.getData('text/html') and
-                        element.type() != 'PreText'
-                    @pasteHTML(element, ev.clipboardData.getData('text/html'))
+                if ev.clipboardData.items and ev.clipboardData.items[0].kind === 'file'
+                    file = ev.clipboardData.items[0].getAsFile();
+                    @dispatchEvent(@createEvent('imagepaste', {file: file, element: element}));
                 else
-                    @pasteText(element, ev.clipboardData.getData('text/plain'))
+                    if ev.clipboardData.getData('text/html') and
+                            element.type() != 'PreText'
+                        @pasteHTML(element, ev.clipboardData.getData('text/html'))
+                    else
+                        @pasteText(element, ev.clipboardData.getData('text/plain'))
 
                 return
 
@@ -349,14 +353,14 @@ class _EditorApp extends ContentTools.ComponentUI
 
     # Page state methods
 
-    pasteHTML: (element, content) ->
+    pasteHTML: (element, content, pasteEmpty = false) ->
         # Paste HTML into/after the given element
         tagNames = ContentEdit.TagNames.get()
 
         # Clean the HTML
         sandbox = document.implementation.createHTMLDocument()
         wrapper = sandbox.createElement('div')
-        wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim())
+        wrapper.innerHTML = ContentTools.getHTMLCleaner().clean(content.trim(), pasteEmpty)
 
         # Remove any undefined nodes or empty #text nodes
         childNodes = []
