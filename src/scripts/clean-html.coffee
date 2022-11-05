@@ -15,7 +15,8 @@ class ContentTools.HTMLCleaner
     # A table of tags and the list of attributes we consider safe for them
     @DEFAULT_ATTRIBUTE_WHITELIST = {
         'a': ['href'],
-        'td': ['colspan']
+        'td': ['colspan'],
+        'img': ['src']
     }
 
     # A default list of tags we consider safe
@@ -30,6 +31,7 @@ class ContentTools.HTMLCleaner
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'i',
         'ins',
+        'img',
         'li',
         'ol',
         'p',
@@ -64,7 +66,7 @@ class ContentTools.HTMLCleaner
         @attributeWhitelist = attributeWhitelist or
                 @constructor.DEFAULT_ATTRIBUTE_WHITELIST
 
-    clean: (html) ->
+    clean: (html, keepEmpty = false) ->
         # Return a clean version of the given string of HTML
 
         # See https://github.com/GetmeUK/ContentTools/issues/542 for details,
@@ -105,9 +107,9 @@ class ContentTools.HTMLCleaner
                 continue
 
             # Remove any tag with no children or only whitespace children with
-            # the exception of text or <br> tags.
+            # the exception of text or <br> tags, unless "keepEmpty" is defined (e.g. paste image)
             unless nodeName == '#text'
-                if node.textContent.trim() == ''
+                if node.textContent.trim() == '' and !keepEmpty
                     if node.textContent == '' or node.parentNode == wrapper
                         # If the element is empty or top level remove it...
                         node.remove()
